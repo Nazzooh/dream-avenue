@@ -612,38 +612,41 @@ function FormField({
         {required && <span style={{ color: '#ef4444' }}>*</span>}
       </label>
 
-      <div style={{ position: 'relative' }}>
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          placeholder={placeholder}
-          style={{
-            width: '100%',
-            padding: '0.875rem 1rem',
-            paddingRight: showValidation ? '3rem' : '1rem',
-            border: '2px solid #E0E0E0',
-            borderRadius: '12px',
-            fontSize: '0.9375rem',
-            transition: 'all 0.3s ease',
-            ...style,
-          }}
-          onFocus={(e) => {
-            if (!style.borderColor) {
-              e.target.style.borderColor = '#C8D46B';
-              e.target.style.boxShadow = '0 0 0 4px rgba(200, 212, 107, 0.1)';
-            }
-          }}
-          onBlur={(e) => {
-            onBlur();
-            if (!style.borderColor) {
-              e.target.style.borderColor = '#E0E0E0';
-              e.target.style.boxShadow = 'none';
-            }
-          }}
-        />
+<div style={{ position: 'relative' }}>
+  <input
+    type={type}
+    name={name}
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    style={{
+      width: '100%',
+      padding: '0.875rem 1rem',
+      paddingRight: showValidation ? '3rem' : '1rem',
+      border: '2px solid #E0E0E0',
+      borderRadius: '12px',
+      fontSize: '0.9375rem',
+      transition: 'all 0.3s ease',
+      ...style,
+    }}
+    onFocus={(e) => {
+      if (!style.borderColor) {
+        e.target.style.borderColor = '#C8D46B';
+        e.target.style.boxShadow = '0 0 0 4px rgba(200, 212, 107, 0.1)';
+      }
+    }}
+    onBlur={(e) => {
+      // call external onBlur if provided
+      onBlur?.();
+
+      if (!style.borderColor) {
+        e.target.style.borderColor = '#E0E0E0';
+        e.target.style.boxShadow = 'none';
+      }
+    }}
+  />
+</div>
+
 
         {/* Validation Icon */}
         <AnimatePresence>
