@@ -1,4 +1,4 @@
-import { supabase } from "../../lib/supabase";
+import { supabase } from '../lib/supabase';
 
 export async function fetchPublicCalendarMonth(year: number, month: number) {
   console.log("[Public Calendar] Fetching", year, month);
