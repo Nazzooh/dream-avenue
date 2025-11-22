@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/lib/supabase";
-import { Card } from "./Card"; // adjust to your card component if needed
+import { Card } from "../../ui/card";
 import { Button } from "./Button";
 import { toast } from "sonner";
 import { Bell, Radio, Activity } from "lucide-react";
