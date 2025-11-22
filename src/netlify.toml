@@ -3,7 +3,7 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  
+
 [build.environment]
   NODE_VERSION = "18"
 
@@ -33,3 +33,7 @@
   for = "/*.woff2"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# ✅ Prevent Netlify from treating the whole repo as functions
+[functions]
+  directory = "netlify/functions"
