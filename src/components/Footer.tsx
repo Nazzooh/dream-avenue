@@ -141,7 +141,6 @@ export function Footer() {
               marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
               fontWeight: 600,
               margin: 0,
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
             }}>
               Quick Links
             </h4>
@@ -193,7 +192,6 @@ export function Footer() {
               marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
               fontWeight: 600,
               margin: 0,
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
             }}>
               Services
             </h4>
@@ -246,7 +244,6 @@ export function Footer() {
               marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
               fontWeight: 600,
               margin: 0,
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
             }}>
               Contact Us
             </h4>
