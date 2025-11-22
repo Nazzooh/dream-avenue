@@ -671,7 +671,6 @@ function FormField({
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
 
       {/* Validation Message / Helper Text */}
       <AnimatePresence mode="wait">
