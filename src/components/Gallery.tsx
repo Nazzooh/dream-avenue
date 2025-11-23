@@ -83,7 +83,7 @@ export function Gallery() {
           className="section-header"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6 }}
         >
           <div className="section-badge">Gallery</div>
@@ -107,7 +107,7 @@ export function Gallery() {
                 key={image.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.6, delay: index * 0.05 }}
                 onClick={() => openLightbox(index)}
                 style={{
