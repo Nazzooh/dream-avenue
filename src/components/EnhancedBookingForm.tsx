@@ -8,8 +8,8 @@ import { toast } from 'sonner@2.0.3';
 import { InlineSpinner } from './LoadingFallback';
 
 interface EnhancedBookingFormProps {
-  selectedDate: string;
-  selectedSlot: string | null;
+  selectedDate?: string;
+  selectedSlot?: string | null;
   selectedPackageId: string | null;
   selectedPackageName?: string;
   onContinue: (formData: BookingFormData) => void;
@@ -188,6 +188,9 @@ export function EnhancedBookingForm({
         padding: '2.5rem',
         border: '1px solid rgba(224, 192, 151, 0.3)',
         boxShadow: '0 12px 48px rgba(0, 0, 0, 0.1)',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        className: 'enhanced-booking-form'
       }}
     >
       {/* Header */}
@@ -372,6 +375,7 @@ export function EnhancedBookingForm({
             background: 'linear-gradient(135deg, rgba(200, 212, 107, 0.08), rgba(224, 192, 151, 0.08))',
             borderRadius: '16px',
             border: '2px solid rgba(200, 212, 107, 0.2)',
+            className: 'services-section'
           }}
         >
           <h4 style={{
@@ -612,41 +616,38 @@ function FormField({
         {required && <span style={{ color: '#ef4444' }}>*</span>}
       </label>
 
-<div style={{ position: 'relative' }}>
-  <input
-    type={type}
-    name={name}
-    value={value}
-    onChange={onChange}
-    placeholder={placeholder}
-    style={{
-      width: '100%',
-      padding: '0.875rem 1rem',
-      paddingRight: showValidation ? '3rem' : '1rem',
-      border: '2px solid #E0E0E0',
-      borderRadius: '12px',
-      fontSize: '0.9375rem',
-      transition: 'all 0.3s ease',
-      ...style,
-    }}
-    onFocus={(e) => {
-      if (!style.borderColor) {
-        e.target.style.borderColor = '#C8D46B';
-        e.target.style.boxShadow = '0 0 0 4px rgba(200, 212, 107, 0.1)';
-      }
-    }}
-    onBlur={(e) => {
-      // call external onBlur if provided
-      onBlur?.();
-
-      if (!style.borderColor) {
-        e.target.style.borderColor = '#E0E0E0';
-        e.target.style.boxShadow = 'none';
-      }
-    }}
-  />
-</div>
-
+      <div style={{ position: 'relative' }}>
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          style={{
+            width: '100%',
+            padding: '0.875rem 1rem',
+            paddingRight: showValidation ? '3rem' : '1rem',
+            border: '2px solid #E0E0E0',
+            borderRadius: '12px',
+            fontSize: '0.9375rem',
+            transition: 'all 0.3s ease',
+            ...style,
+          }}
+          onFocus={(e) => {
+            if (!style.borderColor) {
+              e.target.style.borderColor = '#C8D46B';
+              e.target.style.boxShadow = '0 0 0 4px rgba(200, 212, 107, 0.1)';
+            }
+          }}
+          onBlur={(e) => {
+            onBlur();
+            if (!style.borderColor) {
+              e.target.style.borderColor = '#E0E0E0';
+              e.target.style.boxShadow = 'none';
+            }
+          }}
+        />
 
         {/* Validation Icon */}
         <AnimatePresence>
@@ -671,6 +672,7 @@ function FormField({
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
 
       {/* Validation Message / Helper Text */}
       <AnimatePresence mode="wait">
@@ -715,6 +717,30 @@ styleSheet.textContent = `
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 410px) {
+    .enhanced-booking-form {
+      padding: 1rem !important;
+    }
+    .enhanced-booking-form h3 {
+      font-size: 1.5rem !important;
+    }
+    .enhanced-booking-form .services-section {
+      padding: 1rem !important;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .enhanced-booking-form {
+      padding: 0.875rem !important;
+    }
+    .enhanced-booking-form input,
+    .enhanced-booking-form select,
+    .enhanced-booking-form textarea {
+      padding: 0.75rem !important;
+      font-size: 0.875rem !important;
+    }
   }
 `;
 document.head.appendChild(styleSheet);
