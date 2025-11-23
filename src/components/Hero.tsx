@@ -60,7 +60,7 @@ export function Hero() {
       style={{ 
         position: 'relative', 
         overflow: 'hidden',
-        minHeight: isMobile ? 'calc(110vh - 60px)' : '110vh',
+        minHeight: isMobile ? 'calc(85vh - 60px)' : '85vh',
         display: 'flex',
         alignItems: 'center',
         background: 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%)',
@@ -479,7 +479,7 @@ export function Hero() {
                   padding: '0 clamp(12px, 2vw, 20px)',
                 }}>
                   Transform your special moments into unforgettable celebrations. 
-                  A modern elegant venue crafted for weddings, corporate events, and grand celebrations.
+                  A luxury venue crafted for weddings, corporate events, and grand celebrations.
                 </p>
               </motion.div>
 
