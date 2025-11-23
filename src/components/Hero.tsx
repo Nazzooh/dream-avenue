@@ -479,7 +479,7 @@ export function Hero() {
                   padding: '0 clamp(12px, 2vw, 20px)',
                 }}>
                   Transform your special moments into unforgettable celebrations. 
-                  A luxury venue crafted for weddings, corporate events, and grand celebrations.
+                  A modern elegant venue crafted for weddings, corporate events, and grand celebrations.
                 </p>
               </motion.div>
 
