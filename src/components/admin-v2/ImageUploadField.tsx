@@ -1,7 +1,7 @@
 // Enhanced Image Upload Field with Supabase Storage Integration
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2, Check } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../utils/supabase/client';
 
 interface ImageUploadFieldProps {
