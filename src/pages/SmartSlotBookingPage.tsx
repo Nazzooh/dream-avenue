@@ -66,13 +66,135 @@ const responsiveStyles = `
     .calendar-section {
       padding: 2rem 1rem !important;
     }
+    
+    .package-card {
+      min-height: auto !important;
+    }
   }
   
   @media (max-width: 480px) {
     .nav-buttons {
       position: static !important;
-      margin: 1rem !important;
-      padding-top: 0 !important;
+      margin: 0 1rem 1rem !important;
+      padding: 0 !important;
+    }
+    
+    .booking-page-container {
+      padding-top: 70px !important;
+    }
+    
+    .package-carousel {
+      gap: 0.75rem !important;
+    }
+    
+    .package-card-image {
+      height: 140px !important;
+    }
+    
+    .package-card-content {
+      padding: 1.25rem !important;
+    }
+    
+    .calendar-section {
+      padding: 1.5rem 0.75rem !important;
+    }
+    
+    .calendar-container {
+      padding: 1.25rem !important;
+    }
+    
+    .slot-grid {
+      gap: 0.75rem !important;
+    }
+    
+    .price-summary {
+      padding: 1.25rem !important;
+    }
+  }
+
+  @media (max-width: 410px) {
+    .packages-panel {
+      padding: 1rem 0.75rem !important;
+    }
+    
+    .form-panel {
+      padding: 1rem 0.75rem !important;
+    }
+    
+    .package-carousel {
+      gap: 0.625rem !important;
+    }
+    
+    .package-card-image {
+      height: 120px !important;
+    }
+    
+    .package-card-content {
+      padding: 1rem !important;
+    }
+    
+    .package-card-title {
+      font-size: 1.125rem !important;
+    }
+    
+    .package-card-description {
+      font-size: 0.8125rem !important;
+    }
+    
+    .package-card-price {
+      font-size: 1.25rem !important;
+    }
+    
+    .calendar-section {
+      padding: 1.25rem 0.5rem !important;
+    }
+    
+    .calendar-container {
+      padding: 1rem !important;
+      border-radius: 16px !important;
+    }
+    
+    .slot-grid {
+      gap: 0.625rem !important;
+      grid-template-columns: 1fr !important;
+    }
+    
+    .price-summary {
+      padding: 1rem !important;
+    }
+    
+    .form-wrapper {
+      padding: 1rem !important;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .packages-panel {
+      padding: 0.75rem 0.5rem !important;
+    }
+    
+    .form-panel {
+      padding: 0.75rem 0.5rem !important;
+    }
+    
+    .package-card-content {
+      padding: 0.875rem !important;
+    }
+    
+    .package-card-title {
+      font-size: 1rem !important;
+    }
+    
+    .section-title {
+      font-size: 1.5rem !important;
+    }
+    
+    .calendar-container {
+      padding: 0.875rem !important;
+    }
+    
+    .price-summary {
+      padding: 0.875rem !important;
     }
   }
 `;
@@ -186,7 +308,7 @@ export default function SmartSlotBookingPage() {
   const displayPrice = baseDisplayPrice + floorCleaningForDisplay;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF9F6', paddingTop: '80px' }}>
+    <div style={{ minHeight: '100vh', background: '#FAF9F6', paddingTop: '80px', overflowX: 'hidden', maxWidth: '100vw' }} className="booking-page-container">
       <Navbar />
 
       {/* Navigation Buttons */}
@@ -259,6 +381,9 @@ export default function SmartSlotBookingPage() {
           display: 'grid',
           gridTemplateColumns: '1fr',
           gap: 0,
+          maxWidth: '100%',
+          width: '100%',
+          boxSizing: 'border-box',
         }}
         className="booking-split-container"
       >
