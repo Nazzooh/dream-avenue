@@ -63,7 +63,7 @@ export default function FacilitiesModule() {
   const { showToast, ToastContainer } = useToast();
 
   // React Query hooks
-  const { data: facilities = [], isLoading } = useFacilities();
+  const { data: facilities = [], isLoading } = useFacilities(true); // Include inactive facilities in admin
   const createMutation = useCreateFacility();
   const updateMutation = useUpdateFacility();
   const deleteMutation = useDeleteFacility();
@@ -538,7 +538,7 @@ export default function FacilitiesModule() {
           <FormSelect
             name="status"
             label="Status"
-            defaultValue={editingFacility?.is_active ? 'Active' : 'Inactive'}
+            defaultValue={editingFacility?.is_active ? 'Active' : editingFacility ? 'Inactive' : 'Active'}
             options={[
               { value: 'Active', label: 'Active - Show on website' },
               { value: 'Inactive', label: 'Inactive - Hide from website' },
