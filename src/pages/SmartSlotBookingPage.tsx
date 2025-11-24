@@ -1,24 +1,18 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Sparkles, ArrowLeft, Check, FileText } from 'lucide-react';
+import { Home, Sparkles, ArrowLeft, Calendar as CalendarIcon, ChevronRight, ChevronLeft, Check, Loader2, FileText } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { PublicBookingCalendar } from '../components/PublicBookingCalendar';
-import {
-  SlotSelectorGrid,
-  SLOT_OPTIONS,
-} from '../components/slot-booking/SlotSelectorGrid';
-import {
-  EnhancedBookingForm,
-  BookingFormData,
-} from '../components/EnhancedBookingForm';
+import { SlotSelectorGrid, SLOT_OPTIONS, SHORT_DURATION_SLOT } from '../components/slot-booking/SlotSelectorGrid';
+import { EnhancedBookingForm, BookingFormData } from '../components/EnhancedBookingForm';
 import { usePackages } from '../src/hooks/usePackages';
 import { useAvailabilityForDate } from '../src/hooks/useCalendar';
 import { toast } from 'sonner@2.0.3';
-import { createBooking, normalizeTimes } from '../api/createBooking';
+import { createBooking, normalizeTimes } from '../src/api/createBooking';
 
-// Responsive styles injected as <style> at the bottom
+// Add responsive styles
 const responsiveStyles = `
   @media (min-width: 1024px) {
     .booking-split-container {
@@ -210,10 +204,8 @@ export default function SmartSlotBookingPage() {
   const [searchParams] = useSearchParams();
   const packageId = searchParams.get('package');
   const calendarSectionRef = useRef<HTMLDivElement>(null);
-
-  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(
-    packageId
-  );
+  
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(packageId);
   const [showCalendarSection, setShowCalendarSection] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<string>('full_day');
@@ -221,26 +213,24 @@ export default function SmartSlotBookingPage() {
   const [formData, setFormData] = useState<BookingFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-
+  
   const { data: packages = [] } = usePackages();
   const selectedPackage = packages.find((p) => p.id === selectedPackageId);
 
-  // Fetch availability for the selected date (even if not yet used in UI)
-  useAvailabilityForDate(selectedDate, !!selectedDate);
+  // Fetch availability for the selected date
+  const { data: availability } = useAvailabilityForDate(selectedDate, !!selectedDate);
 
   const handleFormContinue = (data: BookingFormData) => {
     setFormData(data);
     setShowCalendarSection(true);
     setTimeout(() => {
-      calendarSectionRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+      calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
+    // Reset slot selection when date changes
     setSelectedSlot('full_day');
   };
 
@@ -263,19 +253,19 @@ export default function SmartSlotBookingPage() {
     setIsSubmitting(true);
 
     try {
-      const eventTypeText = formData.eventType
-        ? `Event Type: ${formData.eventType}`
-        : '';
-
+      // Map event type to special_requests field as required
+      const eventTypeText = formData.eventType ? `Event Type: ${formData.eventType}` : '';
+      
+      // Combine event type with user's message
       let combinedSpecialRequests = eventTypeText;
       if (formData.message) {
-        combinedSpecialRequests = eventTypeText
-          ? `${eventTypeText}\n${formData.message}`
-          : formData.message;
+        combinedSpecialRequests = eventTypeText ? `${eventTypeText}\n${formData.message}` : formData.message;
       }
-
+      
+      // Normalize slot to start/end times
       const { start, end } = normalizeTimes(selectedSlot);
-
+      
+      // Create booking using centralized function
       await createBooking({
         full_name: formData.fullName.trim(),
         mobile: formData.mobile,
@@ -286,16 +276,14 @@ export default function SmartSlotBookingPage() {
         package_id: formData.packageId,
         special_requests: combinedSpecialRequests || null,
         email: null,
-        additional_notes: `Smart Slot Booking - ${
-          SLOT_OPTIONS.find((s) => s.key === selectedSlot)?.label ||
-          selectedSlot
-        }`,
+        additional_notes: `Smart Slot Booking - ${SLOT_OPTIONS.find(s => s.key === selectedSlot)?.label || selectedSlot}`,
         user_id: null,
       });
 
       toast.success('Booking created successfully');
       setShowSuccessModal(true);
     } catch (error: any) {
+      // Display raw backend error message
       toast.error('Booking Failed', {
         description: error.message || 'Failed to create booking',
         duration: 5000,
@@ -305,7 +293,7 @@ export default function SmartSlotBookingPage() {
     }
   };
 
-  // Price calculation
+  // Calculate final price for display
   const selectedSlotData = SLOT_OPTIONS.find((s) => s.key === selectedSlot);
   let baseDisplayPrice: number;
   if (selectedSlot === 'short_duration') {
@@ -314,20 +302,13 @@ export default function SmartSlotBookingPage() {
     baseDisplayPrice = selectedPackage ? selectedPackage.price : 0;
   }
 
+  // Calculate services for display (floor cleaning is always included)
   const floorCleaningForDisplay = 3000;
+
   const displayPrice = baseDisplayPrice + floorCleaningForDisplay;
 
   return (
-    <div
-      className="booking-page-container"
-      style={{
-        minHeight: '100vh',
-        background: '#FAF9F6',
-        paddingTop: '80px',
-        overflowX: 'hidden',
-        width: '100%',
-      }}
-    >
+    <div style={{ minHeight: '100vh', background: '#FAF9F6', paddingTop: '80px', overflowX: 'hidden', maxWidth: '100vw' }} className="booking-page-container">
       <Navbar />
 
       {/* Navigation Buttons */}
@@ -393,24 +374,21 @@ export default function SmartSlotBookingPage() {
         </motion.button>
       </motion.div>
 
-      {/* Top section – packages + form */}
+      {/* ========== TOP SECTION: 50/50 SPLIT (90-100vh) ========== */}
       <div
-        className="booking-split-container"
         style={{
           minHeight: '90vh',
           display: 'grid',
           gridTemplateColumns: '1fr',
           gap: 0,
-          maxWidth: '1200px',
-          margin: '0 auto',
+          maxWidth: '100%',
           width: '100%',
           boxSizing: 'border-box',
-          padding: '0 1.25rem',
         }}
+        className="booking-split-container"
       >
-        {/* Packages panel */}
+        {/* LEFT PANEL - Packages Carousel */}
         <motion.div
-          className="packages-panel"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
@@ -423,28 +401,16 @@ export default function SmartSlotBookingPage() {
             flexDirection: 'column',
             justifyContent: 'center',
           }}
+          className="packages-panel"
         >
-          <div
-            style={{
-              maxWidth: '720px',
-              margin: '0 auto',
-              width: '100%',
-            }}
-          >
+          <div style={{ maxWidth: '720px', margin: '0 auto', width: '100%' }}>
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               style={{ textAlign: 'center', marginBottom: '3rem' }}
             >
-              <Sparkles
-                size={40}
-                style={{
-                  color: '#B6F500',
-                  display: 'inline-block',
-                  marginBottom: '1rem',
-                }}
-              />
+              <Sparkles size={40} style={{ color: '#B6F500', display: 'inline-block', marginBottom: '1rem' }} />
               <h2
                 style={{
                   fontSize: '2.25rem',
@@ -469,17 +435,21 @@ export default function SmartSlotBookingPage() {
               />
             </motion.div>
 
-            <div style={{ position: 'relative' }}>
+            {/* Horizontal Scrollable Package Cards */}
+            <div
+              style={{
+                position: 'relative',
+              }}
+            >
               <div
-                className="package-carousel"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1.5rem',
                   maxWidth: '800px',
                   margin: '0 auto',
-                  width: '100%',
                 }}
+                className="package-carousel"
               >
                 {packages.map((pkg, index) => (
                   <motion.div
@@ -493,25 +463,22 @@ export default function SmartSlotBookingPage() {
                     style={{
                       width: '100%',
                       cursor: 'pointer',
-                      border:
-                        selectedPackageId === pkg.id
-                          ? '3px solid #B6F500'
-                          : '2px solid rgba(224, 192, 151, 0.3)',
+                      border: selectedPackageId === pkg.id 
+                        ? '3px solid #B6F500' 
+                        : '2px solid rgba(224, 192, 151, 0.3)',
                       borderRadius: '24px',
-                      background:
-                        selectedPackageId === pkg.id
-                          ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.08), rgba(224, 192, 151, 0.08))'
-                          : 'white',
+                      background: selectedPackageId === pkg.id
+                        ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.08), rgba(224, 192, 151, 0.08))'
+                        : 'white',
                       overflow: 'hidden',
                       transition: 'all 0.3s ease',
-                      boxShadow:
-                        selectedPackageId === pkg.id
-                          ? '0 16px 40px rgba(182, 245, 0, 0.25), 0 0 0 4px rgba(182, 245, 0, 0.1)'
-                          : '0 4px 16px rgba(0, 0, 0, 0.08)',
+                      boxShadow: selectedPackageId === pkg.id
+                        ? '0 16px 40px rgba(182, 245, 0, 0.25), 0 0 0 4px rgba(182, 245, 0, 0.1)'
+                        : '0 4px 16px rgba(0, 0, 0, 0.08)',
                     }}
                   >
+                    {/* Package Image */}
                     <div
-                      className="package-card-image"
                       style={{
                         height: '180px',
                         backgroundImage: `url(${pkg.image_url})`,
@@ -537,8 +504,7 @@ export default function SmartSlotBookingPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.375rem',
-                            boxShadow:
-                              '0 4px 16px rgba(182, 245, 0, 0.4)',
+                            boxShadow: '0 4px 16px rgba(182, 245, 0, 0.4)',
                           }}
                         >
                           <Check size={16} />
@@ -547,12 +513,9 @@ export default function SmartSlotBookingPage() {
                       )}
                     </div>
 
-                    <div
-                      className="package-card-content"
-                      style={{ padding: '1.75rem' }}
-                    >
+                    {/* Package Details */}
+                    <div style={{ padding: '1.75rem' }}>
                       <h3
-                        className="package-card-title"
                         style={{
                           fontSize: '1.375rem',
                           marginBottom: '0.75rem',
@@ -562,9 +525,8 @@ export default function SmartSlotBookingPage() {
                       >
                         {pkg.name}
                       </h3>
-
+                      
                       <p
-                        className="package-card-description"
                         style={{
                           fontSize: '0.9375rem',
                           color: '#666',
@@ -585,8 +547,7 @@ export default function SmartSlotBookingPage() {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           paddingTop: '1rem',
-                          borderTop:
-                            '1px solid rgba(224, 192, 151, 0.2)',
+                          borderTop: '1px solid rgba(224, 192, 151, 0.2)',
                         }}
                       >
                         <span
@@ -598,12 +559,10 @@ export default function SmartSlotBookingPage() {
                           Base Price
                         </span>
                         <span
-                          className="package-card-price"
                           style={{
                             fontSize: '1.5rem',
                             fontWeight: 700,
-                            background:
-                              'linear-gradient(135deg, #B6F500, #E0C097)',
+                            background: 'linear-gradient(135deg, #B6F500, #E0C097)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
@@ -626,40 +585,30 @@ export default function SmartSlotBookingPage() {
                   color: '#999',
                 }}
               >
-                <Sparkles
-                  size={48}
-                  style={{ color: '#E0C097', marginBottom: '1rem' }}
-                />
+                <Sparkles size={48} style={{ color: '#E0C097', marginBottom: '1rem' }} />
                 <p>No packages available at the moment.</p>
               </div>
             )}
           </div>
         </motion.div>
 
-        {/* Form panel */}
+        {/* RIGHT PANEL - Enhanced Booking Form */}
         <motion.div
-          className="form-panel"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           style={{
             position: 'relative',
             padding: '3rem 2rem',
-            background:
-              'linear-gradient(135deg, rgba(250, 249, 246, 0.8), rgba(255, 255, 255, 0.9))',
+            background: 'linear-gradient(135deg, rgba(250, 249, 246, 0.8), rgba(255, 255, 255, 0.9))',
             backdropFilter: 'blur(20px)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
           }}
+          className="form-panel"
         >
-          <div
-            style={{
-              maxWidth: '540px',
-              margin: '0 auto',
-              width: '100%',
-            }}
-          >
+          <div style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}>
             <EnhancedBookingForm
               selectedPackageId={selectedPackageId}
               selectedPackageName={selectedPackage?.name}
@@ -670,30 +619,23 @@ export default function SmartSlotBookingPage() {
         </motion.div>
       </div>
 
-      {/* Calendar + slots + summary */}
+      {/* ========== BOTTOM SECTION: Calendar + Slots + Message ========== */}
       <AnimatePresence>
         {showCalendarSection && (
           <motion.div
             ref={calendarSectionRef}
-            className="calendar-section"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
             transition={{ duration: 0.6 }}
             style={{
               padding: '4rem 2rem',
-              background:
-                'linear-gradient(180deg, #FFFFFF, #FAF9F6)',
+              background: 'linear-gradient(180deg, #FFFFFF, #FAF9F6)',
               borderTop: '2px solid rgba(224, 192, 151, 0.2)',
             }}
+            className="calendar-section"
           >
-            <div
-              style={{
-                maxWidth: '1200px',
-                margin: '0 auto',
-                width: '100%',
-              }}
-            >
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
               {/* Calendar */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -708,8 +650,7 @@ export default function SmartSlotBookingPage() {
                   style={{
                     fontSize: '2rem',
                     marginBottom: '1rem',
-                    background:
-                      'linear-gradient(135deg, #B6F500, #E0C097)',
+                    background: 'linear-gradient(135deg, #B6F500, #E0C097)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -721,25 +662,21 @@ export default function SmartSlotBookingPage() {
                   style={{
                     width: '60px',
                     height: '3px',
-                    background:
-                      'linear-gradient(90deg, #B6F500, #E0C097)',
+                    background: 'linear-gradient(90deg, #B6F500, #E0C097)',
                     margin: '0 auto 2rem',
                     borderRadius: '2px',
                   }}
                 />
 
                 <div
-                  className="calendar-container"
                   style={{
                     maxWidth: '600px',
                     margin: '0 auto',
                     background: 'white',
                     borderRadius: '20px',
                     padding: '2rem',
-                    boxShadow:
-                      '0 8px 24px rgba(0, 0, 0, 0.08)',
-                    border:
-                      '2px solid rgba(224, 192, 151, 0.2)',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
+                    border: '2px solid rgba(224, 192, 151, 0.2)',
                   }}
                 >
                   <PublicBookingCalendar
@@ -749,7 +686,7 @@ export default function SmartSlotBookingPage() {
                 </div>
               </motion.div>
 
-              {/* Slots */}
+              {/* Slot Selection */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -761,8 +698,7 @@ export default function SmartSlotBookingPage() {
                     fontSize: '2rem',
                     marginBottom: '1rem',
                     textAlign: 'center',
-                    background:
-                      'linear-gradient(135deg, #E0C097, #B6F500)',
+                    background: 'linear-gradient(135deg, #E0C097, #B6F500)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -774,8 +710,7 @@ export default function SmartSlotBookingPage() {
                   style={{
                     width: '60px',
                     height: '3px',
-                    background:
-                      'linear-gradient(90deg, #E0C097, #B6F500)',
+                    background: 'linear-gradient(90deg, #E0C097, #B6F500)',
                     margin: '0 auto 2rem',
                     borderRadius: '2px',
                   }}
@@ -788,7 +723,9 @@ export default function SmartSlotBookingPage() {
                 />
               </motion.div>
 
-              {/* Price + terms + confirm */}
+
+
+              {/* Price Summary & Confirm Button */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -799,69 +736,37 @@ export default function SmartSlotBookingPage() {
                   textAlign: 'center',
                 }}
               >
+                {/* Price Display */}
                 <div
-                  className="price-summary"
                   style={{
-                    background:
-                      'linear-gradient(135deg, rgba(182, 245, 0, 0.1), rgba(224, 192, 151, 0.1))',
+                    background: 'linear-gradient(135deg, rgba(182, 245, 0, 0.1), rgba(224, 192, 151, 0.1))',
                     borderRadius: '16px',
                     padding: '1.5rem',
                     marginBottom: '2rem',
-                    border:
-                      '2px solid rgba(182, 245, 0, 0.3)',
+                    border: '2px solid rgba(182, 245, 0, 0.3)',
                   }}
                 >
-                  <div
-                    style={{
-                      marginBottom: '1rem',
-                      paddingBottom: '1rem',
-                      borderBottom:
-                        '1px solid rgba(200, 212, 107, 0.3)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: '0.5rem',
-                        fontSize: '0.875rem',
-                        color: '#666',
-                      }}
-                    >
+                  {/* Price Breakdown - Always show since floor cleaning is mandatory */}
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(200, 212, 107, 0.3)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
                       <span>Base Price:</span>
-                      <span>
-                        ₹{baseDisplayPrice.toLocaleString('en-IN')}
-                      </span>
+                      <span>₹{baseDisplayPrice.toLocaleString('en-IN')}</span>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: '0.5rem',
-                        fontSize: '0.875rem',
-                        color: '#666',
-                      }}
-                    >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
                       <span>Floor Cleaning (Included):</span>
                       <span>₹3,000</span>
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      marginBottom: '0.5rem',
-                      color: '#666',
-                      fontSize: '0.9375rem',
-                    }}
-                  >
+                  {/* Total Amount */}
+                  <div style={{ marginBottom: '0.5rem', color: '#666', fontSize: '0.9375rem' }}>
                     Total Amount
                   </div>
                   <div
                     style={{
                       fontSize: '2.5rem',
                       fontWeight: 700,
-                      background:
-                        'linear-gradient(135deg, #B6F500, #E0C097)',
+                      background: 'linear-gradient(135deg, #B6F500, #E0C097)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -869,7 +774,6 @@ export default function SmartSlotBookingPage() {
                   >
                     ₹{displayPrice.toLocaleString('en-IN')}
                   </div>
-
                   {selectedSlot === 'short_duration' && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -877,18 +781,18 @@ export default function SmartSlotBookingPage() {
                       style={{
                         marginTop: '0.75rem',
                         padding: '0.5rem 1rem',
-                        background:
-                          'rgba(255, 107, 157, 0.1)',
+                        background: 'rgba(255, 107, 157, 0.1)',
                         borderRadius: '8px',
                         fontSize: '0.8125rem',
                         color: '#343A40',
                       }}
                     >
-                      🎉 Special rate for 4–5 hour event
+                      🎉 Special rate for 4-5 hour event
                     </motion.div>
                   )}
                 </div>
 
+                {/* Terms and Conditions Checkbox */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -896,12 +800,12 @@ export default function SmartSlotBookingPage() {
                   style={{
                     marginBottom: '1.5rem',
                     padding: '1rem',
-                    background: termsAccepted
-                      ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.05), rgba(224, 192, 151, 0.05))'
+                    background: termsAccepted 
+                      ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.05), rgba(224, 192, 151, 0.05))' 
                       : 'rgba(255, 107, 157, 0.05)',
                     borderRadius: '12px',
-                    border: termsAccepted
-                      ? '2px solid rgba(182, 245, 0, 0.3)'
+                    border: termsAccepted 
+                      ? '2px solid rgba(182, 245, 0, 0.3)' 
                       : '2px solid rgba(255, 107, 157, 0.3)',
                   }}
                 >
@@ -917,9 +821,7 @@ export default function SmartSlotBookingPage() {
                     <input
                       type="checkbox"
                       checked={termsAccepted}
-                      onChange={(e) =>
-                        setTermsAccepted(e.target.checked)
-                      }
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
                       style={{
                         width: '20px',
                         height: '20px',
@@ -929,14 +831,7 @@ export default function SmartSlotBookingPage() {
                         flexShrink: 0,
                       }}
                     />
-                    <span
-                      style={{
-                        fontSize: '0.9375rem',
-                        lineHeight: '1.5',
-                        color: '#343A40',
-                        textAlign: 'left',
-                      }}
-                    >
+                    <span style={{ fontSize: '0.9375rem', lineHeight: '1.5', color: '#343A40', textAlign: 'left' }}>
                       I have read and agree to the{' '}
                       <Link
                         to="/terms-and-conditions"
@@ -949,59 +844,39 @@ export default function SmartSlotBookingPage() {
                         }}
                       >
                         Hall Rules and Guidelines
-                      </Link>{' '}
-                      of Dream Avenue Convention Center
+                      </Link>
+                      {' '}of Dream Avenue Convention Center
                     </span>
                   </label>
                 </motion.div>
 
+                {/* Confirm Button */}
                 <motion.button
                   onClick={handleConfirmBooking}
-                  whileHover={
-                    termsAccepted && !isSubmitting
-                      ? {
-                          scale: 1.03,
-                          boxShadow:
-                            '0 16px 40px rgba(182, 245, 0, 0.4)',
-                        }
-                      : {}
-                  }
-                  whileTap={
-                    termsAccepted && !isSubmitting
-                      ? { scale: 0.98 }
-                      : {}
-                  }
+                  whileHover={termsAccepted && !isSubmitting ? { scale: 1.03, boxShadow: '0 16px 40px rgba(182, 245, 0, 0.4)' } : {}}
+                  whileTap={termsAccepted && !isSubmitting ? { scale: 0.98 } : {}}
                   disabled={isSubmitting || !termsAccepted}
                   style={{
                     width: '100%',
                     padding: '1.5rem 3rem',
-                    background:
-                      termsAccepted && !isSubmitting
-                        ? 'linear-gradient(135deg, #B6F500, #E0C097)'
-                        : '#E0E0E0',
-                    color:
-                      termsAccepted && !isSubmitting
-                        ? '#343A40'
-                        : '#999',
+                    background: termsAccepted && !isSubmitting
+                      ? 'linear-gradient(135deg, #B6F500, #E0C097)'
+                      : '#E0E0E0',
+                    color: termsAccepted && !isSubmitting ? '#343A40' : '#999',
                     border: 'none',
                     borderRadius: '50px',
                     fontSize: '1.25rem',
                     fontWeight: 700,
-                    cursor:
-                      isSubmitting || !termsAccepted
-                        ? 'not-allowed'
-                        : 'pointer',
-                    boxShadow:
-                      termsAccepted && !isSubmitting
-                        ? '0 12px 32px rgba(182, 245, 0, 0.35)'
-                        : 'none',
+                    cursor: (isSubmitting || !termsAccepted) ? 'not-allowed' : 'pointer',
+                    boxShadow: termsAccepted && !isSubmitting 
+                      ? '0 12px 32px rgba(182, 245, 0, 0.35)' 
+                      : 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '0.75rem',
                     transition: 'all 0.3s ease',
-                    opacity:
-                      isSubmitting || !termsAccepted ? 0.6 : 1,
+                    opacity: (isSubmitting || !termsAccepted) ? 0.6 : 1,
                   }}
                 >
                   {isSubmitting ? (
@@ -1025,7 +900,7 @@ export default function SmartSlotBookingPage() {
                     </>
                   )}
                 </motion.button>
-
+                
                 {!termsAccepted && (
                   <motion.p
                     initial={{ opacity: 0 }}
@@ -1042,8 +917,7 @@ export default function SmartSlotBookingPage() {
                     }}
                   >
                     <FileText size={14} />
-                    Please accept the terms and conditions to
-                    proceed
+                    Please accept the terms and conditions to proceed
                   </motion.p>
                 )}
               </motion.div>
@@ -1052,7 +926,7 @@ export default function SmartSlotBookingPage() {
         )}
       </AnimatePresence>
 
-      {/* Success modal */}
+      {/* Success Modal */}
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div
@@ -1078,24 +952,18 @@ export default function SmartSlotBookingPage() {
               exit={{ scale: 0.8, y: 50 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                background:
-                  'linear-gradient(135deg, rgba(182, 245, 0, 0.95), rgba(224, 192, 151, 0.95))',
+                background: 'linear-gradient(135deg, rgba(182, 245, 0, 0.95), rgba(224, 192, 151, 0.95))',
                 borderRadius: '24px',
                 padding: '3rem',
                 maxWidth: '500px',
                 textAlign: 'center',
-                boxShadow:
-                  '0 20px 60px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
               }}
             >
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{
-                  delay: 0.2,
-                  type: 'spring',
-                  stiffness: 200,
-                }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                 style={{
                   width: '80px',
                   height: '80px',
@@ -1110,25 +978,11 @@ export default function SmartSlotBookingPage() {
                 <Check size={48} style={{ color: '#B6F500' }} />
               </motion.div>
 
-              <h2
-                style={{
-                  fontSize: '2rem',
-                  marginBottom: '1rem',
-                  color: '#343A40',
-                }}
-              >
+              <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#343A40' }}>
                 Booking Confirmed! 🎉
               </h2>
-              <p
-                style={{
-                  fontSize: '1.125rem',
-                  marginBottom: '2rem',
-                  color: '#343A40',
-                  opacity: 0.9,
-                }}
-              >
-                Your booking has been successfully submitted. We'll
-                contact you shortly via WhatsApp!
+              <p style={{ fontSize: '1.125rem', marginBottom: '2rem', color: '#343A40', opacity: 0.9 }}>
+                Your booking has been successfully submitted. We'll contact you shortly via WhatsApp!
               </p>
 
               <motion.button
@@ -1158,18 +1012,8 @@ export default function SmartSlotBookingPage() {
 
       <Footer />
 
-      {/* Global styles for this page */}
+      {/* Responsive Styles + Animations */}
       <style>{`
-        .booking-page-container,
-        .booking-page-container * {
-          box-sizing: border-box;
-        }
-
-        .booking-page-container {
-          max-width: 100%;
-          overflow-x: hidden;
-        }
-
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
