@@ -1,7 +1,7 @@
 // Dream Avenue Convention Center - Contact Information
 export const CONTACT_INFO = {
   address: {
-    street: "Feroke Road",
+    street: "Feroke - chaliyam Road",
     area: "Karuvanthiruthy",
     city: "Kozhikode",
     state: "Kerala",
@@ -21,7 +21,7 @@ export const CONTACT_INFO = {
   },
   
   emails: {
-    primary: "dream-avenue.krt@gmail.com",
+    primary: "dreamavenue.krt@gmail.com",
     secondary: "koyaferoke@gmail.com"
   },
   
@@ -47,7 +47,7 @@ export const CONTACT_INFO = {
     whatsappWithMessage: (message: string) => 
       `https://wa.me/918606206096?text=${encodeURIComponent(message)}`,
     googleMaps: "https://maps.google.com/?q=Feroke+Road+Karuvanthiruthy+Kozhikode+Kerala+673631",
-    email: "mailto:dream-avenue.krt@gmail.com"
+    email: "mailto:dreamavenue.krt@gmail.com"
   }
 } as const;
 
