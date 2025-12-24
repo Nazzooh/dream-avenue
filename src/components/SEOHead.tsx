@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { CONTACT_INFO } from '../src/constants/contact';
 
 interface SEOHeadProps {
   title?: string;
@@ -26,7 +27,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     // Update or create meta tags
     const updateMetaTag = (selector: string, attribute: string, content: string) => {
       let tag = document.querySelector(selector) as HTMLMetaElement;
-      
+
       if (!tag) {
         tag = document.createElement('meta');
         if (selector.startsWith('meta[property')) {
@@ -36,7 +37,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
         }
         document.head.appendChild(tag);
       }
-      
+
       tag.content = content;
     };
 
@@ -68,46 +69,68 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     }
     canonical.href = url;
 
-    // Structured Data (JSON-LD)
-    const schemaData = {
-      "@context": "https://schema.org",
-      "@type": "EventVenue",
-      "name": "Dream Avenue Convention Center",
-      "description": description,
-      "url": url,
-      "image": image,
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Dream Avenue",
-        "addressLocality": "Calicut",
-        "addressRegion": "Kerala",
-        "addressCountry": "India"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "11.2588",
-        "longitude": "75.7804"
-      },
-      "telephone": "+91 0000 000000",
-      "amenityFeature": [
-        {
-          "@type": "LocationFeatureSpecification",
-          "name": "Air Conditioning",
-          "value": true
+    // Structured Data (JSON-LD) - Dynamic based on type
+    let schemaData: any;
+
+    if (type === 'event') {
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "EventVenue",
+        "name": "Dream Avenue Convention Center",
+        "description": description,
+        "url": url,
+        "image": image,
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Dream Avenue",
+          "addressLocality": "Calicut",
+          "addressRegion": "Kerala",
+          "addressCountry": "India"
         },
-        {
-          "@type": "LocationFeatureSpecification",
-          "name": "Parking",
-          "value": true
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "11.2588",
+          "longitude": "75.7804"
         },
-        {
-          "@type": "LocationFeatureSpecification",
-          "name": "Catering",
-          "value": true
-        }
-      ],
-      "maximumAttendeeCapacity": 500
-    };
+        "telephone": CONTACT_INFO.phones.main,
+        "amenityFeature": [
+          {
+            "@type": "LocationFeatureSpecification",
+            "name": "Air Conditioning",
+            "value": true
+          },
+          {
+            "@type": "LocationFeatureSpecification",
+            "name": "Parking",
+            "value": true
+          },
+          {
+            "@type": "LocationFeatureSpecification",
+            "name": "Catering",
+            "value": true
+          }
+        ],
+        "maximumAttendeeCapacity": 500
+      };
+    } else if (type === 'article') {
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title,
+        "description": description,
+        "image": image,
+        "url": url
+      };
+    } else {
+      // Default to WebSite schema
+      schemaData = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": title,
+        "description": description,
+        "url": url
+      };
+    }
 
     let scriptTag = document.querySelector('#seo-schema') as HTMLScriptElement;
     if (!scriptTag) {

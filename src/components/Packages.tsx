@@ -4,6 +4,7 @@ import { Check, Sparkles } from 'lucide-react';
 import { usePackages } from '../src/hooks/usePackages';
 import { CardSkeleton } from './SkeletonLoader';
 import { useState } from 'react';
+import { Package } from '../src/schemas/packages';
 
 export function Packages() {
   const navigate = useNavigate();
@@ -92,6 +93,17 @@ export function Packages() {
           </p>
         </motion.div>
 
+        {/* Description paragraph */}
+        <p style={{
+          color: 'var(--gray-300)',
+          fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
+          lineHeight: 1.65,
+          marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+          margin: 0,
+        }}>
+          Calicut's premier luxury venue for weddings, corporate events, and grand celebrations. Experience world-class hospitality and state-of-the-art facilities.
+        </p>
+
         {/* Horizontal Scrolling Packages - Netflix Style */}
         <div
           className="packages-container"
@@ -115,7 +127,7 @@ export function Packages() {
             }
           `}</style>
 
-          {packages.map((pkg, index) => (
+          {packages.map((pkg: Package, index: number) => (
             <motion.article
               key={pkg.id}
               initial={{ opacity: 0, x: 30 }}
@@ -144,7 +156,7 @@ export function Packages() {
                   ? '0 20px 60px rgba(0, 0, 0, 0.4)'
                   : 'var(--shadow-lg)',
               }}
-              onMouseEnter={() => setHoveredCard(pkg.id)}
+              onMouseEnter={() => setHoveredCard(pkg.id ?? null)}
               onMouseLeave={() => setHoveredCard(null)}
             >
               {/* Dark overlay */}

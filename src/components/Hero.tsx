@@ -4,7 +4,7 @@ import { Sparkles, Calendar, MapPin, Users, ChevronDown, ArrowRight, Award, Star
 import { useState, useEffect } from 'react';
 
 // Faster animation settings for better performance
-const fastTransition = { duration: 0.4, ease: 'easeOut' };
+const fastTransition = { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const };
 
 export function Hero() {
   const navigate = useNavigate();
@@ -37,7 +37,6 @@ export function Hero() {
     }
   };
 
-  // Show floating CTA after scrolling 300px with hysteresis (show at 300px, hide at 150px) with hysteresis (show at 300px, hide at 150px)
   // Show floating CTA after scrolling 5500px with hysteresis (show at 5500px, hide at 2250px)
   useEffect(() => {
     const unsubscribe = scrollY.on('change', (latest) => {
@@ -220,7 +219,7 @@ export function Hero() {
                 margin: '0',
                 fontWeight: '400',
               }}>
-                Experience luxury and elegance at Calicut's premier convention center. Where your dreams find a perfect avenue.
+                Experience luxury and elegance at Calicut's premier convention center. A state-of-the-art venue meticulously crafted for weddings, corporate events, and grand celebrations.
               </p>
             </motion.div>
 

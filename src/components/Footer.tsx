@@ -1,5 +1,6 @@
-import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Linkedin, Cookie } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { revokeConsent } from './CookieConsent';
 import logoImage from 'figma:asset/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 import { CONTACT_INFO } from '../src/constants/contact';
 
@@ -40,24 +41,24 @@ export function Footer() {
         }}>
           {/* Brand Section */}
           <div style={{ minWidth: 0 }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
               gap: 'clamp(0.75rem, 2vw, 1rem)',
               marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
             }}>
-              <img 
-                src={logoImage} 
-                alt="Dream Avenue Logo" 
-                style={{ 
-                  width: 'clamp(40px, 10vw, 48px)', 
-                  height: 'clamp(40px, 10vw, 48px)', 
+              <img
+                src={logoImage}
+                alt="Dream Avenue Logo"
+                style={{
+                  width: 'clamp(40px, 10vw, 48px)',
+                  height: 'clamp(40px, 10vw, 48px)',
                   objectFit: 'contain',
                   flexShrink: 0
                 }}
               />
               <div style={{ minWidth: 0 }}>
-                <div style={{ 
+                <div style={{
                   fontFamily: 'var(--font-heading)',
                   fontSize: 'clamp(1.125rem, 2.5vw, 1.25rem)',
                   color: 'var(--white)',
@@ -65,7 +66,7 @@ export function Footer() {
                 }}>
                   Dream Avenue
                 </div>
-                <div style={{ 
+                <div style={{
                   fontSize: 'clamp(0.6875rem, 1.5vw, 0.75rem)',
                   color: 'var(--gray-300)',
                   letterSpacing: '0.5px',
@@ -75,8 +76,8 @@ export function Footer() {
                 </div>
               </div>
             </div>
-            <p style={{ 
-              color: 'var(--gray-300)', 
+            <p style={{
+              color: 'var(--gray-300)',
               fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
               lineHeight: 1.65,
               marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
@@ -86,9 +87,9 @@ export function Footer() {
             </p>
 
             {/* Social Links */}
-            <div style={{ 
-              display: 'flex', 
-              gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', 
+            <div style={{
+              display: 'flex',
+              gap: 'clamp(0.625rem, 1.5vw, 0.75rem)',
               marginTop: 'clamp(1.25rem, 3vw, 1.75rem)',
               flexWrap: 'wrap',
             }}>
@@ -144,10 +145,10 @@ export function Footer() {
             }}>
               Quick Links
             </h4>
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: 'clamp(0.625rem, 1.5vw, 0.875rem)' 
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'clamp(0.625rem, 1.5vw, 0.875rem)'
             }}>
               {[
                 { label: 'Home', href: '#home' },
@@ -156,10 +157,10 @@ export function Footer() {
                 { label: 'Events', href: '#events' },
                 { label: 'Gallery', href: '#gallery' }
               ].map(({ label, href }) => (
-                <a 
+                <a
                   key={href}
-                  href={href} 
-                  onClick={(e) => handleNavClick(e, href)} 
+                  href={href}
+                  onClick={(e) => handleNavClick(e, href)}
                   style={{
                     color: 'var(--gray-300)',
                     fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
@@ -195,10 +196,10 @@ export function Footer() {
             }}>
               Services
             </h4>
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: 'clamp(0.625rem, 1.5vw, 0.875rem)' 
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'clamp(0.625rem, 1.5vw, 0.875rem)'
             }}>
               {[
                 { label: 'Wedding Packages', href: '#packages' },
@@ -208,10 +209,10 @@ export function Footer() {
                 { label: 'Catering Services', href: '#facilities' },
                 { label: 'Event Planning', href: '#facilities' }
               ].map(({ label, href }) => (
-                <a 
+                <a
                   key={label}
-                  href={href} 
-                  onClick={(e) => handleNavClick(e, href)} 
+                  href={href}
+                  onClick={(e) => handleNavClick(e, href)}
                   style={{
                     color: 'var(--gray-300)',
                     fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
@@ -251,8 +252,8 @@ export function Footer() {
               {/* Address */}
               <div style={{ display: 'flex', gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', alignItems: 'flex-start' }}>
                 <MapPin size={18} style={{ color: 'var(--lime-primary)', flexShrink: 0, marginTop: '3px' }} />
-                <span style={{ 
-                  color: 'var(--gray-300)', 
+                <span style={{
+                  color: 'var(--gray-300)',
                   fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)',
                   lineHeight: 1.6,
                 }}>
@@ -263,16 +264,16 @@ export function Footer() {
                   </span>
                 </span>
               </div>
-              
+
               {/* Phone */}
               <div style={{ display: 'flex', gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', alignItems: 'flex-start' }}>
                 <Phone size={18} style={{ color: 'var(--lime-primary)', flexShrink: 0, marginTop: '3px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
-                  <a 
+                  <a
                     href={`tel:${CONTACT_INFO.phones.main}`}
-                    style={{ 
-                      color: 'var(--gray-300)', 
-                      fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)', 
+                    style={{
+                      color: 'var(--gray-300)',
+                      fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)',
                       textDecoration: 'none',
                       transition: 'color 0.3s ease',
                     }}
@@ -281,11 +282,11 @@ export function Footer() {
                   >
                     {CONTACT_INFO.phones.main}
                   </a>
-                  <a 
+                  <a
                     href={`tel:${CONTACT_INFO.phones.booking}`}
-                    style={{ 
-                      color: 'var(--gray-300)', 
-                      fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)', 
+                    style={{
+                      color: 'var(--gray-300)',
+                      fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)',
                       textDecoration: 'none',
                       transition: 'color 0.3s ease',
                     }}
@@ -296,16 +297,16 @@ export function Footer() {
                   </a>
                 </div>
               </div>
-              
+
               {/* Email */}
               <div style={{ display: 'flex', gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', alignItems: 'flex-start' }}>
                 <Mail size={18} style={{ color: 'var(--lime-primary)', flexShrink: 0, marginTop: '3px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
-                  <a 
+                  <a
                     href={`mailto:${CONTACT_INFO.emails.primary}`}
-                    style={{ 
-                      color: 'var(--gray-300)', 
-                      fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)', 
+                    style={{
+                      color: 'var(--gray-300)',
+                      fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)',
                       textDecoration: 'none',
                       transition: 'color 0.3s ease',
                       wordBreak: 'break-word',
@@ -315,11 +316,11 @@ export function Footer() {
                   >
                     {CONTACT_INFO.emails.primary}
                   </a>
-                  <a 
+                  <a
                     href={`mailto:${CONTACT_INFO.emails.secondary}`}
-                    style={{ 
-                      color: 'var(--gray-300)', 
-                      fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)', 
+                    style={{
+                      color: 'var(--gray-300)',
+                      fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)',
                       textDecoration: 'none',
                       transition: 'color 0.3s ease',
                       wordBreak: 'break-word',
@@ -337,10 +338,47 @@ export function Footer() {
 
         {/* Footer Bottom */}
         <div className="footer-bottom">
-          <p onClick={handleSecretAccess}>© {currentYear} Dream Avenue Convention Center. All rights reserved.</p>
-          <p style={{ marginTop: 'var(--space-2)' }}>
-            Made with <span style={{ color: 'var(--lime-primary)' }}>♥</span> for creating beautiful moments
-          </p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+          }}>
+            <p onClick={handleSecretAccess}>© {currentYear} Dream Avenue Convention Center. All rights reserved.</p>
+
+            <button
+              onClick={revokeConsent}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                color: 'var(--gray-400)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontFamily: 'inherit',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = 'var(--white)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.color = 'var(--gray-400)';
+              }}
+            >
+              <Cookie size={14} />
+              Manage Cookie Preferences
+            </button>
+
+            <p style={{ margin: 0 }}>
+              Made with <span style={{ color: 'var(--lime-primary)' }}>♥</span> for creating beautiful moments
+            </p>
+          </div>
         </div>
       </div>
     </footer>
