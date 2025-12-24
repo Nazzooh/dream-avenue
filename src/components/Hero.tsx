@@ -11,18 +11,18 @@ export function Hero() {
   const [showFloatingCTA, setShowFloatingCTA] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { scrollY } = useScroll();
-  
+
   // Detect mobile screen
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-  
+
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     const element = document.querySelector(href);
@@ -55,10 +55,10 @@ export function Hero() {
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   return (
-    <section 
-      id="home" 
-      style={{ 
-        position: 'relative', 
+    <section
+      id="home"
+      style={{
+        position: 'relative',
         overflow: 'hidden',
         minHeight: isMobile ? 'calc(85vh - 60px)' : '85vh',
         display: 'flex',
@@ -110,7 +110,7 @@ export function Hero() {
           left: 0,
           width: '100%',
           height: '100%',
-          background: isMobile 
+          background: isMobile
             ? `linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.75) 100%)`
             : `linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0.6) 100%)`,
           zIndex: 1,
@@ -137,9 +137,9 @@ export function Hero() {
 
       {/* MOBILE LAYOUT */}
       {isMobile && (
-        <motion.div 
-          style={{ 
-            position: 'relative', 
+        <motion.div
+          style={{
+            position: 'relative',
             zIndex: 10,
             width: '100%',
             padding: '0 20px',
@@ -152,7 +152,7 @@ export function Hero() {
             gap: '28px',
             alignItems: 'center',
           }}>
-            
+
             {/* Mobile Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -171,7 +171,7 @@ export function Hero() {
               }}
             >
               <Award size={14} style={{ color: '#C8D46B' }} />
-              <span style={{ 
+              <span style={{
                 fontSize: '0.75rem',
                 fontWeight: '700',
                 color: '#FAF9F6',
@@ -210,9 +210,9 @@ export function Hero() {
                 backgroundClip: 'text',
                 letterSpacing: '-0.01em',
               }}>
-                Where Dreams Meet Avenue
+                The Ultimate Destination for Grand Celebrations
               </h1>
-              
+
               <p style={{
                 fontSize: '1rem',
                 lineHeight: '1.6',
@@ -220,7 +220,7 @@ export function Hero() {
                 margin: '0',
                 fontWeight: '400',
               }}>
-                Transform your special moments into unforgettable celebrations
+                Experience luxury and elegance at Calicut's premier convention center. Where your dreams find a perfect avenue.
               </p>
             </motion.div>
 
@@ -384,9 +384,9 @@ export function Hero() {
 
       {/* DESKTOP LAYOUT */}
       {!isMobile && (
-        <motion.div 
-          style={{ 
-            position: 'relative', 
+        <motion.div
+          style={{
+            position: 'relative',
             zIndex: 10,
             width: '100%',
             maxWidth: '1400px',
@@ -401,7 +401,7 @@ export function Hero() {
             gap: 'clamp(40px, 8vw, 80px)',
             alignItems: 'center',
           }}>
-            
+
             {/* Main Hero Content */}
             <div style={{
               display: 'flex',
@@ -411,7 +411,7 @@ export function Hero() {
               gap: 'clamp(24px, 4vw, 48px)',
               padding: 'clamp(20px, 4vw, 60px) clamp(16px, 3vw, 40px)',
             }}>
-              
+
               {/* Premium Badge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -431,7 +431,7 @@ export function Hero() {
                 }}
               >
                 <Award size={18} style={{ color: '#C8D46B' }} />
-                <span style={{ 
+                <span style={{
                   fontSize: 'clamp(0.8125rem, 1.5vw, 0.9375rem)',
                   fontWeight: '600',
                   color: '#FAF9F6',
@@ -466,20 +466,20 @@ export function Hero() {
                   backgroundClip: 'text',
                   letterSpacing: '-0.02em',
                 }}>
-                  Where Dreams Meet Avenue
+                  The Ultimate Destination for Grand Celebrations
                 </h1>
-                
+
                 <p style={{
                   fontSize: 'clamp(1.125rem, 2vw, 1.375rem)',
                   lineHeight: '1.7',
                   color: 'rgba(250, 249, 246, 0.9)',
-                  maxWidth: '700px',
+                  maxWidth: '800px',
                   margin: '0 auto',
                   fontWeight: '400',
                   padding: '0 clamp(12px, 2vw, 20px)',
                 }}>
-                  Transform your special moments into unforgettable celebrations. 
-                  A luxury venue crafted for weddings, corporate events, and grand celebrations.
+                  Experience luxury and elegance at Calicut's premier convention center.
+                  A state-of-the-art venue meticulously crafted for weddings, corporate events, and grand celebrations.
                 </p>
               </motion.div>
 
@@ -649,8 +649,8 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 1 }}
           whileHover={{ y: 4 }}
         >
-          <span style={{ 
-            fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)', 
+          <span style={{
+            fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
             letterSpacing: '1px',
             fontWeight: '600',
             textTransform: 'uppercase',
@@ -679,7 +679,7 @@ export function Hero() {
       <motion.button
         onClick={() => navigate('/booking')}
         initial={{ opacity: 0, y: 100, scale: 0.8 }}
-        animate={{ 
+        animate={{
           opacity: showFloatingCTA ? 1 : 0,
           y: showFloatingCTA ? 0 : 100,
           scale: showFloatingCTA ? 1 : 0.8,
@@ -735,7 +735,7 @@ export function Hero() {
         zIndex: 1,
         pointerEvents: 'none',
       }} />
-      
+
       <div style={{
         position: 'absolute',
         bottom: '10%',

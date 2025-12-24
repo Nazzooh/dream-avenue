@@ -22,12 +22,21 @@ export function Packages() {
             <div className="section-badge">Packages</div>
             <h2 className="section-title">Curated Event Packages</h2>
             <p className="section-description">
-              Choose from our premium packages designed to make your celebration extraordinary
+              Choose from our all-inclusive luxury packages designed to make your wedding or corporate event truly extraordinary.
             </p>
           </motion.div>
-          <div 
+          <p style={{
+            color: 'var(--gray-300)',
+            fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
+            lineHeight: 1.65,
+            marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+            margin: 0,
+          }}>
+            Calicut's premier luxury venue for weddings, corporate events, and grand celebrations. Experience world-class hospitality and state-of-the-art facilities.
+          </p>
+          <div
             className="packages-container"
-            style={{ 
+            style={{
               overflowX: 'auto',
               overflowY: 'hidden',
               display: 'flex',
@@ -79,14 +88,14 @@ export function Packages() {
           <div className="section-badge">Packages</div>
           <h2 className="section-title">Curated Event Packages</h2>
           <p className="section-description">
-            Choose from our premium packages designed to make your celebration extraordinary
+            Choose from our all-inclusive luxury packages designed to make your wedding or corporate event truly extraordinary.
           </p>
         </motion.div>
 
         {/* Horizontal Scrolling Packages - Netflix Style */}
-        <div 
+        <div
           className="packages-container"
-          style={{ 
+          style={{
             overflowX: 'auto',
             overflowY: 'hidden',
             display: 'flex',
@@ -105,7 +114,7 @@ export function Packages() {
               display: none;
             }
           `}</style>
-          
+
           {packages.map((pkg, index) => (
             <motion.article
               key={pkg.id}
@@ -125,14 +134,14 @@ export function Packages() {
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundImage: pkg.image_url 
-                  ? `url(${pkg.image_url})` 
+                backgroundImage: pkg.image_url
+                  ? `url(${pkg.image_url})`
                   : 'linear-gradient(135deg, var(--lime-primary), var(--lime-secondary))',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 transition: 'all 0.4s ease',
-                boxShadow: hoveredCard === pkg.id 
-                  ? '0 20px 60px rgba(0, 0, 0, 0.4)' 
+                boxShadow: hoveredCard === pkg.id
+                  ? '0 20px 60px rgba(0, 0, 0, 0.4)'
                   : 'var(--shadow-lg)',
               }}
               onMouseEnter={() => setHoveredCard(pkg.id)}
@@ -146,8 +155,8 @@ export function Packages() {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: hoveredCard === pkg.id 
-                    ? 'rgba(0, 0, 0, 0.75)' 
+                  backgroundColor: hoveredCard === pkg.id
+                    ? 'rgba(0, 0, 0, 0.75)'
                     : 'rgba(0, 0, 0, 0.5)',
                   transition: 'background-color 0.4s ease',
                   zIndex: 1,
@@ -155,11 +164,11 @@ export function Packages() {
               />
 
               {/* Package Content */}
-              <div 
+              <div
                 className="package-card-content"
-                style={{ 
-                  flex: 1, 
-                  display: 'flex', 
+                style={{
+                  flex: 1,
+                  display: 'flex',
                   flexDirection: 'column',
                   padding: 'clamp(1.2rem, 4vw, 1.8rem)',
                   position: 'relative',
@@ -168,14 +177,14 @@ export function Packages() {
                   paddingBottom: '5rem', // Space for button
                 }}
               >
-                <h3 style={{ 
+                <h3 style={{
                   marginBottom: 'var(--space-3)',
                   color: 'white',
                   textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
                 }}>
                   {pkg.name}
                 </h3>
-                <p style={{ 
+                <p style={{
                   marginBottom: 'var(--space-4)',
                   color: 'rgba(255, 255, 255, 0.95)',
                   textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
@@ -183,35 +192,35 @@ export function Packages() {
                 }}>
                   {pkg.description}
                 </p>
-                
+
                 {/* Features */}
                 {pkg.features && pkg.features.length > 0 && (
-                  <ul style={{ 
-                    listStyle: 'none', 
-                    padding: 0, 
+                  <ul style={{
+                    listStyle: 'none',
+                    padding: 0,
                     margin: 0,
                   }}>
                     {pkg.features.map((feature: string, idx: number) => (
-                      <li 
-                        key={idx} 
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'flex-start', 
+                      <li
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
                           gap: 'var(--space-2)',
                           marginBottom: 'var(--space-2)',
                         }}
                       >
-                        <Check 
-                          size={16} 
-                          style={{ 
-                            color: 'var(--lime-primary)', 
-                            flexShrink: 0, 
+                        <Check
+                          size={16}
+                          style={{
+                            color: 'var(--lime-primary)',
+                            flexShrink: 0,
                             marginTop: '2px',
                             filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))',
-                          }} 
+                          }}
                         />
-                        <span style={{ 
-                          fontSize: '0.875rem', 
+                        <span style={{
+                          fontSize: '0.875rem',
                           color: 'rgba(255, 255, 255, 0.9)',
                           textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
                         }}>
@@ -224,9 +233,9 @@ export function Packages() {
               </div>
 
               {/* Book Button - Always visible at bottom */}
-              <button 
-                className="btn btn-primary" 
-                style={{ 
+              <button
+                className="btn btn-primary"
+                style={{
                   position: 'absolute',
                   bottom: '1.2rem',
                   left: '50%',
