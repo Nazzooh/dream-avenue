@@ -15,7 +15,7 @@ export function mapEventRow(row: any): NormalizedEvent {
   // Handle both pre-mapped events (from getEventsForCalendar) and raw DB rows
   const date = row.event_date || row.date;
   const hasISOFormat = row.start?.includes('T');
-  
+
   return {
     id: row.id,
     title: row.title || "Event",
@@ -29,17 +29,17 @@ export function mapEventRow(row: any): NormalizedEvent {
 }
 
 export function mapEventsArray(events: any[]): NormalizedEvent[] {
-  if (process.env.NODE_ENV !== "production") {
+  if (import.meta.env.MODE !== "production") {
     console.log("📅 Mapping events:", events.length);
   }
-  
+
   const normalized = events
     .map(mapEventRow)
     .filter((event) => event.date !== null && event.date !== undefined);
-  
-  if (process.env.NODE_ENV !== "production") {
+
+  if (import.meta.env.MODE !== "production") {
     console.log("✅ Normalized events:", normalized);
   }
-  
+
   return normalized;
 }

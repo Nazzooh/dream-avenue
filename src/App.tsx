@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Toaster } from 'sonner@2.0.3';
+import { Toaster } from 'sonner';
 import { queryClient } from './src/lib/queryClient';
 import { LoadingFallback, AdminLoadingFallback } from './components/LoadingFallback';
 import { initializePerformanceOptimizations } from './src/utils/performanceOptimizations';
@@ -160,7 +160,7 @@ export default function App() {
       <CookieConsent />
 
       {/* 🧰 React Query Devtools - Only in development */}
-      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }
