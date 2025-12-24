@@ -378,6 +378,9 @@ export function Footer() {
             <p style={{ margin: 0 }}>
               Made with <span style={{ color: 'var(--lime-primary)' }}>♥</span> for creating beautiful moments
             </p>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--gray-400)' }}>
+              Designed and developed by <a href="https://nasooh.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime-primary)', textDecoration: 'none', fontWeight: 600 }}>Nasooh</a>
+            </p>
           </div>
         </div>
       </div>

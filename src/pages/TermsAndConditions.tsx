@@ -168,6 +168,16 @@ export default function TermsAndConditions() {
             >
               📍 Near Punchiri Bus stop, Karuvanthiruthy Peroke
             </div>
+            <div
+              style={{
+                marginTop: '1.5rem',
+                textAlign: 'center',
+                color: '#888',
+                fontSize: '0.8125rem',
+              }}
+            >
+              Designed and developed by <a href="https://nasooh.in" target="_blank" rel="noopener noreferrer" style={{ color: '#C8D46B', textDecoration: 'none', fontWeight: 600 }}>Nasooh</a>
+            </div>
           </div>
         </motion.div>
 

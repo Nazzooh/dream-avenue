@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg-cream)' }}>
         <div className="text-center">
-          <motion.div 
+          <motion.div
             animate={{ rotate: [0, 360] }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             className="rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"
@@ -59,31 +59,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className={`admin-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Sidebar */}
-      <DashboardSidebar 
-        currentPage={currentRoute.id} 
-        isOpen={sidebarOpen} 
+      <DashboardSidebar
+        currentPage={currentRoute.id}
+        isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
+
       {/* Main Content Area */}
       <div className="admin-main-content">
-        <DashboardTopbar 
-          pageTitle={currentRoute.title} 
+        <DashboardTopbar
+          pageTitle={currentRoute.title}
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         />
-        
+
         {/* Scrollable Content - Fluid Layout */}
-        <main 
+        <main
           className="w-full mx-auto"
-          style={{ 
+          style={{
             background: 'var(--bg-cream)',
             padding: 'clamp(1rem,3vw,3rem) clamp(1rem,4vw,3rem)',
             maxWidth: '1600px'
           }}
         >
           {children}
+
+          <footer style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid var(--admin-divider)', textAlign: 'center' }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--admin-text-muted)' }}>
+              © {new Date().getFullYear()} Dream Avenue · Designed and developed by <a href="https://nasooh.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--admin-lime-primary)', textDecoration: 'none', fontWeight: 600 }}>Nasooh</a>
+            </p>
+          </footer>
         </main>
       </div>
 

@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Sparkles, Mail, Lock } from 'lucide-react';
 import { useAuth } from '../../src/auth/useAuth';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 export function AdminLogin() {
   const navigate = useNavigate();
-  const { user, isAdmin, isLoading, signIn, profileError } = useAuth();
+  const { session, isAdmin, isLoading, signIn } = useAuth();
+  const user = session?.user;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,16 +21,9 @@ export function AdminLogin() {
     }
   }, [user, isAdmin, isLoading, navigate]);
 
-  // Show profile error if exists
-  useEffect(() => {
-    if (profileError) {
-      toast.error(profileError);
-    }
-  }, [profileError]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error('Please enter your email and password');
       return;
@@ -43,10 +37,10 @@ export function AdminLogin() {
       navigate('/admin/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
-      
+
       // User-friendly error messages
       let errorMessage = 'Login failed. Please try again.';
-      
+
       if (error.message?.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password. Please check your credentials.';
       } else if (error.message?.includes('Admin role required')) {
@@ -60,7 +54,7 @@ export function AdminLogin() {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -188,10 +182,10 @@ export function AdminLogin() {
               </button>
 
               {/* Info */}
-              <div style={{ 
-                marginTop: '1rem', 
-                padding: '0.75rem', 
-                background: '#F0FDF4', 
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: '#F0FDF4',
                 border: '1px solid #86EFAC',
                 borderRadius: '8px',
                 fontSize: '0.875rem',
@@ -205,6 +199,9 @@ export function AdminLogin() {
             <div className="admin-login-card-footer">
               <p className="admin-login-footer-text">
                 © Dream Avenue Convention Center · 2025
+              </p>
+              <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)', textAlign: 'center' }}>
+                Designed and developed by <a href="https://nasooh.in" target="_blank" rel="noopener noreferrer" style={{ color: '#B6F500', textDecoration: 'none', fontWeight: 600 }}>Nasooh</a>
               </p>
             </div>
           </div>

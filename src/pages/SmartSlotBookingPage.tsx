@@ -9,7 +9,7 @@ import { SlotSelectorGrid, SLOT_OPTIONS, SHORT_DURATION_SLOT } from '../componen
 import { EnhancedBookingForm, BookingFormData } from '../components/EnhancedBookingForm';
 import { usePackages } from '../src/hooks/usePackages';
 import { useAvailabilityForDate } from '../src/hooks/useCalendar';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { createBooking, normalizeTimes } from '../src/api/createBooking';
 
 // Add responsive styles
@@ -204,7 +204,7 @@ export default function SmartSlotBookingPage() {
   const [searchParams] = useSearchParams();
   const packageId = searchParams.get('package');
   const calendarSectionRef = useRef<HTMLDivElement>(null);
-  
+
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(packageId);
   const [showCalendarSection, setShowCalendarSection] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -213,7 +213,7 @@ export default function SmartSlotBookingPage() {
   const [formData, setFormData] = useState<BookingFormData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  
+
   const { data: packages = [] } = usePackages();
   const selectedPackage = packages.find((p) => p.id === selectedPackageId);
 
@@ -255,16 +255,16 @@ export default function SmartSlotBookingPage() {
     try {
       // Map event type to special_requests field as required
       const eventTypeText = formData.eventType ? `Event Type: ${formData.eventType}` : '';
-      
+
       // Combine event type with user's message
       let combinedSpecialRequests = eventTypeText;
       if (formData.message) {
         combinedSpecialRequests = eventTypeText ? `${eventTypeText}\n${formData.message}` : formData.message;
       }
-      
+
       // Normalize slot to start/end times
       const { start, end } = normalizeTimes(selectedSlot);
-      
+
       // Create booking using centralized function
       await createBooking({
         full_name: formData.fullName.trim(),
@@ -463,8 +463,8 @@ export default function SmartSlotBookingPage() {
                     style={{
                       width: '100%',
                       cursor: 'pointer',
-                      border: selectedPackageId === pkg.id 
-                        ? '3px solid #B6F500' 
+                      border: selectedPackageId === pkg.id
+                        ? '3px solid #B6F500'
                         : '2px solid rgba(224, 192, 151, 0.3)',
                       borderRadius: '24px',
                       background: selectedPackageId === pkg.id
@@ -525,7 +525,7 @@ export default function SmartSlotBookingPage() {
                       >
                         {pkg.name}
                       </h3>
-                      
+
                       <p
                         style={{
                           fontSize: '0.9375rem',
@@ -800,12 +800,12 @@ export default function SmartSlotBookingPage() {
                   style={{
                     marginBottom: '1.5rem',
                     padding: '1rem',
-                    background: termsAccepted 
-                      ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.05), rgba(224, 192, 151, 0.05))' 
+                    background: termsAccepted
+                      ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.05), rgba(224, 192, 151, 0.05))'
                       : 'rgba(255, 107, 157, 0.05)',
                     borderRadius: '12px',
-                    border: termsAccepted 
-                      ? '2px solid rgba(182, 245, 0, 0.3)' 
+                    border: termsAccepted
+                      ? '2px solid rgba(182, 245, 0, 0.3)'
                       : '2px solid rgba(255, 107, 157, 0.3)',
                   }}
                 >
@@ -868,8 +868,8 @@ export default function SmartSlotBookingPage() {
                     fontSize: '1.25rem',
                     fontWeight: 700,
                     cursor: (isSubmitting || !termsAccepted) ? 'not-allowed' : 'pointer',
-                    boxShadow: termsAccepted && !isSubmitting 
-                      ? '0 12px 32px rgba(182, 245, 0, 0.35)' 
+                    boxShadow: termsAccepted && !isSubmitting
+                      ? '0 12px 32px rgba(182, 245, 0, 0.35)'
                       : 'none',
                     display: 'flex',
                     alignItems: 'center',
@@ -900,7 +900,7 @@ export default function SmartSlotBookingPage() {
                     </>
                   )}
                 </motion.button>
-                
+
                 {!termsAccepted && (
                   <motion.p
                     initial={{ opacity: 0 }}
