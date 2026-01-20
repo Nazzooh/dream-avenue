@@ -35,8 +35,8 @@ export function Footer() {
         {/* Footer Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-          gap: 'clamp(2rem, 4vw, 3.5rem)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
+          gap: 'clamp(2rem, 3vw, 3rem)',
           alignItems: 'start',
         }}>
           {/* Brand Section */}
