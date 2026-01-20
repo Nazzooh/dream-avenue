@@ -48,6 +48,12 @@ export const addResourceHints = () => {
   dnsPrefetch.href = 'https://supabase.co';
   document.head.appendChild(dnsPrefetch);
 
+  // Preconnect to YouTube for Hero video
+  const youtubePreconnect = document.createElement('link');
+  youtubePreconnect.rel = 'preconnect';
+  youtubePreconnect.href = 'https://www.youtube-nocookie.com';
+  document.head.appendChild(youtubePreconnect);
+
   // Preconnect to Supabase API (if not already done)
   const preconnect = document.createElement('link');
   preconnect.rel = 'preconnect';
@@ -61,7 +67,7 @@ export const addResourceHints = () => {
  */
 export const respectReducedMotion = () => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  
+
   if (prefersReducedMotion.matches) {
     document.documentElement.style.setProperty('--animation-duration', '0.01ms');
     document.documentElement.style.setProperty('--transition-duration', '0.01ms');

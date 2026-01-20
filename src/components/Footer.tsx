@@ -104,6 +104,7 @@ export function Footer() {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Visit our ${['Facebook', 'Instagram', 'Twitter', 'LinkedIn'][index]} page`}
                   style={{
                     width: 'clamp(36px, 8vw, 40px)',
                     height: 'clamp(36px, 8vw, 40px)',
