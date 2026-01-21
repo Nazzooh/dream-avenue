@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { SEOHead } from '../components/SEOHead';
 import { Navbar } from '../components/Navbar';
-import { HeroScroll as Hero } from '../components/HeroScroll';
+import { Hero } from '../components/Hero';
 import { Stats } from '../components/Stats';
 
 // Lazy load below-the-fold sections for faster initial load
