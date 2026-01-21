@@ -1,9 +1,9 @@
 import { motion } from 'motion/react';
-import { 
-  Sparkles, 
-  Building2, 
-  Trees, 
-  Sunset, 
+import {
+  Sparkles,
+  Building2,
+  Trees,
+  Sunset,
   UtensilsCrossed,
   Car,
   Music,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useFacilities } from '../src/hooks/useFacilities';
 import { FacilitySkeleton } from './SkeletonLoader';
+import { getOptimizedSupabaseUrl } from '../src/utils/imageUtils';
 
 const iconMap: Record<string, any> = {
   'banquet': Building2,
@@ -34,10 +35,10 @@ export function Facilities() {
   const { data: facilities, isLoading, error } = useFacilities();
 
   // Log for debugging - Now using direct Supabase queries (fast & reliable)
-  console.log('🏢 Facilities Component:', { 
+  console.log('🏢 Facilities Component:', {
     count: facilities?.length || 0,
-    isLoading, 
-    hasError: !!error 
+    isLoading,
+    hasError: !!error
   });
 
   return (
@@ -99,19 +100,14 @@ export function Facilities() {
                     transition={{ delay: index * 0.1 }}
                   >
                     {imageUrl ? (
-                      <div 
-                        style={{
-                          width: '100%',
-                          height: '200px',
-                          borderRadius: 'var(--radius-lg)',
-                          marginBottom: 'var(--space-4)',
-                          backgroundImage: `url(${imageUrl})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          boxShadow: 'var(--shadow-md)',
-                        }}
-                        role="img"
-                        aria-label={`${facility.title} image`}
+                      <img
+                        src={getOptimizedSupabaseUrl(imageUrl || undefined, 600)}
+                        alt={facility.title}
+                        className="w-full h-[200px] object-cover rounded-lg mb-4 shadow-md bg-gray-100"
+                        loading="lazy"
+                        decoding="async"
+                        width="600"
+                        height="400"
                       />
                     ) : (
                       <div className="facility-icon" style={{ background: 'var(--gradient-radial-soft)' }}>

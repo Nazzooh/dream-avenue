@@ -79,26 +79,47 @@ export function Hero() {
           overflow: 'hidden',
         }}
       >
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/qXgr8igDL84?si=Ed55gP9UjPLfyvg6&autoplay=1&mute=1&controls=0&loop=1&playlist=qXgr8igDL84&playsinline=1&modestbranding=1&rel=0&showinfo=0&disablekb=1"
-          title="Dream Avenue Convention Center Background"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        {/* Iframe Container/Placeholder - Prevents CLS */}
+        <div
           style={{
             position: 'absolute',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            // Both Mobile & Desktop: Height fills screen, width extends (crops sides)
-            // Center portion shown, left/right sides cropped automatically
-            width: 'auto',
-            height: '100%',
-            minWidth: 'auto',
-            minHeight: '100%',
-            aspectRatio: '16 / 9',
-            border: 'none',
+            width: '100vw',
+            height: '100vh',
+            background: '#0A0A0A', // Placeholder color to prevent flash
             pointerEvents: 'none',
+            overflow: 'hidden',
           }}
-        />
+          className="hero-video-container"
+        >
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/qXgr8igDL84?si=Ed55gP9UjPLfyvg6&autoplay=1&mute=1&controls=0&loop=1&playlist=qXgr8igDL84&playsinline=1&modestbranding=1&rel=0&showinfo=0&disablekb=1&enablejsapi=1"
+            title="Dream Avenue Convention Center Background"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            tabIndex={-1}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '177.77777778vh', // 16:9 Aspect Ratio (100 * 16/9)
+              height: '100vh',
+              minWidth: '100%',
+              minHeight: '56.25vw', // 16:9 Aspect Ratio (100 * 9/16)
+              border: 'none',
+              pointerEvents: 'none',
+              opacity: 0,
+              animation: 'fadeIn 1s ease-in-out 0.5s forwards', // Fade in to hide load stutter
+            }}
+          />
+          <style>{`
+            @keyframes fadeIn {
+              to { opacity: 1; }
+            }
+          `}</style>
+        </div>
       </motion.div>
 
       {/* Gradient Overlays for depth */}

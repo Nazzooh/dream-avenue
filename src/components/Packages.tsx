@@ -5,6 +5,7 @@ import { usePackages } from '../src/hooks/usePackages';
 import { CardSkeleton } from './SkeletonLoader';
 import { useState } from 'react';
 import { Package } from '../src/schemas/packages';
+import { getOptimizedSupabaseUrl } from '../src/utils/imageUtils';
 
 export function Packages() {
   const navigate = useNavigate();
@@ -146,19 +147,32 @@ export function Packages() {
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundImage: pkg.image_url
-                  ? `url(${pkg.image_url})`
-                  : 'linear-gradient(135deg, var(--lime-primary), var(--lime-secondary))',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
                 transition: 'all 0.4s ease',
                 boxShadow: hoveredCard === pkg.id
                   ? '0 20px 60px rgba(0, 0, 0, 0.4)'
                   : 'var(--shadow-lg)',
+                backgroundColor: 'var(--gray-900)', // fallback
               }}
               onMouseEnter={() => setHoveredCard(pkg.id ?? null)}
               onMouseLeave={() => setHoveredCard(null)}
             >
+              {/* Background Image */}
+              {pkg.image_url ? (
+                <img
+                  src={getOptimizedSupabaseUrl(pkg.image_url, 600)}
+                  alt={pkg.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  width="600"
+                  height="800"
+                  decoding="async"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0 w-full h-full"
+                  style={{ background: 'linear-gradient(135deg, var(--lime-primary), var(--lime-secondary))' }}
+                />
+              )}
               {/* Dark overlay */}
               <div
                 style={{
