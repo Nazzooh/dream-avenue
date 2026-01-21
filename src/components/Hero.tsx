@@ -110,8 +110,8 @@ export function Hero() {
               minHeight: '56.25vw', // 16:9 Aspect Ratio (100 * 9/16)
               border: 'none',
               pointerEvents: 'none',
-              opacity: 0,
-              animation: 'fadeIn 1s ease-in-out 0.5s forwards', // Fade in to hide load stutter
+              opacity: 1,
+              // animation removed to prevent delay
             }}
           />
           <style>{`
