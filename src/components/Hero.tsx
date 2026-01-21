@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, MapPin, Users, ChevronDown, ArrowRight, Award, Star, Phone } from 'lucide-react';
-
-// Faster animation settings for better performance
-const fastTransition = { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const };
+import { Sparkles, Calendar, ChevronDown, ArrowRight, Award, Phone } from 'lucide-react';
 
 // @ts-ignore
 import heroPoster from '../assets/hero-poster.png';
@@ -12,20 +9,8 @@ import heroPoster from '../assets/hero-poster.png';
 export function Hero() {
   const navigate = useNavigate();
   const [showFloatingCTA, setShowFloatingCTA] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollY, scrollYProgress } = useScroll();
-
-  // Detect mobile screen
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -69,6 +54,7 @@ export function Hero() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: '80px', // Offset for Navbar height
       }}
     >
       {/* Dynamic Video Background Layer */}
@@ -92,7 +78,6 @@ export function Hero() {
           pointerEvents: 'none',
         }} />
 
-        {/* Iframe Scaling Logic for "Cover" effect */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -126,7 +111,7 @@ export function Hero() {
           textAlign: 'center',
           scale: contentScale,
           opacity: contentOpacity,
-          padding: '0 24px',
+          padding: '20px 24px 0 24px', // Extra top padding inside content
           maxWidth: '1200px',
         }}
       >
