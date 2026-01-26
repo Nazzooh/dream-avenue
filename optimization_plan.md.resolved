@@ -1,0 +1,57 @@
+# Implementation Plan - Phase 2: Report-Driven Optimization (Score 42 -> 100)
+
+## Goal Description
+Address critical performance bottlenecks (LCP 6.3s, huge payload) and remaining accessibility/best-practices issues identified in the Lighthouse report.
+
+## Proposed Changes
+
+### 1. Performance (LCP & Payload)
+#### [NEW] [src/utils/imageUtils.ts](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/src/utils/imageUtils.ts)
+- Create [getOptimizedSupabaseUrl(url: string, width: number)](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/src/utils/imageUtils.ts#1-58) helper.
+- Appends `?width={width}&format=webp&quality=80` to Supabase Storage URLs.
+
+#### [MODIFY] [src/components/Facilities.tsx](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/components/Facilities.tsx)
+- Replace `backgroundImage` `div` with `<img />` (or [OptimizedImage](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/components/OptimizedImage.tsx#10-47)) to enable lazy loading and specific dimensions.
+- Apply [getOptimizedSupabaseUrl](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/src/utils/imageUtils.ts#1-58).
+
+#### [MODIFY] [src/components/Packages.tsx](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/components/Packages.tsx)
+- Similar to Facilities, optimize the package card images.
+
+#### [MODIFY] [src/components/Hero.tsx](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/components/Hero.tsx)
+- Add a specific container logic or placeholder for the YouTube iframe to prevent CLS (0.344 score).
+- Ensure Preconnect is actually effective (moved to top of queue).
+
+### 2. Accessibility
+- Fix "Button does not have an accessible name" (likely the floating CTA or specific icon buttons).
+- Fix heading order (h2 -> h3, check for skips).
+
+### 3. Git Cleanup
+- Re-run `git rm -r --cached node_modules` to ensure clean repo.
+
+## Verification
+- Re-run build.
+- `notify_user` to prompt for another Netlify deploy and test.
+
+### 4. Hero Video Refinement
+#### [MODIFY] [src/components/Hero.tsx](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/components/Hero.tsx)
+- Removed `animation` and artificial `opacity: 0` delay to eliminate black screen flash.
+
+### 6. Lighthouse: Improve LCP (13.4s -> <2.5s)
+#### [MODIFY] [src/components/Hero.tsx](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/src/components/Hero.tsx)
+- Add a highly optimized `poster` image to the video iframe placeholder.
+- Use an `<img>` tag with `priority` (or `loading="eager"`) as the absolute first paint element to satisfy LCP immediately while the video loads.
+- Ensure text is visible during webfont load (`font-display: swap`).
+
+### 7. Google Lighthouse: PWA & Best Practices
+#### [NEW] [vite.config.ts](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/vite.config.ts)
+- Add `vite-plugin-pwa` to generate `sw.js` and manifest.
+- Configure basic PWA capabilities (offline fallback for static assets).
+
+#### [MODIFY] [index.html](file:///c:/Users/Sabreena/Downloads/New%20folder%20%282%29/dream-avenue/index.html)
+- Ensure viewport meta tag is correct.
+- Check font loading strategy.
+
+## Verification Plan
+### Automated Tests
+- Run `npm run build` to verify PWA generation.
+- Re-run Lighthouse on specific URL to check LCP score.

@@ -75,7 +75,7 @@ export function Hero() {
           height: '100%',
           background: 'rgba(0,0,0,0.4)',
           zIndex: 1,
-          pointerEvents: 'none',
+          pointerEvents: 'auto', // Capture all clicks/interactions
         }} />
 
         <div style={{
