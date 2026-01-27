@@ -103,7 +103,8 @@ export function Facilities() {
                       <img
                         src={getOptimizedSupabaseUrl(imageUrl || undefined, 600)}
                         alt={facility.title}
-                        className="w-full h-[200px] object-cover rounded-lg mb-4 shadow-md bg-gray-100"
+                        className="w-full object-cover rounded-lg mb-4 shadow-md bg-gray-100"
+                        style={{ height: '350px', width: '100%', objectFit: 'cover' }}
                         loading="lazy"
                         decoding="async"
                         width="600"
