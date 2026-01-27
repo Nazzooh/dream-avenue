@@ -9,7 +9,7 @@ const LOCAL_GALLERY_IMAGES: GalleryItem[] = [
   {
     id: '1',
     title: 'Luxury Wedding Reception',
-    image_url: '/new-gallery-images/wedding.png',
+    image_url: '/new-gallery-images/banquet-hall.png',
     category: 'Weddings',
     description: 'A luxurious wedding reception hall with crystal chandeliers and floral decorations.',
     event_type: 'Wedding',
@@ -18,7 +18,7 @@ const LOCAL_GALLERY_IMAGES: GalleryItem[] = [
   {
     id: '2',
     title: 'Corporate Conference',
-    image_url: '/new-gallery-images/corporate.png',
+    image_url: '/new-gallery-images/corporate-event.png',
     category: 'Corporate Events',
     description: 'Modern corporate event setup with professional lighting and seating.',
     event_type: 'Corporate',
