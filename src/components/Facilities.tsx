@@ -88,7 +88,7 @@ export function Facilities() {
           ) : (
             <div className="grid grid-cols-3">
               {facilities.map((facility, index) => {
-                const Icon = getIcon(facility.icon);
+                const Icon = getIcon(facility.icon || undefined);
                 const imageUrl = facility.image_url || facility.image;
                 return (
                   <motion.div

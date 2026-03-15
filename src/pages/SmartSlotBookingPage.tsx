@@ -412,6 +412,7 @@ export default function SmartSlotBookingPage() {
             >
               <Sparkles size={40} style={{ color: '#B6F500', display: 'inline-block', marginBottom: '1rem' }} />
               <h2
+                className="section-title"
                 style={{
                   fontSize: '2.25rem',
                   marginBottom: '0.75rem',
@@ -454,6 +455,7 @@ export default function SmartSlotBookingPage() {
                 {packages.map((pkg, index) => (
                   <motion.div
                     key={pkg.id}
+                    className="package-card"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -479,6 +481,7 @@ export default function SmartSlotBookingPage() {
                   >
                     {/* Package Image */}
                     <div
+                      className="package-card-image"
                       style={{
                         height: '180px',
                         backgroundImage: `url(${pkg.image_url})`,
@@ -514,8 +517,9 @@ export default function SmartSlotBookingPage() {
                     </div>
 
                     {/* Package Details */}
-                    <div style={{ padding: '1.75rem' }}>
+                    <div className="package-card-content" style={{ padding: '1.75rem', boxSizing: 'border-box' }}>
                       <h3
+                        className="package-card-title"
                         style={{
                           fontSize: '1.375rem',
                           marginBottom: '0.75rem',
@@ -527,6 +531,7 @@ export default function SmartSlotBookingPage() {
                       </h3>
 
                       <p
+                        className="package-card-description"
                         style={{
                           fontSize: '0.9375rem',
                           color: '#666',
@@ -548,6 +553,8 @@ export default function SmartSlotBookingPage() {
                           justifyContent: 'space-between',
                           paddingTop: '1rem',
                           borderTop: '1px solid rgba(224, 192, 151, 0.2)',
+                          flexWrap: 'wrap',
+                          gap: '0.25rem',
                         }}
                       >
                         <span
@@ -559,6 +566,7 @@ export default function SmartSlotBookingPage() {
                           Base Price
                         </span>
                         <span
+                          className="package-card-price"
                           style={{
                             fontSize: '1.5rem',
                             fontWeight: 700,
@@ -647,6 +655,7 @@ export default function SmartSlotBookingPage() {
                 }}
               >
                 <h2
+                  className="section-title"
                   style={{
                     fontSize: '2rem',
                     marginBottom: '1rem',
@@ -694,6 +703,7 @@ export default function SmartSlotBookingPage() {
                 style={{ marginBottom: '3rem' }}
               >
                 <h2
+                  className="section-title"
                   style={{
                     fontSize: '2rem',
                     marginBottom: '1rem',

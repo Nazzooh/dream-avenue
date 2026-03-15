@@ -105,7 +105,6 @@ export function Packages() {
           Calicut's premier luxury venue for weddings, corporate events, and grand celebrations. Experience world-class hospitality and state-of-the-art facilities.
         </p>
 
-        {/* Horizontal Scrolling Packages - Netflix Style */}
         <div
           className="packages-container"
           style={{
@@ -125,6 +124,20 @@ export function Packages() {
           <style>{`
             .packages-container::-webkit-scrollbar {
               display: none;
+            }
+            @media (max-width: 768px) {
+              .packages-container {
+                flex-direction: column;
+                align-items: center;
+                overflow-x: hidden;
+                scroll-snap-type: none;
+              }
+              .package-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: unset !important;
+                flex: none !important;
+              }
             }
           `}</style>
 

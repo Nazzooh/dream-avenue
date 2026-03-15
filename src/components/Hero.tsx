@@ -188,6 +188,7 @@ export function Hero() {
 
         {/* Dynamic Actions */}
         <motion.div
+          className="hero-buttons"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
@@ -281,6 +282,7 @@ export function Hero() {
 
       {/* Elegant Scroll Indicator */}
       <motion.div
+        className="hero-explore-indicator"
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
         style={{
@@ -301,7 +303,22 @@ export function Hero() {
 
       <style>{`
         h1 {
-          font-size: clamp(2.5rem, 8vw, 5.5rem) !important;
+          font-size: clamp(2rem, 10vw, 5.5rem) !important;
+        }
+        @media (max-width: 768px) {
+          .hero-buttons {
+            flex-direction: column;
+            width: 100%;
+            padding: 0 1rem;
+          }
+          .hero-buttons button, .hero-buttons a {
+            width: 100%;
+            justify-content: center;
+          }
+          .hero-explore-indicator {
+            bottom: 20px !important;
+            display: none !important; /* Hide on mobile to prevent overlap */
+          }
         }
       `}</style>
     </section>

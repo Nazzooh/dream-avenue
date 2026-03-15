@@ -1406,3 +1406,62 @@
     right: 2px !important;
   }
 }
+
+/* ============================================================================
+   MOBILE BOTTOM NAV — Fixed at Bottom for Mobile View
+   ============================================================================ */
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--admin-bg-card);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--admin-border);
+  }
+
+  .mobile-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 4px;
+    color: var(--admin-text-secondary);
+    text-decoration: none;
+    font-size: 0.65rem;
+    font-weight: 500;
+    gap: 4px;
+    transition: all var(--admin-transition-fast);
+  }
+
+  .mobile-bottom-nav-item:hover,
+  .mobile-bottom-nav-item:active {
+    color: var(--admin-text-primary);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .mobile-bottom-nav-item.active {
+    color: var(--admin-text-primary);
+    font-weight: 600;
+  }
+  
+  .mobile-bottom-nav-item.active svg {
+    color: var(--admin-lime-primary);
+    filter: drop-shadow(0 0 4px rgba(182, 245, 0, 0.4));
+  }
+  
+  /* Make room for bottom nav on mobile */
+  .admin-dashboard-container {
+    padding-bottom: 70px;
+  }
+}

@@ -6,7 +6,7 @@
  * @param quality - Desired quality (default: 80)
  * @returns Optimized URL
  */
-export const getOptimizedSupabaseUrl = (url: string | undefined | null, width: number = 800, quality: number = 80): string | undefined => {
+export const getOptimizedSupabaseUrl = (url: string | undefined | null, _width: number = 800, _quality: number = 80): string | undefined => {
     if (!url) return undefined;
 
     // Return original URL to ensure reliability until Image Transformation is confirmed enabled

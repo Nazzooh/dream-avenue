@@ -55,15 +55,17 @@ export function Navbar() {
             {/* Logo */}
             <a 
               href="#home" 
-              className="navbar-logo text-[32px]" 
+              className="navbar-logo text-[24px] sm:text-[32px]" 
+              style={{ flexShrink: 1, minWidth: 0, overflow: 'hidden' }}
               onClick={(e) => handleNavClick(e, '#home')}
             >
-              <img 
-                src={logoImage} 
-                alt="Dream Avenue Logo" 
-              />
+                <img 
+                  src={logoImage}
+                  style={{ maxWidth: '40px', height: 'auto' }}
+                  alt="Dream Avenue Logo" 
+                />
               <div className="navbar-logo-text">
-                <div className="navbar-logo-title text-[30px]">Dream Avenue</div>
+                <div className="navbar-logo-title text-[20px] sm:text-[30px]" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Dream Avenue</div>
                 <div className="navbar-logo-subtitle text-[8px] text-left">CONVENTION CENTER</div>
               </div>
             </a>
