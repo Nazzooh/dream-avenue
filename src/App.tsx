@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
@@ -14,6 +14,7 @@ import { CookieConsent } from './components/CookieConsent';
 // 📅 Booking Page - Lazy load (user action required)
 const SmartSlotBookingPage = lazy(() => import('./pages/SmartSlotBookingPage'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // 🧩 Admin Pages - Lazy load (auth required)
 const AdminLogin = lazy(() => import('./pages/admin/Login').then(m => ({ default: m.AdminLogin })));
@@ -148,7 +149,7 @@ export default function App() {
             />
 
             {/* 🚫 Redirect all other routes */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </Router>

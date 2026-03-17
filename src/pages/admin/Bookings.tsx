@@ -1,25 +1,95 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Phone, Mail, User, Users, Clock, 
   MessageSquare, X, Check, AlertCircle, XCircle,
-  Eye, CheckCircle, Ban, Trash2, Search, Filter,
-  Download, MoreVertical, TrendingUp, CalendarDays,
-  MapPin, Package, ChevronDown, RefreshCw, FileText, DollarSign, ShoppingCart, Activity, Edit3
+  Eye, CheckCircle, Ban, Trash2, Search,
+  Download, RefreshCw, Activity, Edit3, CalendarDays,
+  Package, DollarSign, ShoppingCart, TrendingUp, FileText
 } from 'lucide-react';
 import AdminLayout from '../../components/admin-v2/AdminLayout';
-import { PageHeader } from '../../components/admin-v2/PageHeader';
 import { StatusBadge } from '../../components/admin-v2/StatusBadge';
 import { useBookings, useCancelBooking, useUpdateBookingStatus, useDeleteBooking } from '../../src/hooks/useBookings';
 import { Booking, BookingStatus } from '../../src/schemas/bookings';
 import { BookingAction } from '../../src/types/booking';
 import { Package as PackageType } from '../../src/schemas/packages';
 import { usePackages } from '../../src/hooks/usePackages';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { supabase } from '../../utils/supabase/client';
 import { formatAdminHistory } from '../../src/utils/formatAdminHistory';
 import { adminUpdateBookingDetails } from '../../src/api/bookings';
 import { getBookingActions, confirmBooking, adminUpdateBookingExtras } from '../../src/api/adminBookings';
+
+// Metric Card Component for Admin Bookings
+function MetricCard({ title, value, change, icon, trend = 'up', delay = 0, color = '#B6F500' }: {
+  title: string;
+  value: string | number;
+  change?: string;
+  icon: React.ReactNode;
+  trend?: 'up' | 'down';
+  delay?: number;
+  color?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="admin-metric-card"
+      style={{
+        padding: 'clamp(1rem,2.5vw,1.5rem)',
+        borderRadius: 'clamp(0.75rem,2vw,1rem)',
+        borderLeft: `4px solid ${color}`
+      }}
+    >
+      <div className="admin-metric-header">
+        <span 
+          className="admin-metric-label"
+          style={{
+            fontSize: 'clamp(0.75rem,1.5vw,0.875rem)'
+          }}
+        >
+          {title}
+        </span>
+        <div 
+          className="admin-metric-icon"
+          style={{
+            width: 'clamp(2.5rem,6vw,3rem)',
+            height: 'clamp(2.5rem,6vw,3rem)',
+            fontSize: 'clamp(1rem,2vw,1.25rem)',
+            background: `${color}15`,
+            color: color
+          }}
+        >
+          {icon}
+        </div>
+      </div>
+      
+      <div 
+        className="admin-metric-value"
+        style={{
+          fontSize: 'clamp(1.75rem,4vw,2.5rem)'
+        }}
+      >
+        {value}
+      </div>
+      
+      {change && (
+        <div 
+          className={`admin-metric-change ${trend === 'up' ? 'positive' : 'negative'}`}
+          style={{
+            fontSize: 'clamp(0.75rem,1.25vw,0.875rem)'
+          }}
+        >
+          <TrendingUp className="w-[1em] h-[1em]" style={{ 
+            transform: trend === 'down' ? 'rotate(180deg)' : 'rotate(0deg)' 
+          }} />
+          <span>{change}</span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
 
 export function AdminBookings() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -30,7 +100,6 @@ export function AdminBookings() {
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   const { data: bookings = [], isLoading, refetch } = useBookings();
   const cancelBookingMutation = useCancelBooking();
@@ -84,7 +153,7 @@ export function AdminBookings() {
     if (!bookingToCancel) return;
 
     try {
-      await cancelBookingMutation.mutateAsync(bookingToCancel.id);
+      await cancelBookingMutation.mutateAsync(bookingToCancel.id!);
       setIsCancelModalOpen(false);
       setBookingToCancel(null);
       
@@ -111,7 +180,7 @@ export function AdminBookings() {
     if (!bookingToDelete) return;
 
     try {
-      await deleteBookingMutation.mutateAsync(bookingToDelete.id);
+      await deleteBookingMutation.mutateAsync(bookingToDelete.id!);
       setIsDeleteModalOpen(false);
       setBookingToDelete(null);
       setIsViewModalOpen(false);
@@ -164,17 +233,9 @@ export function AdminBookings() {
     }
   };
 
-  const getStatusVariant = (status: BookingStatus): 'success' | 'warning' | 'danger' | 'neutral' => {
-    switch (status) {
-      case 'confirmed': return 'success';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'danger';
-      case 'completed': return 'success';
-      default: return 'neutral';
-    }
-  };
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
@@ -184,17 +245,21 @@ export function AdminBookings() {
     });
   };
 
-  const formatTime = (timeStr: string | null) => {
-    if (!timeStr) return 'N/A';
-    const [hours, minutes] = timeStr.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+  const formatTime = (timeStr: string | null | undefined) => {
+    if (!timeStr || !timeStr.includes(':')) return 'N/A';
+    try {
+      const [hours, minutes] = timeStr.split(':');
+      const hour = parseInt(hours);
+      if (isNaN(hour)) return 'N/A';
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (e) {
+      return 'N/A';
+    }
   };
 
-  const formatEventType = (eventType: string | null) => {
-    console.log('🔍 formatEventType called with:', eventType);
+  const formatEventType = (eventType: string | null | undefined) => {
     if (!eventType) return 'Not specified';
     // Replace underscores with spaces and capitalize each word
     return eventType
@@ -219,196 +284,143 @@ export function AdminBookings() {
   return (
     <AdminLayout>
       <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #FAF9F6 0%, #F5F3EE 100%)' }}>
-        {/* Main Content Container with Fluid Grid */}
-        <div className="w-full max-w-[1600px] mx-auto px-[4%] sm:px-[5%] lg:px-[6%] xl:px-[8%] py-[clamp(1.5rem,4vw,3rem)]">
-          {/* Enhanced Header with Fluid Typography */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-[clamp(1rem,2.5vw,1.5rem)] mb-[clamp(1.5rem,3vw,2rem)]">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-[clamp(1.75rem,4vw,2.5rem)] leading-tight mb-[0.5em]" style={{ color: '#2A2A2A' }}>
-                Booking Management
+        {/* Sticky Premium Header */}
+        <div 
+          className="sticky top-0 z-30"
+          style={{ 
+            background: 'rgba(255, 255, 255, 0.8)', 
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(0,0,0,0.05)',
+            margin: '0 calc(clamp(1rem,5vw,3rem) * -1)',
+            padding: 'clamp(1rem,2.5vw,1.5rem) clamp(1rem,5vw,3rem)'
+          }}
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-[clamp(1.5rem,3vw,1.875rem)] font-semibold" style={{ color: '#2A2A2A', fontFamily: 'Poppins, sans-serif' }}>
+                Bookings Management
               </h1>
-              <p className="text-[clamp(0.875rem,1.5vw,1rem)]" style={{ color: '#666' }}>
-                Manage event bookings and track venue occupancy
+              <p className="text-[clamp(0.75rem,1.5vw,0.875rem)]" style={{ color: '#666' }}>
+                {stats.pending > 0 ? `${stats.pending} bookings need your attention` : 'All bookings are up to date'}
               </p>
             </div>
             
-            <div className="flex flex-wrap gap-[clamp(0.5rem,1.5vw,0.75rem)]">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => refetch()}
-                className="px-[clamp(0.75rem,2vw,1rem)] py-[clamp(0.5rem,1.5vw,0.625rem)] rounded-xl transition-all duration-200 flex items-center gap-2 text-[clamp(0.875rem,1.5vw,1rem)]"
-                style={{
-                  background: 'white',
-                  border: '2px solid #E8E5DB',
-                  color: '#666',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#C8D46B';
-                  e.currentTarget.style.color = '#2A2A2A';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#E8E5DB';
-                  e.currentTarget.style.color = '#666';
-                }}
+                className="p-2.5 rounded-xl transition-all hover:bg-black/5"
+                style={{ border: '1px solid rgba(0,0,0,0.1)', color: '#666' }}
               >
-                <RefreshCw className="w-[1em] h-[1em]" />
-                <span className="hidden sm:inline">Refresh</span>
+                <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
-              
               <button
-                className="px-[clamp(0.75rem,2vw,1rem)] py-[clamp(0.5rem,1.5vw,0.625rem)] rounded-xl transition-all duration-200 flex items-center gap-2 text-[clamp(0.875rem,1.5vw,1rem)]"
-                style={{
-                  background: 'linear-gradient(135deg, #C8D46B, #B5C55A)',
-                  border: 'none',
-                  color: 'white',
-                  boxShadow: '0 4px 12px rgba(200, 212, 107, 0.3)'
-                }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black text-white hover:bg-gray-800 transition-all shadow-lg shadow-black/10 text-sm font-medium"
               >
-                <Download className="w-[1em] h-[1em]" />
-                <span className="hidden sm:inline">Export</span>
+                <Download className="w-4 h-4" />
+                <span>Export Report</span>
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Statistics Cards - Fluid Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-[clamp(0.75rem,2vw,1rem)] mb-[clamp(1.5rem,3vw,2rem)]">
-            <StatCard
-              label="Total Bookings"
+        {/* Main Content Container */}
+        <div className="w-full max-w-[1600px] mx-auto px-[4%] py-[clamp(1.5rem,4vw,2.5rem)]">
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[clamp(1rem,2vw,1.5rem)] mb-[clamp(2rem,4vw,3rem)]">
+            <MetricCard
+              title="Total Volume"
               value={stats.total}
-              icon={<CalendarDays className="w-[1em] h-[1em]" />}
-              color="#C8D46B"
-              delay={0}
-            />
-            <StatCard
-              label="Pending"
-              value={stats.pending}
-              icon={<Clock className="w-[1em] h-[1em]" />}
-              color="#F4B942"
+              icon={<CalendarDays className="w-full h-full" />}
+              color="#B6F500"
               delay={0.1}
             />
-            <StatCard
-              label="Confirmed"
-              value={stats.confirmed}
-              icon={<CheckCircle className="w-[1em] h-[1em]" />}
-              color="#4CAF50"
+            <MetricCard
+              title="Pending Review"
+              value={stats.pending}
+              icon={<Clock className="w-full h-full" />}
+              color="#FF9800"
               delay={0.2}
+              change={stats.pending > 0 ? "Needs action" : "Cleared"}
+              trend={stats.pending > 0 ? "up" : "down"}
             />
-            <StatCard
-              label="Completed"
-              value={stats.completed}
-              icon={<Check className="w-[1em] h-[1em]" />}
-              color="#E0C097"
+            <MetricCard
+              title="Confirmed Events"
+              value={stats.confirmed}
+              icon={<CheckCircle className="w-full h-full" />}
+              color="#4CAF50"
               delay={0.3}
             />
-            <StatCard
-              label="Cancelled"
-              value={stats.cancelled}
-              icon={<XCircle className="w-[1em] h-[1em]" />}
-              color="#E57373"
+            <MetricCard
+              title="Successfully Hosted"
+              value={stats.completed}
+              icon={<Package className="w-full h-full" />}
+              color="#E0C097"
               delay={0.4}
             />
           </div>
 
-          {/* Search and Filter Bar - Fluid Layout */}
-          <div className="flex flex-col xl:flex-row gap-[clamp(0.75rem,2vw,1rem)] mb-[clamp(1.5rem,3vw,2rem)]">
-            {/* Search */}
-            <div className="flex-1 min-w-0 relative">
-              <Search className="absolute left-[clamp(0.75rem,2vw,1rem)] top-1/2 -translate-y-1/2 w-[clamp(1rem,1.5vw,1.25rem)] h-[clamp(1rem,1.5vw,1.25rem)]" style={{ color: '#999' }} />
-              <input
-                type="text"
-                placeholder="Search by name, phone, or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-[clamp(2.5rem,6vw,3rem)] pr-[clamp(0.75rem,2vw,1rem)] py-[clamp(0.625rem,1.5vw,0.75rem)] rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
-                style={{
-                  background: 'white',
-                  border: '2px solid #E8E5DB',
-                  color: '#2A2A2A',
-                  outline: 'none'
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#C8D46B';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(200, 212, 107, 0.15)';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = '#E8E5DB';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              />
-            </div>
+          {/* Search and Filters - Glassmorphic design */}
+          <div 
+            className="p-[clamp(1rem,2.5vw,1.5rem)] rounded-3xl mb-[clamp(1.5rem,3vw,2rem)]"
+            style={{ 
+              background: 'white',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.03)',
+              border: '1px solid rgba(0,0,0,0.05)'
+            }}
+          >
+            <div className="flex flex-col xl:flex-row gap-6">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name, phone, or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-gray-50 focus:border-[#B6F500]/50 outline-none transition-all text-sm"
+                  style={{ background: '#F9F9F9' }}
+                />
+              </div>
 
-            {/* Status Filter Pills - Flexible Layout */}
-            <div className="flex gap-[clamp(0.5rem,1.5vw,0.75rem)] flex-wrap">
-              {[
-                { value: 'all', label: 'All', color: '#666' },
-                { value: 'pending', label: 'Pending', color: '#F4B942' },
-                { value: 'confirmed', label: 'Confirmed', color: '#4CAF50' },
-                { value: 'completed', label: 'Completed', color: '#E0C097' },
-                { value: 'cancelled', label: 'Cancelled', color: '#E57373' }
-              ].map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setStatusFilter(filter.value as BookingStatus | 'all')}
-                  className="px-[clamp(0.75rem,2vw,1rem)] py-[clamp(0.5rem,1.5vw,0.625rem)] rounded-xl transition-all duration-200 capitalize text-[clamp(0.75rem,1.5vw,0.875rem)] whitespace-nowrap"
-                  style={{
-                    background: statusFilter === filter.value ? filter.color : 'white',
-                    color: statusFilter === filter.value ? 'white' : '#666',
-                    border: `2px solid ${statusFilter === filter.value ? filter.color : '#E8E5DB'}`,
-                    boxShadow: statusFilter === filter.value 
-                      ? `0 4px 12px ${filter.color}40` 
-                      : '0 2px 4px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  {filter.label}
-                  {filter.value !== 'all' && (
-                    <span 
-                      className="ml-[0.5em] px-[0.5em] py-[0.125em] rounded-full text-[0.75em]"
-                      style={{
-                        background: statusFilter === filter.value 
-                          ? 'rgba(255,255,255,0.3)' 
-                          : 'rgba(0,0,0,0.05)'
-                      }}
-                    >
-                      {stats[filter.value as keyof typeof stats]}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {/* Status Filters */}
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { value: 'all', label: 'All Bookings' },
+                  { value: 'pending', label: 'Pending' },
+                  { value: 'confirmed', label: 'Confirmed' },
+                  { value: 'completed', label: 'Completed' },
+                  { value: 'cancelled', label: 'Cancelled' }
+                ].map((filter) => (
+                  <button
+                    key={filter.value}
+                    onClick={() => setStatusFilter(filter.value as BookingStatus | 'all')}
+                    className="px-5 py-2.5 rounded-xl transition-all text-sm font-medium whitespace-nowrap"
+                    style={{
+                      background: statusFilter === filter.value ? '#000' : '#F5F5F5',
+                      color: statusFilter === filter.value ? '#FFF' : '#666',
+                    }}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Bookings List/Grid - Fluid Layout */}
+          {/* Bookings Display */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-[clamp(3rem,10vw,5rem)]">
-              <div className="text-center">
-                <motion.div 
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-[clamp(3rem,8vw,4rem)] h-[clamp(3rem,8vw,4rem)] mx-auto mb-[1em] rounded-full border-4 border-t-transparent"
-                  style={{ borderColor: '#C8D46B', borderTopColor: 'transparent' }}
-                />
-                <p className="text-[clamp(0.875rem,1.5vw,1rem)]" style={{ color: '#666' }}>Loading bookings...</p>
-              </div>
+            <div className="flex items-center justify-center py-20">
+              <RefreshCw className="w-10 h-10 animate-spin text-[#B6F500]" />
             </div>
           ) : filteredBookings.length === 0 ? (
-            <div className="text-center py-[clamp(3rem,10vw,5rem)]">
-              <div 
-                className="w-[clamp(4rem,10vw,5rem)] h-[clamp(4rem,10vw,5rem)] mx-auto mb-[1.5em] rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, rgba(200, 212, 107, 0.1), rgba(181, 197, 90, 0.05))' }}
-              >
-                <Calendar className="w-[50%] h-[50%]" style={{ color: '#C8D46B' }} />
-              </div>
-              <h3 className="text-[clamp(1.25rem,2.5vw,1.5rem)] mb-[0.5em]" style={{ color: '#2A2A2A' }}>
-                {searchQuery ? 'No matching bookings found' : `No ${statusFilter !== 'all' ? statusFilter : ''} bookings`}
-              </h3>
-              <p className="text-[clamp(0.875rem,1.5vw,1rem)]" style={{ color: '#999' }}>
-                {searchQuery 
-                  ? 'Try adjusting your search terms'
-                  : 'Bookings will appear here as they are created'}
-              </p>
+            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+              <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900">No bookings found</h3>
+              <p className="text-gray-500">Try adjusting your filters or search terms</p>
             </div>
           ) : (
-            <div className="space-y-[clamp(0.75rem,2vw,1rem)]">
+            <div className="grid grid-cols-1 gap-4">
               {filteredBookings.map((booking, index) => (
                 <BookingCard
                   key={booking.id}
@@ -417,7 +429,6 @@ export function AdminBookings() {
                   onCancel={handleCancelClick}
                   formatDate={formatDate}
                   formatTime={formatTime}
-                  getStatusVariant={getStatusVariant}
                   delay={index * 0.05}
                 />
               ))}
@@ -442,7 +453,6 @@ export function AdminBookings() {
             formatTime={formatTime}
             formatEventType={formatEventType}
             formatTimeSlot={formatTimeSlot}
-            getStatusVariant={getStatusVariant}
             updateStatusMutation={updateStatusMutation}
             refetchBookings={refetch}
           />
@@ -488,64 +498,14 @@ export function AdminBookings() {
   );
 }
 
-// Stat Card Component with Fluid Design
-function StatCard({ label, value, icon, color, delay }: {
-  label: string;
-  value: number;
-  icon: React.ReactNode;
-  color: string;
-  delay: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="p-[clamp(0.75rem,2.5vw,1.25rem)] rounded-2xl relative overflow-hidden"
-      style={{
-        background: 'white',
-        border: '2px solid #E8E5DB',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-      }}
-    >
-      <div 
-        className="absolute top-0 right-0 opacity-10"
-        style={{ 
-          background: color,
-          width: 'clamp(4rem,20vw,6rem)',
-          height: 'clamp(4rem,20vw,6rem)',
-          marginRight: 'calc(clamp(4rem,20vw,6rem) * -0.33)',
-          marginTop: 'calc(clamp(4rem,20vw,6rem) * -0.33)',
-          borderRadius: '50%'
-        }}
-      />
-      <div className="flex items-center gap-[0.75em] mb-[0.75em]">
-        <div 
-          className="rounded-xl flex items-center justify-center text-[clamp(1rem,2vw,1.25rem)]"
-          style={{ 
-            background: `${color}20`, 
-            color,
-            width: '2.5em',
-            height: '2.5em'
-          }}
-        >
-          {icon}
-        </div>
-      </div>
-      <div className="text-[clamp(1.75rem,4vw,2.5rem)] leading-none mb-[0.25em]" style={{ color: '#2A2A2A' }}>{value}</div>
-      <div className="text-[clamp(0.75rem,1.5vw,0.875rem)]" style={{ color: '#999' }}>{label}</div>
-    </motion.div>
-  );
-}
 
 // Booking Card Component with Fluid Grid
-function BookingCard({ booking, onView, onCancel, formatDate, formatTime, getStatusVariant, delay }: {
+function BookingCard({ booking, onView, onCancel, formatDate, formatTime, delay }: {
   booking: Booking;
   onView: (booking: Booking) => void;
   onCancel: (booking: Booking) => void;
-  formatDate: (date: string) => string;
-  formatTime: (time: string | null) => string;
-  getStatusVariant: (status: BookingStatus) => 'success' | 'warning' | 'danger' | 'neutral';
+  formatDate: (date: string | null | undefined) => string;
+  formatTime: (time: string | null | undefined) => string;
   delay: number;
 }) {
   return (
@@ -639,7 +599,6 @@ function BookingCard({ booking, onView, onCancel, formatDate, formatTime, getSta
         <div className="flex items-center gap-[clamp(0.5rem,1.5vw,0.75rem)] lg:pl-[clamp(0.75rem,2vw,1rem)] lg:border-l-2" style={{ borderColor: '#E8E5DB' }}>
           <StatusBadge 
             status={booking.status} 
-            variant={getStatusVariant(booking.status)} 
           />
           
           <button
@@ -689,17 +648,16 @@ function BookingCard({ booking, onView, onCancel, formatDate, formatTime, getSta
 }
 
 // Booking Details Modal Component with Fluid Grid & Media Queries
-function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDelete, formatDate, formatTime, formatEventType, formatTimeSlot, getStatusVariant, updateStatusMutation, refetchBookings }: {
+function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDelete, formatDate, formatTime, formatEventType, formatTimeSlot, updateStatusMutation, refetchBookings }: {
   booking: Booking;
   onClose: () => void;
   onStatusUpdate: (id: string, status: BookingStatus) => void;
   onCancel: (booking: Booking) => void;
   onDelete: (booking: Booking) => void;
-  formatDate: (date: string) => string;
-  formatTime: (time: string | null) => string;
+  formatDate: (date: string | null | undefined) => string;
+  formatTime: (time: string | null | undefined) => string;
   formatEventType: (eventType: string | null) => string;
   formatTimeSlot: (timeSlot: string | null) => string;
-  getStatusVariant: (status: BookingStatus) => 'success' | 'warning' | 'danger' | 'neutral';
   updateStatusMutation: any;
   refetchBookings: () => void;
 }) {
@@ -745,19 +703,23 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
 
   // Fetch package info
   useEffect(() => {
-    if (booking.package_id) {
-      setIsLoadingPackage(true);
-      supabase
-        .from('packages')
-        .select('*')
-        .eq('id', booking.package_id)
-        .single()
-        .then(({ data, error }) => {
+      const fetchPackage = async () => {
+        setIsLoadingPackage(true);
+        try {
+          const { data, error } = await supabase
+            .from('packages')
+            .select('*')
+            .eq('id', booking.package_id)
+            .single();
+          
           if (data) setPackageInfo(data);
           if (error) console.error('Failed to load package:', error);
-        })
-        .finally(() => setIsLoadingPackage(false));
-    }
+        } finally {
+          setIsLoadingPackage(false);
+        }
+      };
+      
+      fetchPackage();
   }, [booking.package_id]);
 
   // Fetch booking actions (audit trail)
@@ -767,7 +729,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
       
       setIsLoadingActions(true);
       try {
-        const actions = await getBookingActions(booking.id);
+        const actions = await getBookingActions(booking.id!);
         setBookingActions(actions);
       } catch (error) {
         console.error('Failed to load booking actions:', error);
@@ -806,7 +768,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
       console.log('🔄 Confirming booking:', { bookingId: booking.id, adminId });
       
       // Call the confirmBooking function
-      await confirmBooking({ bookingId: booking.id, adminId });
+      await confirmBooking({ bookingId: booking.id!, adminId });
       
       toast.success(
         <div>
@@ -1100,10 +1062,9 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[clamp(0.5rem,1.5vw,0.75rem)]">
               <StatusBadge 
                 status={booking.status} 
-                variant={getStatusVariant(booking.status)} 
               />
               <div className="text-[clamp(0.75rem,1.5vw,0.875rem)]" style={{ color: '#999' }}>
-                Created: {new Date(booking.created_at || '').toLocaleDateString()}
+                Created: {booking.created_at ? new Date(booking.created_at).toLocaleDateString() : 'N/A'}
               </div>
             </div>
 
@@ -1145,7 +1106,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                     </label>
                     <select
                       value={editEventType}
-                      onChange={(e) => setEditEventType(e.target.value)}
+                      onChange={(e) => setEditEventType(e.target.value as any)}
                       className="w-full rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
                       style={{
                         background: 'white',
@@ -1204,7 +1165,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                     </label>
                     <select
                       value={editTimeSlot}
-                      onChange={(e) => setEditTimeSlot(e.target.value)}
+                      onChange={(e) => setEditTimeSlot(e.target.value as any)}
                       className="w-full rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
                       style={{
                         background: 'white',
@@ -1359,13 +1320,13 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                 <InfoCard
                   icon={<User style={{ width: '1em', height: '1em' }} />}
                   label="Full Name"
-                  value={booking.full_name}
+                  value={booking.full_name || ''}
                   color="#C8D46B"
                 />
                 <InfoCard
                   icon={<Phone style={{ width: '1em', height: '1em' }} />}
                   label="Mobile Number"
-                  value={booking.mobile}
+                  value={booking.mobile || ''}
                   color="#E0C097"
                 />
                 {booking.email && (
@@ -1410,7 +1371,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                 <InfoCard
                   icon={<Calendar style={{ width: '1em', height: '1em' }} />}
                   label="Event Date"
-                  value={formatDate(booking.booking_date)}
+                  value={formatDate(booking.booking_date || '')}
                   color="#4CAF50"
                 />
                 {booking.guest_count && (
@@ -2054,7 +2015,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
             {booking.status === 'confirmed' && (
               <>
                 <button
-                  onClick={() => onStatusUpdate(booking.id, 'completed')}
+                  onClick={() => onStatusUpdate(booking.id!, 'completed')}
                   disabled={updateStatusMutation.isPending}
                   className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] disabled:opacity-50 disabled:cursor-not-allowed text-[clamp(0.875rem,1.5vw,1rem)]"
                   style={{

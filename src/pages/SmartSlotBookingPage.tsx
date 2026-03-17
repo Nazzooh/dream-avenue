@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Sparkles, ArrowLeft, Calendar as CalendarIcon, ChevronRight, ChevronLeft, Check, Loader2, FileText } from 'lucide-react';
+import { Home, Sparkles, ArrowLeft, Check, FileText } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { PublicBookingCalendar } from '../components/PublicBookingCalendar';
-import { SlotSelectorGrid, SLOT_OPTIONS, SHORT_DURATION_SLOT } from '../components/slot-booking/SlotSelectorGrid';
+import { SlotSelectorGrid, SLOT_OPTIONS } from '../components/slot-booking/SlotSelectorGrid';
 import { EnhancedBookingForm, BookingFormData } from '../components/EnhancedBookingForm';
 import { usePackages } from '../src/hooks/usePackages';
 import { useAvailabilityForDate } from '../src/hooks/useCalendar';
@@ -218,7 +218,7 @@ export default function SmartSlotBookingPage() {
   const selectedPackage = packages.find((p) => p.id === selectedPackageId);
 
   // Fetch availability for the selected date
-  const { data: availability } = useAvailabilityForDate(selectedDate, !!selectedDate);
+  useAvailabilityForDate(selectedDate, !!selectedDate);
 
   const handleFormContinue = (data: BookingFormData) => {
     setFormData(data);
@@ -294,12 +294,11 @@ export default function SmartSlotBookingPage() {
   };
 
   // Calculate final price for display
-  const selectedSlotData = SLOT_OPTIONS.find((s) => s.key === selectedSlot);
   let baseDisplayPrice: number;
   if (selectedSlot === 'short_duration') {
     baseDisplayPrice = 26000;
   } else {
-    baseDisplayPrice = selectedPackage ? selectedPackage.price : 0;
+    baseDisplayPrice = selectedPackage?.price ?? 0;
   }
 
   // Calculate services for display (floor cleaning is always included)
@@ -459,7 +458,7 @@ export default function SmartSlotBookingPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
-                    onClick={() => setSelectedPackageId(pkg.id)}
+                    onClick={() => setSelectedPackageId(pkg.id || null)}
                     whileHover={{ scale: 1.02, y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     style={{
@@ -576,7 +575,7 @@ export default function SmartSlotBookingPage() {
                             backgroundClip: 'text',
                           }}
                         >
-                          ₹{pkg.price.toLocaleString('en-IN')}
+                          ₹{(pkg.price ?? 0).toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
