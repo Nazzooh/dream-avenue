@@ -4,6 +4,7 @@ import { Home, Sparkles, ArrowLeft, Check, FileText } from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { SEOHead } from '../components/SEOHead';
 import { PublicBookingCalendar } from '../components/PublicBookingCalendar';
 import { SlotSelectorGrid, SLOT_OPTIONS } from '../components/slot-booking/SlotSelectorGrid';
 import { EnhancedBookingForm, BookingFormData } from '../components/EnhancedBookingForm';
@@ -39,20 +40,24 @@ const responsiveStyles = `
   
   @media (max-width: 768px) {
     .nav-buttons {
+      position: absolute !important;
       top: 80px !important;
       left: 10px !important;
       gap: 0.5rem !important;
-      flex-direction: column !important;
-      align-items: flex-start !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      z-index: 10 !important;
+      width: calc(100% - 20px) !important;
+      justify-content: flex-start !important;
     }
     
     .nav-buttons button {
-      padding: 0.5rem 1rem !important;
+      padding: 0.6rem 1.25rem !important;
       font-size: 0.875rem !important;
     }
     
     .packages-panel {
-      padding: 1.5rem 1rem !important;
+      padding: 3rem 1rem !important;
     }
     
     .form-panel {
@@ -70,94 +75,65 @@ const responsiveStyles = `
     .package-card {
       min-height: auto !important;
     }
-  }
-  
-  @media (max-width: 480px) {
-    .nav-buttons {
-      position: static !important;
-      margin: 0 1rem 1rem !important;
-      padding: 0 !important;
-    }
-    
-    .booking-page-container {
-      padding-top: 70px !important;
-    }
-    
-    .package-carousel {
-      gap: 0.75rem !important;
-    }
-    
-    .package-card-image {
-      height: 140px !important;
-    }
-    
-    .package-card-content {
-      padding: 1.25rem !important;
-    }
-    
-    .calendar-section {
-      padding: 1.5rem 0.75rem !important;
-    }
-    
-    .calendar-container {
-      padding: 1.25rem !important;
-    }
-    
-    .slot-grid {
-      gap: 0.75rem !important;
-    }
-    
-    .price-summary {
-      padding: 1.25rem !important;
+
+    /* Hide any floating scroll indicators that might appear from other components */
+    [class*="scroll-indicator"], [class*="mouse-indicator"], .mouse-scroll {
+      display: none !important;
     }
   }
 
-  @media (max-width: 410px) {
-    .packages-panel {
-      padding: 1rem 0.75rem !important;
+  @media (max-width: 480px) {
+    .nav-buttons {
+      position: relative !important;
+      margin: 1rem !important;
+      top: 0 !important;
+      left: 0 !important;
     }
     
-    .form-panel {
-      padding: 1rem 0.75rem !important;
+    .booking-page-container {
+      padding-top: 60px !important;
     }
-    
-    .package-carousel {
-      gap: 0.625rem !important;
+
+    .section-title {
+      font-size: 1.75rem !important;
     }
     
     .package-card-image {
-      height: 120px !important;
+      height: 160px !important;
     }
     
-    .package-card-content {
-      padding: 1rem !important;
+    .package-price-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5rem !important;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .section-title {
+      font-size: 1.5rem !important;
+    }
+    
+    .nav-buttons button {
+      padding: 0.5rem 1rem !important;
+      font-size: 0.8rem !important;
     }
     
     .package-card-title {
-      font-size: 1.125rem !important;
-    }
-    
-    .package-card-description {
-      font-size: 0.8125rem !important;
-    }
-    
-    .package-card-price {
       font-size: 1.25rem !important;
     }
-    
-    .calendar-section {
-      padding: 1.25rem 0.5rem !important;
+  }
+
+  @media (max-width: 320px) {
+    .nav-buttons {
+      flex-direction: column !important;
+      align-items: flex-start !important;
     }
     
-    .calendar-container {
-      padding: 1rem !important;
-      border-radius: 16px !important;
+    .section-title {
+      font-size: 1.35rem !important;
     }
-    
-    .slot-grid {
-      gap: 0.625rem !important;
-      grid-template-columns: 1fr !important;
-    }
+  }
     
     .price-summary {
       padding: 1rem !important;
@@ -189,12 +165,104 @@ const responsiveStyles = `
       font-size: 1.5rem !important;
     }
     
-    .calendar-container {
-      padding: 0.875rem !important;
+    .package-price-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5rem !important;
+    }
+    
+    .package-card-price {
+      margin-top: 0.5rem !important;
+      width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+    }
+
+    .price-value {
+      font-size: 1.5rem !important;
+    }
+
+    .price-summary {
+      padding: 1.25rem !important;
+    }
+
+    /* Aggressive hiding of any animated scroll indicators */
+    [class*="indicator"], [class*="scroll"], .mouse-scroll, .scroll-down {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  }
+
+  @media (max-width: 350px) {
+    .packages-panel {
+      padding: 0.5rem 0.25rem !important;
+    }
+    
+    .package-card-content {
+      padding: 0.75rem 0.5rem !important;
+    }
+    
+    .package-card-title {
+      font-size: 0.95rem !important;
+    }
+    
+    .package-card-price {
+      font-size: 1.25rem !important;
+    }
+
+    .section-title {
+      font-size: 1.35rem !important;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .nav-buttons {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+    }
+    
+    .section-title {
+      font-size: 1.35rem !important; /* Adjusted font size */
+    }
+    
+    .packages-panel {
+      padding: 0.5rem 0.25rem !important; /* Further reduced horizontal padding */
+    }
+    
+    .form-panel {
+      padding: 0.5rem 0.25rem !important;
+    }
+    
+    .package-card-content {
+      padding: 0.75rem 0.5rem !important; /* Further reduced horizontal padding */
+    }
+    
+    .package-card-title {
+      font-size: 0.9rem !important; /* Further adjusted font size */
+    }
+    
+    .price-value {
+      font-size: 1.3rem !important; /* Further adjusted font size */
+    }
+    
+    .package-card {
+      width: 100% !important; /* Ensure card takes full width */
+      margin: 0 !important; /* Remove any external margins */
+      box-sizing: border-box !important; /* Include padding and border in the element's total width and height */
+    }
+    
+    .package-carousel {
+      padding: 0 !important; /* Remove padding from carousel itself */
     }
     
     .price-summary {
-      padding: 0.875rem !important;
+      padding: 0.75rem !important; /* Reduced padding */
+    }
+    
+    .form-wrapper {
+      padding: 0.75rem !important; /* Reduced padding */
     }
   }
 `;
@@ -308,6 +376,11 @@ export default function SmartSlotBookingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF9F6', paddingTop: '80px', overflowX: 'hidden', maxWidth: '100vw' }} className="booking-page-container">
+      <SEOHead 
+        title="Book Convention Center Online | Dream Avenue"
+        description="Book Dream Avenue Convention Center online for your next event in Calicut. Verify availability, select dates, and secure your luxury venue instantly."
+        url="https://dreamavenue.in/booking"
+      />
       <Navbar />
 
       {/* Navigation Buttons */}
@@ -546,6 +619,7 @@ export default function SmartSlotBookingPage() {
                       </p>
 
                       <div
+                        className="package-price-row"
                         style={{
                           display: 'flex',
                           alignItems: 'center',

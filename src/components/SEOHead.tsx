@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { CONTACT_INFO } from '../src/constants/contact';
 
 interface SEOHeadProps {
@@ -20,129 +21,98 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   type = 'website',
   noindex = false,
 }) => {
-  useEffect(() => {
-    // Update document title
-    document.title = title;
+  // Structured Data (JSON-LD) - Dynamic based on type
+  let schemaData: any;
 
-    // Update or create meta tags
-    const updateMetaTag = (selector: string, attribute: string, content: string) => {
-      let tag = document.querySelector(selector) as HTMLMetaElement;
-
-      if (!tag) {
-        tag = document.createElement('meta');
-        if (selector.startsWith('meta[property')) {
-          tag.setAttribute('property', selector.split('"')[1]);
-        } else {
-          tag.setAttribute('name', selector.split('"')[1]);
+  if (type === 'event') {
+    schemaData = {
+      "@context": "https://schema.org",
+      "@type": "EventVenue",
+      "name": "Dream Avenue Convention Center",
+      "description": description,
+      "url": url,
+      "image": image,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Dream Avenue",
+        "addressLocality": "Calicut",
+        "addressRegion": "Kerala",
+        "addressCountry": "India"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "11.2588",
+        "longitude": "75.7804"
+      },
+      "telephone": CONTACT_INFO.phones.main,
+      "amenityFeature": [
+        {
+          "@type": "LocationFeatureSpecification",
+          "name": "Air Conditioning",
+          "value": true
+        },
+        {
+          "@type": "LocationFeatureSpecification",
+          "name": "Parking",
+          "value": true
+        },
+        {
+          "@type": "LocationFeatureSpecification",
+          "name": "Catering",
+          "value": true
         }
-        document.head.appendChild(tag);
-      }
-
-      tag.content = content;
+      ],
+      "maximumAttendeeCapacity": 500
     };
+  } else if (type === 'article') {
+    schemaData = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": title,
+      "description": description,
+      "image": image,
+      "url": url
+    };
+  } else {
+    // Default to WebSite schema
+    schemaData = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": title,
+      "description": description,
+      "url": url
+    };
+  }
 
-    // Standard meta tags
-    updateMetaTag('meta[name="description"]', 'name', description);
-    updateMetaTag('meta[name="keywords"]', 'name', keywords);
-    updateMetaTag('meta[name="robots"]', 'name', noindex ? 'noindex, nofollow' : 'index, follow');
-
-    // Open Graph tags
-    updateMetaTag('meta[property="og:title"]', 'property', title);
-    updateMetaTag('meta[property="og:description"]', 'property', description);
-    updateMetaTag('meta[property="og:image"]', 'property', image);
-    updateMetaTag('meta[property="og:url"]', 'property', url);
-    updateMetaTag('meta[property="og:type"]', 'property', type);
-    updateMetaTag('meta[property="og:site_name"]', 'property', 'Dream Avenue Convention Center');
-
-    // Twitter Card tags
-    updateMetaTag('meta[name="twitter:card"]', 'name', 'summary_large_image');
-    updateMetaTag('meta[name="twitter:title"]', 'name', title);
-    updateMetaTag('meta[name="twitter:description"]', 'name', description);
-    updateMetaTag('meta[name="twitter:image"]', 'name', image);
-
-    // Canonical link
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-    canonical.href = url;
-
-    // Structured Data (JSON-LD) - Dynamic based on type
-    let schemaData: any;
-
-    if (type === 'event') {
-      schemaData = {
-        "@context": "https://schema.org",
-        "@type": "EventVenue",
-        "name": "Dream Avenue Convention Center",
-        "description": description,
-        "url": url,
-        "image": image,
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Dream Avenue",
-          "addressLocality": "Calicut",
-          "addressRegion": "Kerala",
-          "addressCountry": "India"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": "11.2588",
-          "longitude": "75.7804"
-        },
-        "telephone": CONTACT_INFO.phones.main,
-        "amenityFeature": [
-          {
-            "@type": "LocationFeatureSpecification",
-            "name": "Air Conditioning",
-            "value": true
-          },
-          {
-            "@type": "LocationFeatureSpecification",
-            "name": "Parking",
-            "value": true
-          },
-          {
-            "@type": "LocationFeatureSpecification",
-            "name": "Catering",
-            "value": true
-          }
-        ],
-        "maximumAttendeeCapacity": 500
-      };
-    } else if (type === 'article') {
-      schemaData = {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": title,
-        "description": description,
-        "image": image,
-        "url": url
-      };
-    } else {
-      // Default to WebSite schema
-      schemaData = {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": title,
-        "description": description,
-        "url": url
-      };
-    }
-
-    let scriptTag = document.querySelector('#seo-schema') as HTMLScriptElement;
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.id = 'seo-schema';
-      scriptTag.type = 'application/ld+json';
-      document.head.appendChild(scriptTag);
-    }
-    scriptTag.text = JSON.stringify(schemaData);
-
-  }, [title, description, keywords, image, url, type, noindex]);
-
-  return null;
+  return (
+    <Helmet>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
+      <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+      
+      {/* Open Graph tags */}
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={image} />
+      <meta property="og:url" content={url} />
+      <meta property="og:type" content={type} />
+      <meta property="og:site_name" content="Dream Avenue Convention Center" />
+      
+      {/* Twitter Card tags */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={image} />
+      
+      {/* Canonical link */}
+      <link rel="canonical" href={url} />
+      
+      {/* JSON-LD Structured Data */}
+      <script type="application/ld+json">
+        {JSON.stringify(schemaData)}
+      </script>
+    </Helmet>
+  );
 };
 

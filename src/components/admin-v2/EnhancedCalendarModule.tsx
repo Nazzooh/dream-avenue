@@ -12,7 +12,7 @@ import {
   isSameMonth, isSameDay, addMonths, subMonths, 
   startOfWeek, endOfWeek 
 } from 'date-fns';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { DateActionModal } from '../admin/DateActionModal';
 import { AdminAddBookingModal } from '../admin/AdminAddBookingModal';
 

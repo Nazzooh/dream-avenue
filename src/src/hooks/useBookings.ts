@@ -15,7 +15,7 @@ import {
   adminCancelBooking,
 } from "../api/adminBookings";
 import { BookingCreate, BookingUpdate, BookingStatus } from "../schemas/bookings";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { supabase } from "../lib/supabase";
 
 // GET all bookings with filters

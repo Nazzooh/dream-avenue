@@ -5,7 +5,7 @@ import {
   Package, FileText, DollarSign, Trash2, Plus, Check, Loader2 
 } from 'lucide-react';
 import { usePackages } from '../../src/hooks/usePackages';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { supabase } from '../../utils/supabase/client';
 
 interface AdminAddBookingModalProps {

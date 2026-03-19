@@ -8,7 +8,7 @@ import {
   approveAdminRequest,
 } from '../api/adminRequests';
 import { CreateAdminRequest, UpdateAdminRequestStatus } from '../schemas/adminRequests';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 /**
  * Hook to fetch all admin access requests

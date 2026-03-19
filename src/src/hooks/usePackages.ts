@@ -11,7 +11,7 @@ import {
   packageKeys,
 } from "../api/packages";
 import { PackageCreate, PackageUpdate } from "../schemas/packages";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 // GET all packages (public - only active)
 export const usePackages = () => {

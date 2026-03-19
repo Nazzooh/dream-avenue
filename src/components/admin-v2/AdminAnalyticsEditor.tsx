@@ -13,7 +13,7 @@ import {
   useInsertAnalyticsSnapshot 
 } from '../../src/hooks/useAnalyticsAppendOnly';
 import { supabase } from '../../utils/supabase/client';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface MetricInputProps {
   icon: React.ElementType;

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Search, Calendar, Users, Mail, Phone, FileText, Download, Trash2, Eye, Filter, X } from 'lucide-react';
 import { useBookings } from '../../src/hooks/useBookings';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import {
   confirmBooking,
   cancelBooking,

@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { User, Mail, Phone, Users, MessageSquare, Package, Calendar, CheckCircle } from 'lucide-react';
 import { CalendarView } from './CalendarView';
 import { usePackages } from '../../src/hooks/usePackages';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { createBooking } from '../../src/api/createBooking';
 
 interface FullDayBookingFormProps {

@@ -9,7 +9,7 @@ import {
   eventKeys,
 } from "../api/events";
 import type { EventCreate, EventUpdate } from "../schemas/events";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 // GET all events with optional filters
 export const useEvents = (filters?: {

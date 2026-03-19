@@ -7,7 +7,7 @@ import { TimeSlotSelector, TimeSlot, generateDefaultTimeSlots } from './TimeSlot
 import { CalendarLegend } from './CalendarLegend';
 import { useCalendarMonth } from '../../src/hooks/useCalendar';
 import type { CalendarDaySlots } from '../../src/api/calendar';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface BookingCalendarProps {
   onBookingComplete?: (date: string, timeSlot: TimeSlot) => void;

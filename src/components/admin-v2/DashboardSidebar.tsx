@@ -16,7 +16,6 @@ import {
   Sparkles,
   UserPlus,
   TrendingUp,
-  Bell,
   Terminal,
   ChevronLeft,
   ChevronRight
@@ -33,7 +32,6 @@ interface DashboardSidebarProps {
 const navItems = [
   { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
   { id: 'analytics', label: 'Analytics', icon: TrendingUp, path: '/admin/analytics' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
   { id: 'facilities', label: 'Facilities', icon: Building2, path: '/admin/facilities' },
   { id: 'gallery', label: 'Gallery', icon: Image, path: '/admin/gallery' },

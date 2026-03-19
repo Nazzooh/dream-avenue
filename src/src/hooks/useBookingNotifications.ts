@@ -2,7 +2,7 @@
 // Subscribes to Supabase Realtime INSERT events on bookings table
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../utils/supabase/client';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 export interface BookingNotification {
   id: string;

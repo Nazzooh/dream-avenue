@@ -9,7 +9,7 @@ import {
   facilityKeys,
 } from "../api/facilities";
 import { FacilityCreate, FacilityUpdate } from "../schemas/facilities";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 // GET all facilities
 export const useFacilities = () => {

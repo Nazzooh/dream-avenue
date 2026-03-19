@@ -6,7 +6,7 @@ import { blockDate, unblockDate, createManualBooking } from "../api/admin/calend
 import type { BlockDatePayload, ManualBookingPayload } from "../api/admin/calendar";
 import { checkDateAvailability } from "../api/availability";
 import { log } from "../lib/logger";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 // Query key factory
 export const calendarKeys = {

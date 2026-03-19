@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { ArrowLeft, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from '../components/SEOHead';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import termsImage1 from 'figma:asset/fc2506f550c6d919223dabea349d993424eba7ac.png';
 import termsImage2 from 'figma:asset/faebd163188685a7655f5105047bc98e08cb5968.png';
@@ -10,6 +11,11 @@ export default function TermsAndConditions() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF9F6' }}>
+      <SEOHead 
+        title="Terms and Conditions | Dream Avenue Convention Center"
+        description="Read the Hall Rules and Guidelines for Dream Avenue Convention Center. Important information for planning your luxury event."
+        url="https://dreamavenue.in/terms-and-conditions"
+      />
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}

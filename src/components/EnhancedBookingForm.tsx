@@ -4,7 +4,7 @@ import {
   User, Mail, Phone, Users, MessageSquare, Calendar as CalendarIcon,
   Check, AlertCircle, Loader2, Sparkles, Info, Briefcase, Droplets, Flame, Trash2
 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { InlineSpinner } from './LoadingFallback';
 
 interface EnhancedBookingFormProps {

@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'sonner';
 import { queryClient } from './src/lib/queryClient';
 import { LoadingFallback, AdminLoadingFallback } from './components/LoadingFallback';
@@ -27,7 +28,6 @@ const AdminAvailability = lazy(() => import('./pages/admin/Availability').then(m
 const AdminRequests = lazy(() => import('./pages/admin/Requests').then(m => ({ default: m.AdminRequests })));
 const AdminBookings = lazy(() => import('./pages/admin/Bookings').then(m => ({ default: m.AdminBookings })));
 const AnalyticsSettings = lazy(() => import('./pages/admin/AnalyticsSettings').then(m => ({ default: m.AnalyticsSettings })));
-const NotificationCenter = lazy(() => import('./pages/admin/NotificationCenter'));
 
 // 🔐 Auth
 import { ProtectedRoute } from './src/auth/ProtectedRoute';
@@ -44,9 +44,10 @@ export default function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <Suspense fallback={<LoadingFallback />}>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* 🌐 Main Website - No suspense needed (loaded immediately) */}
             <Route path="/" element={<MainWebsite />} />
@@ -139,14 +140,6 @@ export default function App() {
                 </Suspense>
               }
             />
-            <Route
-              path="/admin/notifications"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><NotificationCenter /></ProtectedRoute>
-                </Suspense>
-              }
-            />
 
             {/* 🚫 Redirect all other routes */}
             <Route path="*" element={<NotFoundPage />} />
@@ -163,5 +156,6 @@ export default function App() {
       {/* 🧰 React Query Devtools - Only in development */}
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
+    </HelmetProvider>
   );
 }

@@ -5,7 +5,7 @@ import React, { motion } from 'motion/react';
 import { Calendar, Users, Heart, Save, RefreshCw, TrendingUp, AlertCircle, Sparkles, Database, Zap, Globe } from 'lucide-react';
 import { useAnalyticsSummary, useUpdateAnalyticsSummary } from '../../src/hooks/useAnalyticsSummary';
 import { useAuth } from '../../src/auth/useAuth';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface AnimatedNumberProps {
   value: number;

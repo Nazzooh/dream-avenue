@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, Unlock, Plus, Eye, Loader2, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../src/auth/useAuth';

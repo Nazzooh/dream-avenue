@@ -5,7 +5,7 @@ import { CalendarView } from '../booking/CalendarView';
 import { SlotSelectorGrid, SLOT_OPTIONS } from './SlotSelectorGrid';
 import { DynamicPriceCard } from './DynamicPriceCard';
 import { useCreateBooking } from '../../src/hooks/useBookings';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { buildBookingPayload } from '../../src/utils/bookingPayload';
 
 interface SlotBookingFormProps {

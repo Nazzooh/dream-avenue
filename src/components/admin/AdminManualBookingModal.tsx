@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, Save } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { useCreateManualBooking } from '../../src/hooks/useCalendar';
 import { usePackages } from '../../src/hooks/usePackages';
 

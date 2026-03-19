@@ -9,7 +9,7 @@ import {
   galleryKeys,
 } from "../api/gallery";
 import { GalleryCreate, GalleryUpdate } from "../schemas/gallery";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 // GET all gallery items with optional category filter
 export const useGalleryItems = (category?: string) => {

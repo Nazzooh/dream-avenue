@@ -4,7 +4,7 @@ import { User, Mail, Phone, Users, MessageSquare, Package, Calendar, Clock, Chec
 import { CalendarView } from './CalendarView';
 import { TimeSlotSelector, TimeSlot } from './TimeSlotSelector';
 import { usePackages } from '../../src/hooks/usePackages';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { buildPublicBookingPayload } from '../../src/lib/api/bookings';
 import { supabase } from '../../utils/supabase/client';
 

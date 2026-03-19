@@ -5,8 +5,10 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardTopbar } from './DashboardTopbar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useAdmin } from '../../src/auth/useAdmin';
+import { AutoLogout } from './AutoLogout';
 
 // Map routes to page info
+
 const routeMap: Record<string, { title: string; id: string }> = {
   '/admin': { title: 'Dashboard', id: 'dashboard' },
   '/admin/dashboard': { title: 'Dashboard', id: 'dashboard' },
@@ -58,6 +60,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className={`admin-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <AutoLogout />
       {/* Sidebar */}
       <DashboardSidebar
         currentPage={currentRoute.id}
