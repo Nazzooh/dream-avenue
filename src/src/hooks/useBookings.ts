@@ -14,6 +14,10 @@ import {
   adminDeleteBooking,
   adminCancelBooking,
 } from "../api/adminBookings";
+import {
+  adminGetPaginatedBookings,
+  adminGetBookingStats,
+} from "../api/adminBookingsStats";
 import { BookingCreate, BookingUpdate, BookingStatus } from "../schemas/bookings";
 import { toast } from "sonner";
 import { supabase } from "../lib/supabase";
@@ -28,6 +32,27 @@ export const useBookings = (filters?: {
   return useQuery({
     queryKey: bookingKeys.list(filters),
     queryFn: () => getBookings(filters),
+  });
+};
+
+// GET paginated bookings for admin
+export const useAdminPaginatedBookings = (params: {
+  page?: number;
+  limit?: number;
+  status?: BookingStatus | 'all';
+  searchQuery?: string;
+}) => {
+  return useQuery({
+    queryKey: [...bookingKeys.all, 'paginated', params],
+    queryFn: () => adminGetPaginatedBookings(params),
+  });
+};
+
+// GET booking stats for admin
+export const useAdminBookingStats = () => {
+  return useQuery({
+    queryKey: [...bookingKeys.all, 'stats'],
+    queryFn: () => adminGetBookingStats(),
   });
 };
 

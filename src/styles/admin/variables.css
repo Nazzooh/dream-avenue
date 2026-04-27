@@ -1,0 +1,64 @@
+/* ============================================================================
+   Dream Avenue Admin — Design Tokens & Variables
+   ============================================================================ */
+
+:root {
+  /* Base Colors */
+  --admin-bg-primary: #FAFAF7;
+  --admin-bg-card: #FFFFFF;
+  --admin-bg-hover: #F5F5F2;
+  
+  /* Accent Colors */
+  --admin-lime-primary: #B6F500;
+  --admin-lime-secondary: #A4DD00;
+  --admin-mint-support: #D9F8C4;
+  --admin-success: #C6F68D;
+  --admin-error: #FF6B6B;
+  
+  /* Text Colors */
+  --admin-text-primary: #2A2A2A;
+  --admin-text-secondary: #666666;
+  --admin-text-muted: #999999;
+  
+  /* Border & Dividers */
+  --admin-border: #E6E6E6;
+  --admin-divider: #F0F0F0;
+  
+  /* Status Colors */
+  --admin-status-confirmed: #C6F68D;
+  --admin-status-pending: #FFE59D;
+  --admin-status-cancelled: #FFB6B6;
+  --admin-status-completed: #B8E6D5;
+  
+  /* Shadows */
+  --admin-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.04);
+  --admin-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.05);
+  --admin-shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --admin-shadow-xl: 0 12px 30px rgba(0, 0, 0, 0.1);
+  
+  /* Glow Effects */
+  --admin-glow-lime: 0 0 20px rgba(182, 245, 0, 0.25);
+  --admin-glow-lime-soft: 0 0 12px rgba(182, 245, 0, 0.15);
+  --admin-glow-success: 0 0 16px rgba(198, 246, 141, 0.3);
+  --admin-glow-error: 0 0 16px rgba(255, 107, 107, 0.3);
+  
+  /* Spacing */
+  --admin-spacing-xs: 8px;
+  --admin-spacing-sm: 12px;
+  --admin-spacing-md: 16px;
+  --admin-spacing-lg: 24px;
+  --admin-spacing-xl: 32px;
+  --admin-spacing-2xl: 40px;
+  
+  /* Border Radius */
+  --admin-radius-sm: 8px;
+  --admin-radius-md: 12px;
+  --admin-radius-lg: 16px;
+  --admin-radius-xl: 20px;
+  --admin-radius-full: 9999px;
+  
+  /* Transitions */
+  --admin-transition-fast: 0.15s ease;
+  --admin-transition-base: 0.25s ease;
+  --admin-transition-slow: 0.35s ease;
+}

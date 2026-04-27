@@ -47,7 +47,7 @@ export function Location() {
             }}
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d458.198348041349!2d75.82355258170072!3d11.172560172315125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba651e030f76fb1%3A0xa1febc6ea2f8753d!2sDream%20Avenue!5e1!3m2!1sen!2sin!4v1761727867409!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d8016292.720918528!2d66.59544827499997!3d11.172420200000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba651e030f76fb1%3A0xa1febc6ea2f8753d!2sDream%20Avenue!5e0!3m2!1sen!2sin!4v1773984720044!5m2!1sen!2sin"
               width="100%"
               height="100%"
               style={{ border: 0 }}

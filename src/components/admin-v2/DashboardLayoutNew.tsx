@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardTopbar } from './DashboardTopbar';
 import { MobileBottomNav } from './MobileBottomNav';
+import { KeepAliveWidget } from './KeepAliveWidget';
 
 interface DashboardLayoutNewProps {
   children: React.ReactNode;
@@ -36,6 +37,9 @@ export function DashboardLayoutNew({ children, pageTitle, currentPage }: Dashboa
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav currentPage={currentPage} />
+      
+      {/* Hidden Developer Widget */}
+      <KeepAliveWidget />
     </div>
   );
 }

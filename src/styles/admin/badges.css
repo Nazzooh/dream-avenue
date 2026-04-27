@@ -1,0 +1,55 @@
+/* ============================================================================
+   Dream Avenue Admin — Status Badges
+   ============================================================================ */
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--admin-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+}
+
+.admin-badge-success {
+  background: var(--admin-status-confirmed);
+  color: #2d5016;
+  border-color: #a8d47e;
+}
+
+.admin-badge-warning {
+  background: var(--admin-status-pending);
+  color: #856404;
+  border-color: #ffd966;
+}
+
+.admin-badge-danger {
+  background: var(--admin-status-cancelled);
+  color: #721c24;
+  border-color: #ff9999;
+}
+
+.admin-badge-info {
+  background: var(--admin-status-completed);
+  color: #155724;
+  border-color: #9dd4b8;
+}
+
+.admin-badge-neon {
+  background: linear-gradient(135deg, var(--admin-lime-primary), var(--admin-lime-secondary));
+  color: #2A2A2A;
+  border-color: var(--admin-lime-primary);
+  box-shadow: var(--admin-glow-lime-soft);
+  font-weight: 600;
+}
+
+.admin-badge-gold {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #2A2A2A;
+  border-color: #FFD700;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+  font-weight: 600;
+}

@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import AdminErrorBoundary from './components/admin-v2/AdminErrorBoundary';
+
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { HelmetProvider } from 'react-helmet-async';
@@ -62,84 +64,88 @@ export default function App() {
             {/* 🔑 Admin Login */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* 🧭 Admin Dashboard (Protected) - Lazy loaded */}
-            <Route
-              path="/admin"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                </Suspense>
-              }
-            />
+            {/* 🛡️ Admin Protection Layer */}
+            <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>
+              {/* 🔑 Admin Dashboard (Protected) - Lazy loaded */}
+              <Route
+                path="/admin"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  </Suspense>
+                }
+              />
 
-            {/* 🗂 Admin Management Routes - Lazy loaded */}
-            <Route
-              path="/admin/dashboard"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminDashboard /></ProtectedRoute>
-                </Suspense>
-              }
-            />
-            <Route
-              path="/admin/packages"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminPackages /></ProtectedRoute>
-                </Suspense>
-              }
-            />
-            <Route
-              path="/admin/facilities"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminFacilities /></ProtectedRoute>
-                </Suspense>
-              }
-            />
-            <Route
-              path="/admin/gallery"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminGallery /></ProtectedRoute>
-                </Suspense>
-              }
-            />
+              {/* 🗂 Admin Management Routes - Lazy loaded */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminDashboard /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/packages"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminPackages /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/facilities"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminFacilities /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/gallery"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminGallery /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
 
-            <Route
-              path="/admin/availability"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminAvailability /></ProtectedRoute>
-                </Suspense>
-              }
-            />
-            <Route
-              path="/admin/requests"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminRequests /></ProtectedRoute>
-                </Suspense>
-              }
-            />
-            <Route
-              path="/admin/bookings"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AdminBookings /></ProtectedRoute>
-                </Suspense>
-              }
-            />
-            <Route
-              path="/admin/analytics"
-              element={
-                <Suspense fallback={<AdminLoadingFallback />}>
-                  <ProtectedRoute requireAdmin={true}><AnalyticsSettings /></ProtectedRoute>
-                </Suspense>
-              }
-            />
+              <Route
+                path="/admin/availability"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminAvailability /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/requests"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminRequests /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/bookings"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AdminBookings /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <Suspense fallback={<AdminLoadingFallback />}>
+                    <ProtectedRoute requireAdmin={true}><AnalyticsSettings /></ProtectedRoute>
+                  </Suspense>
+                }
+              />
+            </Route>
+
 
             {/* 🚫 Redirect all other routes */}
             <Route path="*" element={<NotFoundPage />} />

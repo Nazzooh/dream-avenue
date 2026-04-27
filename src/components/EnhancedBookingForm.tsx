@@ -622,7 +622,6 @@ function FormField({
           name={name}
           value={value}
           onChange={onChange}
-          onBlur={onBlur}
           placeholder={placeholder}
           style={{
             width: '100%',

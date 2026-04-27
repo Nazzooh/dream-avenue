@@ -38,11 +38,21 @@ export function AdminLogin() {
     } catch (error: any) {
       console.error('Login error:', error);
 
-      // User-friendly generic error messages (Security: Prevent enumeration)
-      let errorMessage = 'Invalid login credentials or access denied.';
-      
-      if (error.message?.includes('Email not confirmed')) {
+      // User-friendly error messages
+      let errorMessage = 'Login failed. Please try again.';
+
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials.';
+      } else if (error.message?.includes('Admin role required')) {
+        errorMessage = 'Access denied: You do not have admin permissions.';
+      } else if (error.message?.includes('Email not confirmed')) {
         errorMessage = 'Please verify your email address first.';
+      } else if (error.message?.includes('No profile found')) {
+        errorMessage = 'No profile found. Please contact administrator to set up your account.';
+      } else if (error.message?.includes('Failed to fetch user profile')) {
+        errorMessage = 'Error fetching profile. Please contact administrator.';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       toast.error(errorMessage);

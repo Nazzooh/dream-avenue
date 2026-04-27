@@ -9,13 +9,13 @@ import { FormTextarea } from './FormTextarea';
 import { FormSelect } from './FormSelect';
 import { ImageUploadField } from './ImageUploadField';
 import { Button } from './Button';
-import { useToast } from './Toast';
+import { toast } from 'sonner';
 import { 
   useFacilities, 
   useCreateFacility, 
   useUpdateFacility, 
   useDeleteFacility 
-} from '../../src/hooks/useFacilities';
+} from '../../hooks/useFacilities';
 import { 
   Loader2, 
   Sparkles, 
@@ -35,7 +35,8 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
+import { AdminLoadingFallback } from '../LoadingFallback';
 
 const iconOptions = [
   { value: 'sparkles', label: '✨ Sparkles', Icon: Sparkles },
@@ -60,7 +61,6 @@ export default function FacilitiesModule() {
   const [editingFacility, setEditingFacility] = useState<any>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const { showToast, ToastContainer } = useToast();
 
   // React Query hooks
   const { data: facilities = [], isLoading } = useFacilities(true); // Include inactive facilities in admin
@@ -78,10 +78,10 @@ export default function FacilitiesModule() {
     if (confirm(`Are you sure you want to delete "${facility.title}"?`)) {
       try {
         await deleteMutation.mutateAsync(facility.id);
-        showToast('success', '✅ Facility deleted successfully');
+        toast.success('Facility deleted successfully');
       } catch (error) {
         console.error('Delete error:', error);
-        showToast('error', '❌ Failed to delete facility');
+        toast.error('Failed to delete facility');
       }
     }
   };
@@ -92,10 +92,10 @@ export default function FacilitiesModule() {
         id: facility.id,
         data: { is_active: !facility.is_active }
       });
-      showToast('success', `✅ Facility ${!facility.is_active ? 'activated' : 'deactivated'}`);
+      toast.success(`Facility ${!facility.is_active ? 'activated' : 'deactivated'}`);
     } catch (error) {
       console.error('Toggle error:', error);
-      showToast('error', '❌ Failed to update status');
+      toast.error('Failed to update status');
     }
   };
 
@@ -118,17 +118,17 @@ export default function FacilitiesModule() {
           id: editingFacility.id, 
           data: facilityData 
         });
-        showToast('success', '✅ Facility updated successfully');
+        toast.success('Facility updated successfully');
       } else {
         await createMutation.mutateAsync(facilityData);
-        showToast('success', '✅ Facility created successfully');
+        toast.success('Facility created successfully');
       }
       setIsModalOpen(false);
       setEditingFacility(null);
       setImageUrl(null);
     } catch (error) {
       console.error('Submit error:', error);
-      showToast('error', '❌ Operation failed');
+      toast.error('Operation failed');
     }
   };
 
@@ -147,14 +147,7 @@ export default function FacilitiesModule() {
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center" style={{ minHeight: '60vh' }}>
-          <div className="text-center">
-            <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block' }}>
-              <Loader2 className="mx-auto mb-4" size={48} style={{ color: 'var(--dream-neon-green)' }} />
-            </motion.div>
-            <p style={{ color: 'var(--dream-text-secondary)' }}>Loading facilities...</p>
-          </div>
-        </div>
+        <AdminLoadingFallback />
       </AdminLayout>
     );
   }
@@ -164,7 +157,7 @@ export default function FacilitiesModule() {
       {/* Page Header */}
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Facilities Management</h1>
+          <h1 className="admin-page-title" style={{ fontFamily: 'var(--admin-font-serif)' }}>Facilities Management</h1>
           <p className="admin-page-description">
             Manage and update the Dream Avenue facilities displayed on the main website
           </p>
@@ -215,7 +208,7 @@ export default function FacilitiesModule() {
       {viewMode === 'grid' && (
         <AdminGrid columns="3">
           {facilities.map((facility, index) => {
-            const IconComponent = getIcon(facility.icon);
+            const IconComponent = getIcon(facility.icon || 'sparkles');
             return (
               <motion.div
                 key={facility.id}
@@ -373,7 +366,7 @@ export default function FacilitiesModule() {
               </thead>
               <tbody>
                 {facilities.map((facility, index) => {
-                  const IconComponent = getIcon(facility.icon);
+                  const IconComponent = getIcon(facility.icon || 'sparkles');
                   return (
                     <motion.tr
                       key={facility.id}
@@ -573,8 +566,6 @@ export default function FacilitiesModule() {
           </div>
         </form>
       </Modal>
-
-      {ToastContainer}
     </AdminLayout>
   );
 }

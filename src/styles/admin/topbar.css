@@ -1,0 +1,123 @@
+/* ============================================================================
+   Dream Avenue Admin — Topbar & Search
+   ============================================================================ */
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
+  padding: var(--admin-spacing-md) var(--admin-spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-spacing-lg);
+}
+
+.admin-search-bar {
+  flex: 1;
+  max-width: 400px;
+  position: relative;
+}
+
+.admin-search-input {
+  width: 100%;
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  padding-left: 40px;
+  background: var(--admin-bg-card);
+  border: 1.5px solid var(--admin-border);
+  border-radius: var(--admin-radius-full);
+  font-size: 0.875rem;
+  color: var(--admin-text-primary);
+  transition: all var(--admin-transition-base);
+}
+
+.admin-search-input:focus {
+  outline: none;
+  border-color: var(--admin-lime-primary);
+  box-shadow: 0 0 0 4px rgba(182, 245, 0, 0.1);
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: var(--admin-spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--admin-text-muted);
+  width: 18px;
+  height: 18px;
+}
+
+.admin-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-md);
+}
+
+.admin-notification-btn {
+  position: relative;
+  padding: var(--admin-spacing-sm);
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  cursor: pointer;
+  transition: all var(--admin-transition-base);
+}
+
+.admin-notification-btn:hover {
+  background: rgba(182, 245, 0, 0.08);
+  border-color: var(--admin-lime-primary);
+  box-shadow: var(--admin-glow-lime-soft);
+}
+
+.admin-notification-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: var(--admin-error);
+  border: 2px solid var(--admin-bg-card);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.admin-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-sm);
+  padding: var(--admin-spacing-xs) var(--admin-spacing-sm);
+  background: var(--admin-bg-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-full);
+  cursor: pointer;
+  transition: all var(--admin-transition-base);
+}
+
+.admin-profile-btn:hover {
+  background: rgba(182, 245, 0, 0.08);
+  border-color: var(--admin-lime-primary);
+  box-shadow: var(--admin-glow-lime-soft);
+}
+
+.admin-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admin-lime-primary), var(--admin-lime-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}

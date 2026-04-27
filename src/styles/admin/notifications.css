@@ -1,0 +1,54 @@
+/* ============================================================================
+   Dream Avenue Admin — Notifications & Alerts
+   ============================================================================ */
+
+.admin-notification-dropdown {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.admin-notification-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-notification-dropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 10px;
+}
+
+.admin-notification-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(182, 245, 0, 0.3);
+  border-radius: 10px;
+}
+
+.notification-item {
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+  transform: translateX(2px);
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 8px rgba(255, 107, 107, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 16px rgba(255, 107, 107, 0.6); transform: scale(1.05); }
+  100% { box-shadow: 0 0 8px rgba(255, 107, 107, 0.4); transform: scale(1); }
+}
+
+@keyframes bell-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(224, 192, 151, 0)); }
+  50% { filter: drop-shadow(0 0 8px rgba(224, 192, 151, 0.6)); }
+}
+
+@media (max-width: 768px) {
+  .notification-dropdown-panel {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    top: 72px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100vh - 90px) !important;
+    border-radius: 12px !important;
+  }
+}

@@ -6,15 +6,16 @@ import { FormInput } from './FormInput';
 import { FormSelect } from './FormSelect';
 import { Button } from './Button';
 import { ImageUploadField } from './ImageUploadField';
-import { useToast } from './Toast';
+import { toast } from 'sonner';
 import { 
   useGalleryItems, 
   useCreateGalleryItem, 
   useUpdateGalleryItem, 
   useDeleteGalleryItem 
 } from '../../src/hooks/useGallery';
-import { Loader2, Image as ImageIcon, Edit2, Trash2, Plus } from 'lucide-react';
+import { Image as ImageIcon, Edit2, Trash2, Plus } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AdminLoadingFallback } from '../LoadingFallback';
 
 const categoryOptions = [
   { value: 'weddings', label: 'Weddings' },
@@ -30,7 +31,6 @@ export default function GalleryModule() {
   const [editingImage, setEditingImage] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [imageUrl, setImageUrl] = useState<string>('');
-  const { showToast, ToastContainer } = useToast();
 
   // React Query hooks
   const { data: galleryImages = [], isLoading } = useGalleryItems();
@@ -48,10 +48,10 @@ export default function GalleryModule() {
     if (confirm(`Are you sure you want to delete "${image.title || 'this image'}"?`)) {
       try {
         await deleteMutation.mutateAsync(image.id);
-        showToast('success', 'Image deleted successfully');
+        toast.success('Image deleted successfully');
       } catch (error) {
         console.error('Delete error:', error);
-        showToast('error', 'Failed to delete image');
+        toast.error('Failed to delete image');
       }
     }
   };
@@ -68,7 +68,7 @@ export default function GalleryModule() {
     };
 
     if (!imageUrl) {
-      showToast('error', 'Please upload an image');
+      toast.error('Please upload an image');
       return;
     }
 
@@ -78,17 +78,17 @@ export default function GalleryModule() {
           id: editingImage.id, 
           data: imageData 
         });
-        showToast('success', 'Image updated successfully');
+        toast.success('Image updated successfully');
       } else {
         await createMutation.mutateAsync(imageData);
-        showToast('success', 'Image added successfully');
+        toast.success('Image added successfully');
       }
       setIsModalOpen(false);
       setEditingImage(null);
       setImageUrl('');
     } catch (error) {
       console.error('Submit error:', error);
-      showToast('error', 'Operation failed');
+      toast.error('Operation failed');
     }
   };
 
@@ -106,14 +106,7 @@ export default function GalleryModule() {
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center" style={{ minHeight: '60vh' }}>
-          <div className="text-center">
-            <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block' }}>
-              <Loader2 className="mx-auto mb-4" size={48} style={{ color: 'var(--dream-neon-green)' }} />
-            </motion.div>
-            <p style={{ color: 'var(--dream-text-secondary)' }}>Loading gallery...</p>
-          </div>
-        </div>
+        <AdminLoadingFallback />
       </AdminLayout>
     );
   }
@@ -123,7 +116,7 @@ export default function GalleryModule() {
       {/* Page Header */}
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Gallery Management</h1>
+          <h1 className="admin-page-title" style={{ fontFamily: 'var(--admin-font-serif)' }}>Gallery Management</h1>
           <p className="admin-page-description">
             Manage your venue's photo gallery across different event categories
           </p>
@@ -210,9 +203,9 @@ export default function GalleryModule() {
                 <span className="gallery-item-category">
                   {image.category}
                 </span>
-                {image.display_order && (
+                {(image as any).display_order && (
                   <span className="text-xs" style={{ color: 'var(--dream-text-muted)' }}>
-                    Order: {image.display_order}
+                    Order: {(image as any).display_order}
                   </span>
                 )}
               </div>
@@ -271,7 +264,7 @@ export default function GalleryModule() {
           <ImageUploadField
             label="Upload Image"
             value={imageUrl}
-            onChange={setImageUrl}
+            onChange={(url) => setImageUrl(url || '')}
           />
 
           <div className="flex gap-3 justify-end pt-6 border-t" style={{ borderColor: 'rgba(0, 255, 65, 0.2)' }}>
@@ -292,8 +285,6 @@ export default function GalleryModule() {
           </div>
         </form>
       </Modal>
-
-      {ToastContainer}
     </AdminLayout>
   );
 }

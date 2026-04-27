@@ -8,7 +8,7 @@ import { FormSelect } from './FormSelect';
 import { Button } from './Button';
 import { ImageUploadField } from './ImageUploadField';
 import { PackageReorderModal } from './PackageReorderModal';
-import { useToast } from './Toast';
+import { toast } from 'sonner';
 import { 
   useAllPackages, 
   useCreatePackage, 
@@ -17,6 +17,7 @@ import {
 } from '../../src/hooks/usePackages';
 import { Loader2, Package, Edit2, Trash2, Plus, IndianRupee, CheckCircle2, ArrowUpDown } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AdminLoadingFallback } from '../LoadingFallback';
 
 export default function PackagesModule() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +25,6 @@ export default function PackagesModule() {
   const [editingPackage, setEditingPackage] = useState<any>(null);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [features, setFeatures] = useState<string[]>([]);
-  const { showToast, ToastContainer } = useToast();
 
   // React Query hooks
   const { data: packages = [], isLoading } = useAllPackages();
@@ -43,10 +43,10 @@ export default function PackagesModule() {
     if (confirm(`Are you sure you want to delete "${pkg.name}"?`)) {
       try {
         await deleteMutation.mutateAsync(pkg.id);
-        showToast('success', 'Package deleted successfully');
+        toast.success('Package deleted successfully');
       } catch (error) {
         console.error('Delete error:', error);
-        showToast('error', 'Failed to delete package');
+        toast.error('Failed to delete package');
       }
     }
   };
@@ -71,10 +71,10 @@ export default function PackagesModule() {
           id: editingPackage.id, 
           data: packageData 
         });
-        showToast('success', 'Package updated successfully');
+        toast.success('Package updated successfully');
       } else {
         await createMutation.mutateAsync(packageData);
-        showToast('success', 'Package created successfully');
+        toast.success('Package created successfully');
       }
       setIsModalOpen(false);
       setEditingPackage(null);
@@ -82,7 +82,7 @@ export default function PackagesModule() {
       setFeatures([]);
     } catch (error) {
       console.error('Submit error:', error);
-      showToast('error', 'Operation failed');
+      toast.error('Operation failed');
     }
   };
 
@@ -104,20 +104,13 @@ export default function PackagesModule() {
   };
 
   const removeFeature = (index: number) => {
-    setFeatures(features.filter((_, i) => i !== index));
+    setFeatures(featurelist => featurelist.filter((_, i) => i !== index));
   };
 
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center" style={{ minHeight: '60vh' }}>
-          <div className="text-center">
-            <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block' }}>
-              <Loader2 className="mx-auto mb-4" size={48} style={{ color: 'var(--dream-neon-green)' }} />
-            </motion.div>
-            <p style={{ color: 'var(--dream-text-secondary)' }}>Loading packages...</p>
-          </div>
-        </div>
+        <AdminLoadingFallback />
       </AdminLayout>
     );
   }
@@ -127,7 +120,7 @@ export default function PackagesModule() {
       {/* Page Header */}
       <div className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Package Management</h1>
+          <h1 className="admin-page-title" style={{ fontFamily: 'var(--admin-font-serif)' }}>Package Management</h1>
           <p className="admin-page-description">
             Manage event packages, pricing, and features for your venue
           </p>
@@ -321,7 +314,7 @@ export default function PackagesModule() {
           <ImageUploadField
             label="Package Image (Optional)"
             value={imageUrl}
-            onChange={setImageUrl}
+            onChange={(url) => setImageUrl(url || '')}
           />
 
           {/* Features Manager */}
@@ -381,14 +374,25 @@ export default function PackagesModule() {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary">
-              {editingPackage ? 'Update Package' : 'Create Package'}
+            <Button 
+              type="submit" 
+              variant="primary"
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {(createMutation.isPending || updateMutation.isPending) ? (
+                <>
+                  <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block' }}>
+                    <Loader2 size={16} className="mr-2" />
+                  </motion.div>
+                  Saving...
+                </>
+              ) : (
+                editingPackage ? 'Update Package' : 'Create Package'
+              )}
             </Button>
           </div>
         </form>
       </Modal>
-
-      {ToastContainer}
     </AdminLayout>
   );
 }

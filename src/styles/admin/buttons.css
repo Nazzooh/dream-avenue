@@ -1,0 +1,97 @@
+/* ============================================================================
+   Dream Avenue Admin — Buttons & Actions
+   ============================================================================ */
+
+.admin-btn-primary {
+  background: linear-gradient(135deg, var(--admin-lime-primary), var(--admin-lime-secondary));
+  color: var(--admin-text-primary);
+  border: none;
+  border-radius: var(--admin-radius-md);
+  padding: 10px 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--admin-transition-base);
+  box-shadow: var(--admin-shadow-md);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+}
+
+.admin-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--admin-shadow-lg), var(--admin-glow-lime);
+}
+
+.admin-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.admin-btn-secondary {
+  background: var(--admin-bg-card);
+  color: var(--admin-text-primary);
+  border: 1.5px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  padding: 10px 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--admin-transition-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+}
+
+.admin-btn-secondary:hover {
+  background: rgba(182, 245, 0, 0.08);
+  border-color: var(--admin-lime-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-md), var(--admin-glow-lime-soft);
+}
+
+.admin-btn-danger {
+  background: transparent;
+  color: var(--admin-error);
+  border: 2px solid var(--admin-error);
+  border-radius: var(--admin-radius-md);
+  padding: 8px 16px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--admin-transition-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+}
+
+.admin-btn-danger:hover {
+  background: var(--admin-error);
+  color: #FFFFFF;
+  box-shadow: var(--admin-glow-error);
+  transform: translateY(-2px);
+}
+
+.admin-btn-success {
+  background: linear-gradient(135deg, var(--admin-success), #A8E063);
+  color: var(--admin-text-primary);
+  border: none;
+  border-radius: var(--admin-radius-md);
+  padding: 10px 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--admin-transition-base);
+  box-shadow: var(--admin-shadow-md);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+}
+
+.admin-btn-success:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--admin-shadow-lg), var(--admin-glow-success);
+}
