@@ -1,7 +1,7 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Linkedin, Cookie } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { revokeConsent } from './CookieConsent';
-import logoImage from 'figma:asset/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
+import logoImage from '../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 import { CONTACT_INFO } from '../src/constants/contact';
 
 export function Footer() {
@@ -94,10 +94,11 @@ export function Footer() {
               flexWrap: 'wrap',
             }}>
               {[
-                { icon: Facebook, url: 'https://facebook.com' },
-                { icon: Instagram, url: 'https://instagram.com' },
-                { icon: Twitter, url: 'https://twitter.com' },
-                { icon: Linkedin, url: 'https://linkedin.com' }
+                // TODO: Replace with actual Dream Avenue social profile URLs
+                { icon: Facebook, url: '#' },
+                { icon: Instagram, url: '#' },
+                { icon: Twitter, url: '#' },
+                { icon: Linkedin, url: '#' }
               ].map(({ icon: Icon, url }, index) => (
                 <a
                   key={index}

@@ -3,9 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Sparkles } from 'lucide-react';
 import { usePackages } from '../src/hooks/usePackages';
 import { CardSkeleton } from './SkeletonLoader';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Package } from '../src/schemas/packages';
 import { getOptimizedSupabaseUrl } from '../src/utils/imageUtils';
+
+const FALLBACK_PACKAGES: Package[] = [
+  {
+    id: 'fallback-1',
+    name: 'Luxury Wedding Package',
+    description: 'A complete package for your perfect day, including premium catering, exquisite floral arrangements, and exclusive use of the grand hall.',
+    features: ['Premium 5-Course Catering', 'Custom Floral Decor', 'Grand Hall Access', 'Bridal Suite', 'Dedicated Event Planner'],
+    price: 0,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-2',
+    name: 'Corporate Excellence',
+    description: 'Professional setup for conferences and corporate galas with state-of-the-art AV equipment and executive dining.',
+    features: ['Advanced AV Setup', 'Executive Dining', 'High-Speed Wi-Fi', 'Breakout Rooms', 'Valet Parking'],
+    price: 0,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'fallback-3',
+    name: 'Grand Celebration',
+    description: 'Ideal for anniversaries and milestone birthdays with flexible spaces, entertainment options, and custom menus.',
+    features: ['Flexible Space Layout', 'Custom Menu Design', 'Entertainment Stage', 'Dance Floor', 'Photography Points'],
+    price: 0,
+    created_at: new Date().toISOString()
+  }
+];
 
 export function Packages() {
   const navigate = useNavigate();
@@ -141,7 +168,7 @@ export function Packages() {
             }
           `}</style>
 
-          {packages.map((pkg: Package, index: number) => (
+          {(packages.length > 0 ? packages : FALLBACK_PACKAGES).map((pkg: Package, index: number) => (
             <motion.article
               key={pkg.id}
               initial={{ opacity: 0, x: 30 }}
@@ -312,11 +339,7 @@ export function Packages() {
           ))}
         </div>
 
-        {packages.length === 0 && !isLoading && (
-          <div className="text-center" style={{ padding: 'var(--space-12)' }}>
-            <p className="text-muted">No packages available at the moment.</p>
-          </div>
-        )}
+        {/* Fallback packages already shown if empty, so no need for 'No packages' text */}
       </div>
     </section>
   );

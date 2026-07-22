@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import { MapPin, Phone, Mail, Clock, Navigation } from "lucide-react";
 import { CONTACT_INFO } from "../src/constants/contact";
 
 export function Location() {
+  const [mapLoaded, setMapLoaded] = useState(false);
+
   return (
     <section
       id="location"
@@ -44,15 +47,57 @@ export function Location() {
               overflow: "hidden",
               boxShadow: "var(--shadow-lg)",
               height: "500px",
+              position: "relative",
+              background: "var(--gray-200)",
             }}
           >
+            {/* Fallback Background Layer */}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "linear-gradient(135deg, rgba(200, 212, 107, 0.2), rgba(200, 212, 107, 0.05))",
+              zIndex: 1,
+            }}>
+              <MapPin size={48} style={{ color: "var(--lime-primary)", opacity: 0.7, marginBottom: "1rem" }} />
+              <p style={{ color: "var(--text-muted)", fontWeight: 500 }}>Dream Avenue Location</p>
+              <a 
+                href="https://www.google.com/maps/dir/?api=1&destination=Dream+Avenue,Feroke+Road,Karuvanthiruthy,Kozhikode,Kerala+673631"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  marginTop: "1rem",
+                  padding: "0.5rem 1rem",
+                  background: "var(--white)",
+                  color: "var(--dark-text)",
+                  borderRadius: "var(--radius-md)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  boxShadow: "var(--shadow-sm)"
+                }}
+              >
+                Open in Google Maps
+              </a>
+            </div>
+
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d8016292.720918528!2d66.59544827499997!3d11.172420200000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba651e030f76fb1%3A0xa1febc6ea2f8753d!2sDream%20Avenue!5e0!3m2!1sen!2sin!4v1773984720044!5m2!1sen!2sin"
               width="100%"
               height="100%"
-              style={{ border: 0 }}
+              style={{ 
+                border: 0, 
+                position: "relative", 
+                zIndex: 2,
+                opacity: mapLoaded ? 1 : 0,
+                transition: "opacity 0.5s ease"
+              }}
               allowFullScreen
               loading="lazy"
+              onLoad={() => setMapLoaded(true)}
               referrerPolicy="no-referrer-when-downgrade"
               title="Dream Avenue Convention Center Location"
             />

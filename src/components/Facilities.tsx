@@ -14,6 +14,15 @@ import { useFacilities } from '../src/hooks/useFacilities';
 import { FacilitySkeleton } from './SkeletonLoader';
 import { getOptimizedSupabaseUrl } from '../src/utils/imageUtils';
 
+const FALLBACK_FACILITIES = [
+  { id: 'f-1', title: 'Grand Banquet Hall', description: 'Spacious hall with magnificent chandeliers and versatile seating.', icon: 'banquet' },
+  { id: 'f-2', title: 'Lush Gardens', description: 'Beautifully landscaped gardens perfect for outdoor ceremonies and photography.', icon: 'garden' },
+  { id: 'f-3', title: 'Premium Catering', description: 'World-class culinary team offering customizable menus for all tastes.', icon: 'catering' },
+  { id: 'f-4', title: 'Ample Parking', description: 'Secure parking space with valet services for your guests.', icon: 'parking' },
+  { id: 'f-5', title: 'A/C Dining Areas', description: 'Fully air-conditioned dining halls ensuring comfort during events.', icon: 'ac' },
+  { id: 'f-6', title: 'Acoustic Sound System', description: 'State-of-the-art audio setup for music and announcements.', icon: 'music' }
+];
+
 const iconMap: Record<string, any> = {
   'banquet': Building2,
   'garden': Trees,
@@ -79,15 +88,9 @@ export function Facilities() {
                 </pre>
               </details>
             </div>
-          ) : !facilities || facilities.length === 0 ? (
-            <div className="text-center py-12">
-              <p style={{ color: 'var(--text-muted)' }}>
-                No facilities available at this time.
-              </p>
-            </div>
           ) : (
             <div className="grid grid-cols-3">
-              {facilities.map((facility, index) => {
+              {(facilities && facilities.length > 0 ? facilities : FALLBACK_FACILITIES).map((facility: any, index: number) => {
                 const Icon = getIcon(facility.icon || undefined);
                 const imageUrl = facility.image_url || facility.image;
                 return (

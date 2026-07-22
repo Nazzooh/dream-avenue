@@ -456,6 +456,18 @@ export function AvailabilityCalendar() {
         </AnimatePresence>
 
         <Legend />
+
+        <div style={{
+          marginTop: '1.5rem',
+          padding: '1rem',
+          background: 'rgba(200, 212, 107, 0.1)',
+          borderRadius: 'var(--radius-lg)',
+          textAlign: 'center',
+          fontSize: '0.875rem',
+          color: 'var(--text-muted)'
+        }}>
+          <p style={{ margin: 0 }}>Calendar shows live availability. Contact us to confirm dates and details.</p>
+        </div>
       </div>
     </div>
   );

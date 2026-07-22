@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import logoImage from 'figma:asset/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
+import logoImage from '../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 
 export function Navbar() {
   const navigate = useNavigate();

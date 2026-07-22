@@ -1,7 +1,21 @@
-// /src/api/calendar.ts
 import { supabase } from "../../utils/supabase/client";
 import { log } from "../lib/logger";
 
+export interface CalendarDaySlots {
+  full_day: boolean;
+  morning: boolean;
+  evening: boolean;
+  night: boolean;
+  short_duration: boolean;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  type: string;
+}
 export async function fetchCalendarMonth(year: number, month: number) {
   console.log(`[Calendar API] Fetching calendar for ${year}-${month}`);
   log.info("[Calendar API] Fetching month:", year, month);

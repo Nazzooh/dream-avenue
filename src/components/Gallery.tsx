@@ -156,9 +156,36 @@ export function Gallery() {
             ))}
           </div>
         ) : (
-          <div className="text-center" style={{ padding: 'var(--space-12)' }}>
-            <ImageIcon size={48} style={{ color: 'var(--gray-400)', margin: '0 auto var(--space-4)' }} />
-            <p className="text-muted">No gallery images available at the moment.</p>
+          <div 
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: 'var(--space-6)',
+            }}
+          >
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.6, delay: i * 0.05 }}
+                style={{
+                  height: '300px',
+                  borderRadius: 'var(--radius-xl)',
+                  overflow: 'hidden',
+                  background: `linear-gradient(135deg, rgba(200, 212, 107, 0.${i + 2}), rgba(100, 100, 100, 0.1))`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  border: '1px dashed rgba(200, 212, 107, 0.3)',
+                }}
+              >
+                <ImageIcon size={48} style={{ color: 'rgba(200, 212, 107, 0.5)', marginBottom: '1rem' }} />
+                <h4 style={{ color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>Coming Soon</h4>
+              </motion.div>
+            ))}
           </div>
         )}
       </div>

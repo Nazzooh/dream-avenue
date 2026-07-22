@@ -9,6 +9,7 @@ import heroPoster from '../assets/hero-poster.png';
 export function Hero() {
   const navigate = useNavigate();
   const [showFloatingCTA, setShowFloatingCTA] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollY, scrollYProgress } = useScroll();
 
@@ -73,7 +74,10 @@ export function Hero() {
           position: 'absolute',
           width: '100%',
           height: '100%',
-          background: 'rgba(0,0,0,0.4)',
+          background: 'linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.3))',
+          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.3)), url(${heroPoster})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           zIndex: 1,
           pointerEvents: 'auto', // Capture all clicks/interactions
         }} />
@@ -92,12 +96,15 @@ export function Hero() {
             src="https://www.youtube-nocookie.com/embed/qXgr8igDL84?si=qLxbZzpO5cGkX9fY&autoplay=1&mute=1&controls=0&loop=1&playlist=qXgr8igDL84&playsinline=1&modestbranding=1&rel=0&showinfo=0&disablekb=1&enablejsapi=1"
             title="Dream Avenue Background"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            onLoad={() => setVideoLoaded(true)}
             style={{
               width: '100%',
               height: '100%',
               border: 'none',
-              opacity: videoOpacity as any,
+              opacity: videoLoaded ? (videoOpacity as any) : 0,
               transition: 'opacity 1s ease-in-out',
+              position: 'relative',
+              zIndex: 2,
             }}
           />
         </div>
