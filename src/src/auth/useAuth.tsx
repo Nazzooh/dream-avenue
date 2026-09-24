@@ -49,11 +49,8 @@ export function useAuth() {
     }
   }
 
-  // derived isAdmin (accept both root role and metadata role)
-  const isAdmin =
-    (session?.user?.role === "admin") ||
-    (session?.user?.user_metadata?.role === "admin") ||
-    (profile?.role === "admin");
+  // Only database profile role is the trusted source of truth for authorization
+  const isAdmin = profile?.role === "admin";
 
   async function signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({

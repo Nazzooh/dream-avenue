@@ -8,10 +8,8 @@ import { useAdminGuard } from "../hooks/useAdminGuard";
  */
 export function extractRoleFromSession(session: any) {
   if (!session) return null;
-  // prefer root-level role if present
-  const rootRole = session.user?.role ?? session?.user?.role ?? null;
-  const metaRole = session.user?.user_metadata?.role ?? session?.user?.user_metadata?.role ?? null;
-  return { rootRole, metaRole, finalIsAdmin: (rootRole === 'admin' || metaRole === 'admin') };
+  const rootRole = session.user?.role ?? null;
+  return { rootRole, finalIsAdmin: rootRole === 'admin' };
 }
 
 interface ProtectedRouteProps {

@@ -11,7 +11,7 @@ export interface NotificationItem {
   message: string;
   type: 'booking' | 'system' | 'admin' | 'info';
   priority: 'low' | 'medium' | 'high';
-  read: boolean;
+  is_read: boolean;
   created_at: string;
   user_id: string | null;
   metadata?: any;
@@ -77,7 +77,7 @@ export function useNotifications(): UseNotificationsReturn {
       }
 
       setNotifications(data || []);
-      setUnreadCount(data?.filter((n) => !n.read).length || 0);
+      setUnreadCount(data?.filter((n) => !n.is_read).length || 0);
       setIsLoading(false);
     } catch (error) {
       console.error('Error in fetchNotifications:', error);
@@ -90,14 +90,14 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
+        .update({ is_read: true })
         .eq('id', notificationId);
 
       if (error) throw error;
 
       // Update local state
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+        prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
@@ -113,13 +113,13 @@ export function useNotifications(): UseNotificationsReturn {
 
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true })
-        .eq('read', false);
+        .update({ is_read: true })
+        .eq('is_read', false);
 
       if (error) throw error;
 
       // Update local state
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
       toast.success('All notifications marked as read');
     } catch (error) {
@@ -141,7 +141,7 @@ export function useNotifications(): UseNotificationsReturn {
       // Update local state
       setNotifications((prev) => {
         const deleted = prev.find((n) => n.id === notificationId);
-        if (deleted && !deleted.read) {
+        if (deleted && !deleted.is_read) {
           setUnreadCount((count) => Math.max(0, count - 1));
         }
         return prev.filter((n) => n.id !== notificationId);
@@ -205,7 +205,7 @@ export function useNotifications(): UseNotificationsReturn {
             // Add to notifications list
             setNotifications((prev) => [newNotification, ...prev]);
             
-            if (!newNotification.read) {
+            if (!newNotification.is_read) {
               setUnreadCount((count) => count + 1);
             }
 
@@ -252,7 +252,7 @@ export function useNotifications(): UseNotificationsReturn {
 
             // Update unread count
             const oldNotification = notifications.find((n) => n.id === updated.id);
-            if (oldNotification && !oldNotification.read && updated.read) {
+            if (oldNotification && !oldNotification.is_read && updated.is_read) {
               setUnreadCount((count) => Math.max(0, count - 1));
             }
           }
@@ -271,7 +271,7 @@ export function useNotifications(): UseNotificationsReturn {
             
             setNotifications((prev) => {
               const deleted = prev.find((n) => n.id === deletedId);
-              if (deleted && !deleted.read) {
+              if (deleted && !deleted.is_read) {
                 setUnreadCount((count) => Math.max(0, count - 1));
               }
               return prev.filter((n) => n.id !== deletedId);

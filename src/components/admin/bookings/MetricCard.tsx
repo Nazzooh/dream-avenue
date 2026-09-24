@@ -1,7 +1,9 @@
+// src/components/admin/bookings/MetricCard.tsx
+import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export function MetricCard({ title, value, change, icon, trend = 'up', delay = 0, color = '#B6F500' }: {
+interface MetricCardProps {
   title: string;
   value: string | number;
   change?: string;
@@ -9,63 +11,72 @@ export function MetricCard({ title, value, change, icon, trend = 'up', delay = 0
   trend?: 'up' | 'down';
   delay?: number;
   color?: string;
-}) {
+  subtitle?: string;
+}
+
+export function MetricCard({ 
+  title, 
+  value, 
+  change, 
+  icon, 
+  trend = 'up', 
+  delay = 0, 
+  color = '#B6F500',
+  subtitle
+}: MetricCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay, ease: "easeOut" }}
-      className="admin-metric-card"
-      style={{
-        padding: 'clamp(1rem,2.5vw,1.5rem)',
-        borderRadius: 'clamp(0.75rem,2vw,1rem)',
-        borderLeft: `4px solid ${color}`
-      }}
+      transition={{ duration: 0.3, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -3, transition: { duration: 0.2 } }}
+      className="relative overflow-hidden rounded-2xl bg-white/90 backdrop-blur-md p-5 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_30px_-6px_rgba(0,0,0,0.08)] transition-all group"
     >
-      <div className="admin-metric-header">
-        <span 
-          className="admin-metric-label"
-          style={{
-            fontSize: 'clamp(0.75rem,1.5vw,0.875rem)'
-          }}
-        >
+      {/* Top accent glow line */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-1 transition-all duration-300"
+        style={{ backgroundColor: color }}
+      />
+
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
           {title}
         </span>
         <div 
-          className="admin-metric-icon"
-          style={{
-            width: 'clamp(2.5rem,6vw,3rem)',
-            height: 'clamp(2.5rem,6vw,3rem)',
-            fontSize: 'clamp(1rem,2vw,1.25rem)',
-            background: `${color}15`,
-            color: color
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:scale-110"
+          style={{ 
+            backgroundColor: `${color}18`,
+            color: color === '#B6F500' ? '#4A6B00' : color
           }}
         >
           {icon}
         </div>
       </div>
-      
-      <div 
-        className="admin-metric-value"
-        style={{
-          fontSize: 'clamp(1.75rem,4vw,2.5rem)'
-        }}
-      >
-        {value}
+
+      <div className="flex items-baseline gap-2 mb-1">
+        <span className="text-3xl font-bold tracking-tight text-slate-900 font-sans">
+          {typeof value === 'number' ? value.toLocaleString() : value}
+        </span>
+        {change && (
+          <span 
+            className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${
+              trend === 'up' 
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' 
+                : 'bg-amber-50 text-amber-700 border border-amber-200/60'
+            }`}
+          >
+            {trend === 'up' ? (
+              <TrendingUp className="w-3 h-3 mr-1" />
+            ) : (
+              <TrendingDown className="w-3 h-3 mr-1" />
+            )}
+            {change}
+          </span>
+        )}
       </div>
-      
-      {change && (
-        <div 
-          className={`admin-metric-change ${trend === 'up' ? 'positive' : 'negative'}`}
-          style={{
-            fontSize: 'clamp(0.75rem,1.25vw,0.875rem)'
-          }}
-        >
-          <TrendingUp className="w-[1em] h-[1em]" style={{ 
-            transform: trend === 'down' ? 'rotate(180deg)' : 'rotate(0deg)' 
-          }} />
-          <span>{change}</span>
-        </div>
+
+      {subtitle && (
+        <p className="text-xs text-slate-400 mt-1 font-medium">{subtitle}</p>
       )}
     </motion.div>
   );

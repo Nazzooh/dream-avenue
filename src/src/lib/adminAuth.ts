@@ -117,12 +117,6 @@ export async function getCurrentProfile(): Promise<AdminProfile | null> {
  * Helper to check admin role before calling admin RPCs
  */
 export async function getAdminIdOrThrow(): Promise<string> {
-  const { data } = await supabase.auth.getSession();
-  const session = data.session;
-  if (!session) throw new Error('Not signed in');
-  const rootRole = (session.user as any).role;
-  const metaRole = session.user?.user_metadata?.role;
-  const isAdmin = rootRole === 'admin' || metaRole === 'admin';
-  if (!isAdmin) throw new Error('Admin role required');
-  return session.user.id;
+  const profile = await assertAdmin();
+  return profile.id;
 }

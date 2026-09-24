@@ -106,7 +106,7 @@ export function NotificationManagementPanel() {
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      const unread = allNotifications?.filter(n => !n.read).length || 0;
+      const unread = allNotifications?.filter(n => !n.is_read).length || 0;
       const today = allNotifications?.filter(n => new Date(n.created_at) >= todayStart).length || 0;
       const thisWeek = allNotifications?.filter(n => new Date(n.created_at) >= weekStart).length || 0;
 
@@ -170,7 +170,7 @@ export function NotificationManagementPanel() {
     const csvContent = [
       ['ID', 'Title', 'Message', 'Type', 'Priority', 'Read', 'Created At', 'User ID'].join(','),
       ...notificationLogs.map(n => 
-        [n.id, `"${n.title}"`, `"${n.message}"`, n.type, n.priority, n.read, n.created_at, n.user_id].join(',')
+        [n.id, `"${n.title}"`, `"${n.message}"`, n.type, n.priority, n.is_read, n.created_at, n.user_id].join(',')
       )
     ].join('\n');
 
@@ -187,8 +187,8 @@ export function NotificationManagementPanel() {
 
   const filteredLogs = notificationLogs
     .filter(n => {
-      if (filterRead === 'read') return n.read;
-      if (filterRead === 'unread') return !n.read;
+      if (filterRead === 'read') return n.is_read;
+      if (filterRead === 'unread') return !n.is_read;
       return true;
     })
     .filter(n => 
@@ -487,13 +487,13 @@ export function NotificationManagementPanel() {
                       style={{
                         padding: '16px 20px',
                         borderBottom: index !== filteredLogs.length - 1 ? '1px solid rgba(182, 245, 0, 0.1)' : 'none',
-                        background: log.read ? 'transparent' : 'rgba(182, 245, 0, 0.03)',
+                        background: log.is_read ? 'transparent' : 'rgba(182, 245, 0, 0.03)',
                       }}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            {log.read ? (
+                            {log.is_read ? (
                               <CheckCircle2 size={14} style={{ color: '#10B981' }} />
                             ) : (
                               <span
@@ -506,7 +506,7 @@ export function NotificationManagementPanel() {
                                 }}
                               />
                             )}
-                            <p style={{ fontSize: '0.875rem', color: '#2A2A2A', fontWeight: log.read ? '400' : '600' }}>
+                            <p style={{ fontSize: '0.875rem', color: '#2A2A2A', fontWeight: log.is_read ? '400' : '600' }}>
                               {log.message}
                             </p>
                           </div>

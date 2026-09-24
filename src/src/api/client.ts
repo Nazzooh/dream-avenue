@@ -59,16 +59,18 @@ api.interceptors.request.use(
     // Build full URL for logging
     const fullUrl = `${config.baseURL || ''}${config.url || ''}`;
     
-    // Add timestamp for debugging
-    console.log(`[API] ${config.method?.toUpperCase()} ${fullUrl}`, {
-      params: config.params,
-      data: config.data,
-      isPublic: isPublicEndpoint(requestUrl),
-    });
+    if (import.meta.env.DEV) {
+      console.log(`[API] ${config.method?.toUpperCase()} ${fullUrl}`, {
+        params: config.params,
+        isPublic: isPublicEndpoint(requestUrl),
+      });
+    }
     return config;
   },
   (error) => {
-    console.error("[API] Request Error:", error);
+    if (import.meta.env.DEV) {
+      console.error("[API] Request Error:", error);
+    }
     return Promise.reject(error);
   }
 );
@@ -76,14 +78,12 @@ api.interceptors.request.use(
 // Response interceptor - handle errors globally
 api.interceptors.response.use(
   (response) => {
-    // Build full URL for logging
-    const fullUrl = `${response.config.baseURL || ''}${response.config.url || ''}`;
-    
-    // Log successful responses
-    console.log(`[API] ✅ ${response.config.method?.toUpperCase()} ${fullUrl}`, {
-      status: response.status,
-      data: response.data,
-    });
+    if (import.meta.env.DEV) {
+      const fullUrl = `${response.config.baseURL || ''}${response.config.url || ''}`;
+      console.log(`[API] ✅ ${response.config.method?.toUpperCase()} ${fullUrl}`, {
+        status: response.status,
+      });
+    }
     return response;
   },
   (error) => {

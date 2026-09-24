@@ -84,11 +84,10 @@ export async function deleteAdminRequest(id: string): Promise<void> {
   }
 }
 
-/**
- * Approve admin request and grant admin access
- * This will update the user's profile role to 'admin'
- */
 export async function approveAdminRequest(id: string, email: string): Promise<void> {
+  const { assertAdmin } = await import('../lib/adminAuth');
+  await assertAdmin('approve admin request');
+
   // First, update the request status
   await updateAdminRequestStatus({ id, status: 'Approved' });
 

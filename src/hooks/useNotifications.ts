@@ -135,7 +135,7 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true, is_read: true })
+        .update({ is_read: true })
         .eq('id', id);
 
       if (error) {
@@ -161,7 +161,7 @@ export function useNotifications(): UseNotificationsReturn {
 
       const { error } = await supabase
         .from('notifications')
-        .update({ read: true, is_read: true })
+        .update({ is_read: true })
         .in('id', unreadIds);
 
       if (error) {

@@ -8,22 +8,24 @@ export function useSecurityAudit() {
       
       if (!user) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-        
-      if (profile?.role !== 'admin') {
-        console.warn(`🔒 Unauthorized attempt blocked for action: ${action}`);
-        return;
+      let userRole = 'anonymous';
+      let userId: string | null = null;
+
+      if (user) {
+        userId = user.id;
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        userRole = profile?.role || 'user';
       }
 
       await supabase.from('security_logs').insert([{
-        admin_id: user.id,
+        admin_id: userId,
         action,
-        details,
-        user_agent: navigator.userAgent
+        details: { ...details, user_role: userRole },
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
       }]);
     } catch (e) {
       console.error('🔒 Failed to log security event:', e);
