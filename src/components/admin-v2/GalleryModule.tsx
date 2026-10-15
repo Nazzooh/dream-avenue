@@ -1,6 +1,6 @@
-﻿import React, { useState, useMemo } from 'react';
+﻿// src/components/admin-v2/GalleryModule.tsx — Redesigned Warm Editorial Luxury Gallery
+import React, { useState, useMemo } from 'react';
 import AdminLayout from './AdminLayout';
-import { AdminGrid } from './AdminGrid';
 import { Modal } from './Modal';
 import { FormInput } from './FormInput';
 import { FormSelect } from './FormSelect';
@@ -27,8 +27,10 @@ import {
   ShieldCheck, 
   ShieldAlert, 
   Eye, 
-  Sparkles,
-  Layers
+  Calendar,
+  X,
+  SlidersHorizontal,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AdminLoadingFallback } from '../LoadingFallback';
@@ -44,14 +46,15 @@ const categoryOptions = [
 ];
 
 export default function GalleryModule() {
-  // Access control
+  // Authorization
   const { profile, loading: authLoading } = useAdminGuard();
   const userRole = profile?.role;
   const canManage = canManageGallery(userRole);
 
-  // Filter & Search states
+  // Filters & sorting
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'featured'>('newest');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,20 +98,6 @@ export default function GalleryModule() {
   };
 
   const handleEdit = (image: GalleryItem) => {
-    if (!canManage) {
-      // Coordinator fallback: view-only mode
-      setEditingImage(image);
-      setTitle(image.title || '');
-      setCategory(image.category || 'weddings');
-      setEventType(image.event_type || '');
-      setDescription(image.description || '');
-      setImageUrl(image.image_url || '');
-      setIsFeatured(Boolean(image.is_featured));
-      setIsReadOnlyView(true);
-      setIsModalOpen(true);
-      return;
-    }
-
     setEditingImage(image);
     setTitle(image.title || '');
     setCategory(image.category || 'weddings');
@@ -116,7 +105,7 @@ export default function GalleryModule() {
     setDescription(image.description || '');
     setImageUrl(image.image_url || '');
     setIsFeatured(Boolean(image.is_featured));
-    setIsReadOnlyView(false);
+    setIsReadOnlyView(!canManage);
     setIsModalOpen(true);
   };
 
@@ -142,7 +131,7 @@ export default function GalleryModule() {
     e.preventDefault();
 
     if (!canManage) {
-      toast.error('Permission denied: Only Owner, Developer, or Manager accounts can save gallery changes.');
+      toast.error('Permission denied: Only Owner, Developer, or Manager accounts can save changes.');
       return;
     }
 
@@ -181,9 +170,9 @@ export default function GalleryModule() {
     }
   };
 
-  // Filter and search images
+  // Filter and sort images
   const filteredImages = useMemo(() => {
-    return galleryImages.filter((img) => {
+    let result = galleryImages.filter((img) => {
       const matchesCategory = selectedCategory === 'all' || img.category === selectedCategory;
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -195,7 +184,29 @@ export default function GalleryModule() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [galleryImages, selectedCategory, searchQuery]);
+
+    // Sorting
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'featured') {
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+      }
+      if (sortBy === 'title') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      if (sortBy === 'oldest') {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateA - dateB;
+      }
+      // default: newest
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return result;
+  }, [galleryImages, selectedCategory, searchQuery, sortBy]);
 
   if (isLoading || authLoading) {
     return (
@@ -209,287 +220,285 @@ export default function GalleryModule() {
 
   return (
     <AdminLayout>
-      {/* Page Header */}
-      <div className="admin-page-header">
+      {/* 1. Page Header */}
+      <div className="gallery-lux-header">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="admin-page-title" style={{ fontFamily: 'var(--admin-font-serif)' }}>
-              Gallery Management
-            </h1>
+          <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+            <h1 className="gallery-lux-title">Photo Gallery</h1>
             {canManage ? (
               <span
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
                 style={{
-                  background: 'rgba(0, 255, 65, 0.12)',
-                  color: 'var(--dream-neon-green, #00FF41)',
-                  border: '1px solid rgba(0, 255, 65, 0.3)',
+                  background: 'var(--lux-olive-light)',
+                  color: 'var(--lux-olive)',
+                  border: '1px solid var(--lux-olive-border)',
                 }}
               >
                 <ShieldCheck size={13} />
-                {roleLabel(userRole)} • Manager Access
+                <span>{roleLabel(userRole)} • Manager Access</span>
               </span>
             ) : (
               <span
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
                 style={{
-                  background: 'rgba(255, 179, 0, 0.12)',
-                  color: '#FFB300',
-                  border: '1px solid rgba(255, 179, 0, 0.3)',
+                  background: 'var(--lux-gold-light)',
+                  color: 'var(--lux-gold)',
+                  border: '1px solid var(--lux-gold-border)',
                 }}
               >
                 <ShieldAlert size={13} />
-                {roleLabel(userRole)} • Read-Only
+                <span>{roleLabel(userRole)} • Read-Only</span>
               </span>
             )}
           </div>
-          <p className="admin-page-description">
-            Admins (Owner, Developer, and Manager) can add, edit, or delete venue photos and event details
+          <p className="gallery-lux-desc">
+            Curate, organize, and showcase venue settings across wedding, reception, and corporate event spaces.
           </p>
         </div>
 
         {canManage && (
-          <button onClick={handleAddNew} className="admin-btn admin-btn-primary">
-            <Plus size={20} />
-            Add Image
+          <button onClick={handleAddNew} className="workspace-button workspace-button-primary">
+            <Plus size={18} />
+            <span>Add New Photo</span>
           </button>
         )}
       </div>
 
-      {/* Permission Info Banner for Coordinator / Read-Only accounts */}
+      {/* 2. Permission Banner for Coordinator / Read-Only accounts */}
       {!canManage && (
         <div
-          className="mb-6 p-4 rounded-xl flex items-center justify-between gap-4"
+          className="mb-6 p-4 rounded-2xl flex items-center gap-3.5"
           style={{
-            background: 'rgba(255, 179, 0, 0.08)',
-            border: '1px solid rgba(255, 179, 0, 0.25)',
-            color: '#ffc107',
+            background: 'var(--lux-gold-light)',
+            border: '1px solid var(--lux-gold-border)',
+            color: '#8C652D',
           }}
         >
-          <div className="flex items-center gap-3">
-            <ShieldAlert size={20} className="flex-shrink-0" />
-            <p className="text-sm m-0">
-              <strong>Read-only access:</strong> You are currently signed in as <strong>{roleLabel(userRole)}</strong>.
-              Only <strong>Owner</strong>, <strong>Developer</strong>, and <strong>Manager</strong> accounts have
-              permission to add, edit, or delete gallery images and details.
-            </p>
-          </div>
+          <ShieldAlert size={20} className="flex-shrink-0" />
+          <p className="text-sm m-0 leading-relaxed">
+            <strong>Viewing in read-only mode:</strong> You are currently signed in as <strong>{roleLabel(userRole)}</strong>.
+            Editing or deleting photos and details requires <strong>Owner</strong>, <strong>Developer</strong>, or <strong>Manager</strong> permissions.
+          </p>
         </div>
       )}
 
-      {/* Search and Filters Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between mb-6">
-        {/* Category Tabs */}
-        <div className="flex gap-2 flex-wrap items-center">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
-              selectedCategory === 'all'
-                ? 'bg-gradient-neon text-[var(--dream-dark-bg)] shadow-lg border-glow'
-                : 'bg-[var(--dream-dark-secondary)] text-[var(--dream-text-secondary)] border border-[rgba(0,255,65,0.2)] hover:border-[var(--dream-neon-green)] hover:text-[var(--dream-neon-green)]'
-            }`}
-          >
-            All <span className="opacity-75">({galleryImages.length})</span>
-          </button>
-          {categoryOptions.map((cat) => {
-            const count = galleryImages.filter((img) => img.category === cat.value).length;
-            return (
-              <button
-                key={cat.value}
-                onClick={() => setSelectedCategory(cat.value)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                  selectedCategory === cat.value
-                    ? 'bg-gradient-neon text-[var(--dream-dark-bg)] shadow-lg border-glow'
-                    : 'bg-[var(--dream-dark-secondary)] text-[var(--dream-text-secondary)] border border-[rgba(0,255,65,0.2)] hover:border-[var(--dream-neon-green)] hover:text-[var(--dream-neon-green)]'
-                }`}
-              >
-                {cat.label} <span className="opacity-75">({count})</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* 3. Category Filter Tabs */}
+      <div className="gallery-lux-tabs-bar">
+        <button
+          onClick={() => setSelectedCategory('all')}
+          className={`gallery-lux-tab-btn ${selectedCategory === 'all' ? 'is-active' : ''}`}
+        >
+          <span>All Photos</span>
+          <span className="gallery-lux-tab-count">{galleryImages.length}</span>
+        </button>
+        {categoryOptions.map((cat) => {
+          const count = galleryImages.filter((img) => img.category === cat.value).length;
+          const isActive = selectedCategory === cat.value;
+          return (
+            <button
+              key={cat.value}
+              onClick={() => setSelectedCategory(cat.value)}
+              className={`gallery-lux-tab-btn ${isActive ? 'is-active' : ''}`}
+            >
+              <span>{cat.label}</span>
+              <span className="gallery-lux-tab-count">{count}</span>
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Real-time Search Box */}
-        <div className="relative min-w-[240px]">
+      {/* 4. Search and Toolbar Strip */}
+      <div className="gallery-lux-controls">
+        {/* Search Box */}
+        <div className="gallery-lux-search-box">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: 'var(--dream-text-muted, #888)' }}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
           />
           <input
             type="text"
-            placeholder="Search images or details..."
+            placeholder="Search photos by title, category, setting..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="admin-input pl-9 text-sm"
-            style={{ paddingLeft: '34px', height: '40px' }}
+            className="gallery-lux-search-input"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
+
+        {/* Sort & Stats Controls */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
+            <SlidersHorizontal size={14} />
+            <span>Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-white border border-[#EAE6DF] rounded-lg px-2.5 py-1.5 text-xs font-medium text-stone-800 cursor-pointer focus:outline-none focus:border-stone-400"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="featured">Featured First</option>
+              <option value="title">Title (A-Z)</option>
+            </select>
+          </div>
+
+          <span className="text-xs font-semibold text-stone-400">
+            Showing {filteredImages.length} {filteredImages.length === 1 ? 'photo' : 'photos'}
+          </span>
         </div>
       </div>
 
-      {/* Gallery Grid */}
-      <AdminGrid columns="3">
+      {/* 5. Redesigned Gallery Grid with Structured Aspect Cards */}
+      <div className="gallery-lux-grid">
         {filteredImages.map((image, index) => (
           <motion.div
             key={image.id || index}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.03, duration: 0.3 }}
-            className="gallery-item"
-            style={{ display: 'flex', flexDirection: 'column' }}
+            className="gallery-lux-card"
           >
-            {/* Image Preview & Badges */}
-            <div className="relative h-60 overflow-hidden group bg-black/40">
+            {/* 16:10 Aspect Media Container */}
+            <div className="gallery-lux-card-media">
               <img
                 src={image.image_url}
-                alt={image.title || 'Gallery image'}
-                className="gallery-item-image transition-transform duration-500 group-hover:scale-105"
+                alt={image.title || 'Venue gallery photo'}
+                className="gallery-lux-card-image"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=600&q=80';
+                    'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80';
                 }}
               />
 
-              {/* Badges on image */}
-              <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-                <span className="gallery-item-category text-xs font-semibold px-2.5 py-1 rounded-md shadow-sm">
+              {/* Floating Badges */}
+              <div className="gallery-lux-card-badges">
+                <span className="gallery-badge-category">
                   {image.category || 'General'}
                 </span>
                 {image.event_type && (
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-md backdrop-blur-md"
-                    style={{
-                      background: 'rgba(0, 0, 0, 0.65)',
-                      color: '#ffffff',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                    }}
-                  >
+                  <span className="gallery-badge-event-type">
                     {image.event_type}
                   </span>
                 )}
               </div>
 
-              {/* Featured Star Badge */}
+              {/* Featured Gold Badge */}
               {image.is_featured && (
-                <div
-                  className="absolute top-3 right-3 z-10 flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold shadow-md"
-                  style={{
-                    background: 'rgba(255, 215, 0, 0.9)',
-                    color: '#2a2000',
-                  }}
-                  title="Featured in highlights"
-                >
-                  <Star size={12} fill="#2a2000" />
-                  Featured
+                <div className="gallery-badge-featured" title="Featured in venue highlights">
+                  <Star size={12} fill="#8C652D" />
+                  <span>Featured</span>
                 </div>
               )}
 
-              {/* Hover Overlay with Action Buttons */}
-              <div className="gallery-item-overlay flex items-center justify-center gap-3">
+              {/* Hover Actions Overlay */}
+              <div className="gallery-lux-card-overlay">
                 {canManage ? (
                   <>
                     <button
                       onClick={() => handleEdit(image)}
-                      className="admin-btn admin-btn-primary admin-btn-sm"
-                      title="Edit Image and Details"
+                      className="gallery-overlay-btn edit"
+                      title="Edit photo details"
                     >
                       <Edit2 size={15} />
-                      Edit Details
+                      <span>Edit Details</span>
                     </button>
                     <button
                       onClick={() => handleDeleteClick(image)}
-                      className="admin-btn admin-btn-danger admin-btn-sm"
-                      title="Delete Image"
+                      className="gallery-overlay-btn delete"
+                      title="Delete photo"
                     >
                       <Trash2 size={15} />
-                      Delete
+                      <span>Delete</span>
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={() => handleEdit(image)}
-                    className="admin-btn admin-btn-outline admin-btn-sm"
-                    title="View Details"
+                    className="gallery-overlay-btn edit"
+                    title="View photo details"
                   >
                     <Eye size={15} />
-                    View Details
+                    <span>View Details</span>
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Card Content Info */}
-            <div className="gallery-item-info flex-1 flex flex-col justify-between p-4">
+            {/* Card Body — Proper 18px-20px Padding & Refined Typography */}
+            <div className="gallery-lux-card-body">
               <div>
-                <h4 className="gallery-item-title text-base font-bold line-clamp-1 mb-1">
-                  {image.title || 'Untitled'}
-                </h4>
+                <h3 className="gallery-lux-card-title" title={image.title}>
+                  {image.title || 'Untitled Photo'}
+                </h3>
+
                 {image.description ? (
-                  <p
-                    className="text-xs line-clamp-2 mb-2"
-                    style={{ color: 'var(--dream-text-secondary, #a0aec0)', lineHeight: '1.4' }}
-                  >
+                  <p className="gallery-lux-card-desc">
                     {image.description}
                   </p>
                 ) : (
-                  <p
-                    className="text-xs italic mb-2 opacity-50"
-                    style={{ color: 'var(--dream-text-muted, #718096)' }}
-                  >
-                    No description added
+                  <p className="gallery-lux-card-desc empty">
+                    No event description provided
                   </p>
                 )}
               </div>
 
-              <div
-                className="flex items-center justify-between pt-2 border-t text-xs"
-                style={{ borderColor: 'rgba(255, 255, 255, 0.08)', color: 'var(--dream-text-muted, #888)' }}
-              >
-                <span>Category: <strong style={{ color: 'var(--dream-text-primary, #ddd)' }}>{image.category || 'General'}</strong></span>
+              {/* Card Footer — Strict Alignment and Spacing */}
+              <div className="gallery-lux-card-footer">
+                <span className="gallery-footer-category">
+                  <span className="gallery-footer-dot" />
+                  <span>{image.category || 'General'}</span>
+                </span>
+
                 {image.created_at && (
-                  <span>
-                    {new Date(image.created_at).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+                  <span className="gallery-footer-date">
+                    <Calendar size={13} style={{ opacity: 0.6 }} />
+                    <span>
+                      {new Date(image.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
                   </span>
                 )}
               </div>
             </div>
           </motion.div>
         ))}
-      </AdminGrid>
+      </div>
 
-      {/* Empty State */}
+      {/* 6. Empty State */}
       {filteredImages.length === 0 && (
-        <div className="text-center py-20">
+        <div className="workspace-empty mt-8">
           <div
-            className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6"
-            style={{
-              background: 'rgba(0, 255, 65, 0.1)',
-              border: '2px solid rgba(0, 255, 65, 0.3)',
-            }}
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-2"
+            style={{ background: 'var(--lux-olive-light)', color: 'var(--lux-olive)' }}
           >
-            <ImageIcon size={48} style={{ color: 'var(--dream-neon-green)' }} />
+            <ImageIcon size={32} />
           </div>
-          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--dream-text-primary)' }}>
-            {searchQuery ? 'No matching images found' : 'No images in this category'}
-          </h3>
-          <p style={{ color: 'var(--dream-text-secondary)' }}>
+          <h2>{searchQuery ? 'No matching photos found' : 'No photos in this category'}</h2>
+          <p>
             {searchQuery
-              ? `No gallery photos matched "${searchQuery}". Try a different search query.`
-              : 'Add photos showcasing venue moments, halls, and setups.'}
+              ? `No images matched "${searchQuery}". Try searching by setting name, event category, or clearing the filter.`
+              : 'Add high-resolution photos showcasing stage decor, seating, and lighting setups.'}
           </p>
           {canManage && !searchQuery && (
-            <button onClick={handleAddNew} className="admin-btn admin-btn-primary mt-6">
-              <Plus size={20} />
-              Add First Image
+            <button onClick={handleAddNew} className="workspace-button workspace-button-primary mt-4">
+              <Plus size={18} />
+              <span>Add First Photo</span>
             </button>
           )}
         </div>
       )}
 
-      {/* Add / Edit / View Modal */}
+      {/* 7. Add / Edit / View Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => {
@@ -499,17 +508,21 @@ export default function GalleryModule() {
         size="lg"
         title={
           isReadOnlyView
-            ? 'Gallery Image Details'
+            ? 'Gallery Photo Details'
             : editingImage
-            ? 'Edit Gallery Image & Details'
-            : 'Add New Gallery Image'
+            ? 'Edit Photo & Event Details'
+            : 'Add New Photo to Gallery'
         }
       >
         <form onSubmit={handleSubmit} className="space-y-5">
           {isReadOnlyView && (
             <div
-              className="p-3 rounded-lg text-xs"
-              style={{ background: 'rgba(255, 179, 0, 0.1)', color: '#ffc107', border: '1px solid rgba(255, 179, 0, 0.3)' }}
+              className="p-3.5 rounded-xl text-xs font-medium"
+              style={{
+                background: 'var(--lux-gold-light)',
+                color: '#8C652D',
+                border: '1px solid var(--lux-gold-border)',
+              }}
             >
               Viewing in read-only mode. You need Owner, Developer, or Manager permissions to make edits.
             </div>
@@ -541,11 +554,11 @@ export default function GalleryModule() {
             <FormInput
               name="event_type"
               label="Event Type / Setting (Optional)"
-              placeholder="e.g., Stage Setup, Dining Hall, Poolside"
+              placeholder="e.g., Outer Dining Counter, Stage Setup, Lawn"
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
               disabled={isReadOnlyView}
-              helpText="Specific celebration or architectural view"
+              helpText="Specific setting or celebration area"
             />
           </div>
 
@@ -553,7 +566,7 @@ export default function GalleryModule() {
           <FormTextarea
             name="description"
             label="Description & Event Details (Optional)"
-            placeholder="Enter notes about lighting, capacity, decor, or the celebration shown in the photo..."
+            placeholder="Enter notes about seating layout, capacity, decor, or the celebration shown in the photo..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={isReadOnlyView}
@@ -563,17 +576,17 @@ export default function GalleryModule() {
 
           {/* Image Upload / Media Selector */}
           <div>
-            <label className="admin-label mb-2 block">
-              Gallery Photo {isReadOnlyView ? '' : <span style={{ color: 'var(--dream-danger)' }}>*</span>}
+            <label className="admin-label mb-2 block font-semibold text-stone-800 text-sm">
+              Gallery Photo {isReadOnlyView ? '' : <span style={{ color: 'var(--lux-danger)' }}>*</span>}
             </label>
             {isReadOnlyView ? (
               <div
                 style={{
                   maxHeight: '260px',
-                  borderRadius: '12px',
+                  borderRadius: '14px',
                   overflow: 'hidden',
                   background: '#000',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  border: '1px solid var(--lux-border)',
                 }}
               >
                 <img
@@ -595,32 +608,32 @@ export default function GalleryModule() {
           {/* Featured Toggle */}
           {!isReadOnlyView && (
             <div
-              className="flex items-center gap-3 p-3.5 rounded-xl transition-all"
+              className="flex items-center gap-3.5 p-3.5 rounded-xl transition-all"
               style={{
-                background: isFeatured ? 'rgba(255, 215, 0, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                background: isFeatured ? 'var(--lux-gold-light)' : '#FAF8F5',
                 border: isFeatured
-                  ? '1px solid rgba(255, 215, 0, 0.35)'
-                  : '1px solid rgba(255, 255, 255, 0.08)',
+                  ? '1px solid var(--lux-gold-border)'
+                  : '1px solid var(--lux-border)',
               }}
             >
               <input
                 type="checkbox"
-                id="is_featured_checkbox"
+                id="is_featured_lux_checkbox"
                 checked={isFeatured}
                 onChange={(e) => setIsFeatured(e.target.checked)}
-                style={{ width: '18px', height: '18px', accentColor: 'var(--dream-neon-green)' }}
+                style={{ width: '18px', height: '18px', accentColor: '#537517' }}
               />
               <label
-                htmlFor="is_featured_checkbox"
+                htmlFor="is_featured_lux_checkbox"
                 className="cursor-pointer select-none text-sm font-medium"
-                style={{ color: isFeatured ? '#ffd700' : 'var(--dream-text-primary)' }}
+                style={{ color: isFeatured ? '#8C652D' : 'var(--lux-ink)' }}
               >
-                <div className="flex items-center gap-1.5">
-                  <Star size={15} fill={isFeatured ? '#ffd700' : 'none'} color={isFeatured ? '#ffd700' : 'currentColor'} />
+                <div className="flex items-center gap-1.5 font-bold">
+                  <Star size={14} fill={isFeatured ? '#8C652D' : 'none'} color={isFeatured ? '#8C652D' : 'currentColor'} />
                   Feature this photo in homepage highlights
                 </div>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--dream-text-muted)' }}>
-                  Featured images appear prominently in venue promotional showcases
+                <p className="text-xs mt-0.5" style={{ color: 'var(--lux-muted)' }}>
+                  Featured photos appear prominently in venue promotional showcases
                 </p>
               </label>
             </div>
@@ -629,7 +642,7 @@ export default function GalleryModule() {
           {/* Modal Actions */}
           <div
             className="flex gap-3 justify-end pt-5 border-t"
-            style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+            style={{ borderColor: 'var(--lux-border)' }}
           >
             <Button
               type="button"
@@ -652,15 +665,15 @@ export default function GalleryModule() {
                 {isSaving
                   ? 'Saving...'
                   : editingImage
-                  ? 'Update Image Details'
-                  : 'Add Image to Gallery'}
+                  ? 'Update Photo Details'
+                  : 'Add Photo to Gallery'}
               </Button>
             )}
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* 8. Delete Confirmation Modal */}
       <DeleteGalleryConfirmModal
         item={deleteConfirmImage}
         isOpen={Boolean(deleteConfirmImage)}

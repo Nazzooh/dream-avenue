@@ -1,0 +1,843 @@
+﻿/* ==========================================================================
+   DREAM AVENUE — WARM EDITORIAL LUXURY DESIGN SYSTEM
+   Redesigned Sidebar, Topbar, and Gallery Image Cards
+   ========================================================================== */
+
+:root {
+  --lux-bg: #FAF8F5;
+  --lux-card: #FFFFFF;
+  --lux-card-alt: #FDFBF8;
+  --lux-border: #EAE6DF;
+  --lux-border-light: #F2EFE9;
+  --lux-border-hover: #D5CEBF;
+  --lux-ink: #1B221B;
+  --lux-ink-secondary: #525A51;
+  --lux-muted: #858D84;
+  --lux-gold: #B88B52;
+  --lux-gold-light: #F8F1E4;
+  --lux-gold-border: #E8D5B7;
+  --lux-olive: #537517;
+  --lux-olive-light: #EDF6DE;
+  --lux-olive-border: #D6E8B5;
+  --lux-danger: #C93B2B;
+  --lux-danger-light: #FDEEED;
+  --lux-danger-border: #F7C5C0;
+  
+  --lux-shadow-xs: 0 1px 3px rgba(27, 34, 27, 0.04);
+  --lux-shadow-sm: 0 3px 10px rgba(27, 34, 27, 0.04), 0 1px 3px rgba(27, 34, 27, 0.02);
+  --lux-shadow-md: 0 8px 24px rgba(27, 34, 27, 0.06), 0 2px 6px rgba(27, 34, 27, 0.03);
+  --lux-shadow-lg: 0 16px 40px rgba(27, 34, 27, 0.08), 0 4px 12px rgba(27, 34, 27, 0.03);
+  --lux-shadow-xl: 0 24px 50px rgba(27, 34, 27, 0.12);
+
+  --lux-radius-sm: 8px;
+  --lux-radius-md: 12px;
+  --lux-radius-lg: 18px;
+  --lux-radius-xl: 24px;
+  --lux-radius-pill: 9999px;
+  
+  --lux-font-serif: Georgia, 'Times New Roman', Cambria, serif;
+  --lux-font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ==========================================================================
+   1. SIDEBAR (MENUBAR) REDESIGN
+   ========================================================================== */
+
+.admin-sidebar-luxury {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 270px;
+  background: #FAF8F5;
+  border-right: 1px solid var(--lux-border);
+  box-shadow: var(--lux-shadow-md);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s ease;
+  font-family: var(--lux-font-sans);
+}
+
+.admin-sidebar-luxury.collapsed {
+  width: 82px;
+}
+
+@media (max-width: 1024px) {
+  .admin-sidebar-luxury {
+    transform: translateX(-100%);
+  }
+  .admin-sidebar-luxury.open {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-lux-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid var(--lux-border);
+  gap: 12px;
+}
+
+.sidebar-lux-logo-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.sidebar-lux-emblem {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FAF2E3, #EFE3CE);
+  border: 1.5px solid #DFC9A6;
+  color: #8C652D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(184, 139, 82, 0.15);
+}
+
+.sidebar-lux-brand-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-lux-brand-title {
+  font-family: var(--lux-font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--lux-ink);
+  letter-spacing: -0.02em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-lux-brand-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--lux-gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.sidebar-lux-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-lux-nav-heading {
+  font-size: 0.65rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lux-muted);
+  padding: 14px 14px 4px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.sidebar-lux-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-radius: 11px;
+  color: var(--lux-ink-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.sidebar-lux-link:hover {
+  background: #F1ECE3;
+  color: var(--lux-ink);
+  transform: translateX(2px);
+}
+
+.sidebar-lux-link.active {
+  background: var(--lux-olive-light);
+  color: var(--lux-olive);
+  font-weight: 650;
+  box-shadow: var(--lux-shadow-xs);
+}
+
+.sidebar-lux-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  border-radius: 0 4px 4px 0;
+  background: var(--lux-olive);
+}
+
+.sidebar-lux-link-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+.sidebar-lux-link:hover .sidebar-lux-link-icon {
+  transform: scale(1.08);
+}
+
+.sidebar-lux-link.active .sidebar-lux-link-icon {
+  color: var(--lux-olive);
+}
+
+.sidebar-lux-footer {
+  border-top: 1px solid var(--lux-border);
+  padding: 12px 14px 16px;
+  background: #FAF8F5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-lux-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--lux-border);
+  box-shadow: var(--lux-shadow-xs);
+}
+
+.sidebar-lux-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1E251F, #333F34);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sidebar-lux-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-lux-user-role {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--lux-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-lux-user-email {
+  font-size: 0.7rem;
+  color: var(--lux-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-lux-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--lux-ink-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.sidebar-lux-action-btn:hover {
+  background: #F1ECE3;
+  color: var(--lux-ink);
+}
+
+.sidebar-lux-action-btn.logout:hover {
+  background: var(--lux-danger-light);
+  color: var(--lux-danger);
+}
+
+/* ==========================================================================
+   2. NAVBAR (TOPBAR) REDESIGN
+   ========================================================================== */
+
+.admin-topbar-luxury {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  height: 72px;
+  background: rgba(250, 248, 245, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--lux-border);
+  padding: 0 clamp(16px, 3vw, 36px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 1px 4px rgba(27, 34, 27, 0.02);
+  font-family: var(--lux-font-sans);
+}
+
+.topbar-lux-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.topbar-lux-menu-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--lux-border);
+  background: #FFFFFF;
+  color: var(--lux-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.topbar-lux-menu-btn:hover {
+  background: #F2EFE9;
+  border-color: var(--lux-border-hover);
+}
+
+.topbar-lux-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-lux-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lux-gold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.topbar-lux-title {
+  margin: 0;
+  font-family: var(--lux-font-serif);
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 700;
+  color: var(--lux-ink);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.topbar-lux-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-lux-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--lux-radius-pill);
+  background: var(--lux-olive-light);
+  border: 1px solid var(--lux-olive-border);
+  color: var(--lux-olive);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.topbar-lux-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #537517;
+  box-shadow: 0 0 0 2px rgba(83, 117, 23, 0.2);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.topbar-lux-action-btn {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 11px;
+  border: 1px solid var(--lux-border);
+  background: #FFFFFF;
+  color: var(--lux-ink-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  box-shadow: var(--lux-shadow-xs);
+}
+
+.topbar-lux-action-btn:hover {
+  background: #FAF8F5;
+  border-color: var(--lux-border-hover);
+  color: var(--lux-ink);
+  transform: translateY(-1px);
+}
+
+.topbar-lux-notif-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  border: 1px solid var(--lux-border);
+  background: #FFFFFF;
+  color: var(--lux-ink-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  box-shadow: var(--lux-shadow-xs);
+}
+
+.topbar-lux-notif-btn:hover {
+  background: #FAF8F5;
+  color: var(--lux-ink);
+  border-color: var(--lux-border-hover);
+}
+
+.topbar-lux-notif-badge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lux-gold);
+  border: 2px solid #FFFFFF;
+}
+
+/* ==========================================================================
+   3. REDESIGNED GALLERY CARDS & SECTION
+   ========================================================================== */
+
+/* Main Header */
+.gallery-lux-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--lux-border);
+  margin-bottom: 24px;
+}
+
+.gallery-lux-title {
+  margin: 0;
+  font-family: var(--lux-font-serif);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--lux-ink);
+}
+
+.gallery-lux-desc {
+  margin: 6px 0 0 0;
+  color: var(--lux-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* Category Filter Tabs Bar */
+.gallery-lux-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 14px;
+  scrollbar-width: thin;
+}
+
+.gallery-lux-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--lux-radius-pill);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  border: 1px solid var(--lux-border);
+  background: #FFFFFF;
+  color: var(--lux-ink-secondary);
+  box-shadow: var(--lux-shadow-xs);
+}
+
+.gallery-lux-tab-btn:hover {
+  background: #F5F1E8;
+  border-color: var(--lux-border-hover);
+  color: var(--lux-ink);
+}
+
+.gallery-lux-tab-btn.is-active {
+  background: #1B221B;
+  color: #FFFFFF;
+  border-color: #1B221B;
+  box-shadow: 0 4px 14px rgba(27, 34, 27, 0.2);
+}
+
+.gallery-lux-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #F0ECE4;
+  color: var(--lux-ink-secondary);
+}
+
+.gallery-lux-tab-btn.is-active .gallery-lux-tab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+}
+
+/* Search and Controls Strip */
+.gallery-lux-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.gallery-lux-search-box {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+}
+
+.gallery-lux-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 38px 0 38px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-border);
+  background: #FFFFFF;
+  color: var(--lux-ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--lux-shadow-xs);
+  transition: all 0.15s ease;
+}
+
+.gallery-lux-search-input:focus {
+  outline: none;
+  border-color: var(--lux-olive);
+  box-shadow: 0 0 0 3px rgba(83, 117, 23, 0.12);
+}
+
+/* ==========================================================================
+   IMAGE CARDS (PERFECT SPACING & LUXURY PROPORTIONS)
+   ========================================================================== */
+
+.gallery-lux-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+@media (min-width: 1400px) {
+  .gallery-lux-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+}
+
+.gallery-lux-card {
+  background: #FFFFFF;
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--lux-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.24s ease, border-color 0.24s ease;
+  position: relative;
+}
+
+.gallery-lux-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--lux-border-hover);
+  box-shadow: var(--lux-shadow-lg);
+}
+
+/* Media Box with Uniform 16:10 Ratio */
+.gallery-lux-card-media {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: #111612;
+}
+
+.gallery-lux-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-lux-card:hover .gallery-lux-card-image {
+  transform: scale(1.05);
+}
+
+/* Card Floating Badges */
+.gallery-lux-card-badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  z-index: 5;
+}
+
+.gallery-badge-category {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: var(--lux-radius-pill);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: var(--lux-olive);
+  border: 1px solid rgba(83, 117, 23, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.gallery-badge-event-type {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--lux-radius-pill);
+  background: rgba(27, 34, 27, 0.75);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-badge-featured {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--lux-radius-pill);
+  background: linear-gradient(135deg, #FAF2E3, #F3E3CA);
+  border: 1.5px solid #DFC9A6;
+  color: #8C652D;
+  font-size: 0.72rem;
+  font-weight: 750;
+  box-shadow: 0 2px 8px rgba(184, 139, 82, 0.25);
+}
+
+/* Card Hover Overlay & Action Buttons */
+.gallery-lux-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(27, 34, 27, 0.2), rgba(27, 34, 27, 0.75));
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.22s ease;
+  z-index: 10;
+  padding: 16px;
+}
+
+.gallery-lux-card:hover .gallery-lux-card-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  border: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.gallery-overlay-btn:hover {
+  transform: translateY(-2px);
+}
+
+.gallery-overlay-btn.edit {
+  background: #FFFFFF;
+  color: var(--lux-ink);
+}
+
+.gallery-overlay-btn.edit:hover {
+  background: #F4EFEB;
+}
+
+.gallery-overlay-btn.delete {
+  background: rgba(201, 59, 43, 0.95);
+  color: #FFFFFF;
+}
+
+.gallery-overlay-btn.delete:hover {
+  background: #B32E1F;
+}
+
+/* Card Content Area: Generous 18px Padding & Strict Alignment */
+.gallery-lux-card-body {
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+  background: #FFFFFF;
+}
+
+.gallery-lux-card-title {
+  margin: 0;
+  font-family: var(--lux-font-serif);
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--lux-ink);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery-lux-card-desc {
+  margin: 8px 0 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--lux-ink-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5em;
+}
+
+.gallery-lux-card-desc.empty {
+  color: var(--lux-muted);
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* Card Footer: Metadata with Clean Divider */
+.gallery-lux-card-footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--lux-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--lux-muted);
+}
+
+.gallery-footer-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--lux-ink);
+  text-transform: capitalize;
+}
+
+.gallery-footer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lux-olive);
+}
+
+.gallery-footer-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lux-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Container Margin Alignment for Luxury Sidebar */
+@media (min-width: 1025px) {
+  .admin-main-content {
+    margin-left: 270px !important;
+    transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  .admin-container.sidebar-collapsed .admin-main-content {
+    margin-left: 82px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-main-content {
+    margin-left: 0 !important;
+  }
+}

@@ -1,5 +1,5 @@
 // src/components/admin-v2/MediaLibraryModal.tsx
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { X, Search } from 'lucide-react';
 import { MediaGrid } from './MediaGrid';
 import { MediaDropzone } from './MediaDropzone';

@@ -1,5 +1,5 @@
 // src/components/admin-v2/MediaDropzone.tsx
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
 import { MediaUploadQueue, QueuedUploadItem } from './MediaUploadQueue';
 import { MediaItem } from '../../src/api/media';
@@ -122,7 +122,7 @@ export function MediaDropzone({
     handleFilesAdded(droppedFiles);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     handleFilesAdded(selectedFiles);
     if (fileInputRef.current) {
@@ -258,6 +258,12 @@ export function MediaDropzone({
           isUploading={uploading}
           maxFiles={maxFiles}
         />
+      )}
+
+      {uploading && uploadProgress > 0 && (
+        <div style={{ width: '100%', height: '4px', background: 'var(--admin-border, #E6E6E6)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ width: `${Math.min(100, Math.max(0, uploadProgress))}%`, height: '100%', background: 'var(--admin-lime-primary, #B6F500)', transition: 'width 0.2s ease' }} />
+        </div>
       )}
 
       {errorMessage && (

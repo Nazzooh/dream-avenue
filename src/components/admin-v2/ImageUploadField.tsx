@@ -1,5 +1,5 @@
-// src/components/admin-v2/ImageUploadField.tsx — Enhanced Media Library Integrated Field
-import React, { useState } from 'react';
+// src/components/admin-v2/ImageUploadField.tsx â€” Enhanced Media Library Integrated Field
+import { useState } from 'react';
 import { Upload, X, Image as ImageIcon, FolderOpen, Check } from 'lucide-react';
 import { MediaLibraryModal } from './MediaLibraryModal';
 
@@ -242,7 +242,7 @@ export function ImageUploadField({
         multiple={multiple}
         bucket={bucket}
         folder={folder}
-        title={`Media Library — ${label}`}
+        title={`Media Library â€” ${label}`}
         initialTab={modalInitialTab}
       />
     </div>

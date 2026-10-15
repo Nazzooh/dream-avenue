@@ -1,5 +1,4 @@
 // src/components/admin-v2/MediaUploadQueue.tsx
-import React from 'react';
 import { Loader2, CheckCircle2, AlertCircle, X, Plus, Upload, Trash2 } from 'lucide-react';
 
 export interface QueuedUploadItem {

@@ -1,5 +1,4 @@
 // src/components/admin-v2/MediaGrid.tsx
-import React from 'react';
 import { MediaItem } from '../../src/api/media';
 import { Check, Image as ImageIcon, Trash2 } from 'lucide-react';
 

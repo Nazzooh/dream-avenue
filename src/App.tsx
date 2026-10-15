@@ -10,16 +10,16 @@ import { queryClient } from './src/lib/queryClient';
 import { LoadingFallback, AdminLoadingFallback } from './components/LoadingFallback';
 import { initializePerformanceOptimizations } from './src/utils/performanceOptimizations';
 
-// 🌿 Main Website - Load immediately (critical path)
+// ðŸŒ¿ Main Website - Load immediately (critical path)
 import { MainWebsite } from './pages/MainWebsite';
 import { CookieConsent } from './components/CookieConsent';
 
-// 📅 Booking Page - Lazy load (user action required)
+// ðŸ“… Booking Page - Lazy load (user action required)
 const SmartSlotBookingPage = lazy(() => import('./pages/SmartSlotBookingPage'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
-// 🧩 Admin Pages - Lazy load (auth required)
+// ðŸ§© Admin Pages - Lazy load (auth required)
 const AdminLogin = lazy(() => import('./pages/admin/Login').then(m => ({ default: m.AdminLogin })));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminPackages = lazy(() => import('./pages/admin/Packages').then(m => ({ default: m.AdminPackages })));
@@ -34,14 +34,15 @@ const AdminPartners = lazy(() => import('./pages/admin/Partners').then(m => ({ d
 const AdminActivity = lazy(() => import('./pages/admin/Activity').then(m => ({ default: m.AdminActivity })));
 const AdminTasks = lazy(() => import('./pages/admin/Tasks').then(m => ({ default: m.AdminTasks })));
 
-// 🔐 Auth
+// ðŸ” Auth
 import { ProtectedRoute } from './src/auth/ProtectedRoute';
 
-// 🎨 Styles
+// ðŸŽ¨ Styles
 import './styles/admin-dashboard.css';        // Admin Dashboard - Light pastel neon theme
 import './styles/admin-login-pastel.css';     // Admin Login - Pastel theme
 import './styles/new-booking-page.css';       // Booking Page - Elegant Split Layout (Pastel Luxury)
 import './styles/admin-workspace.css';
+import './styles/admin-redesign.css';
 
 export default function App() {
   // Initialize performance optimizations on mount
@@ -55,22 +56,22 @@ export default function App() {
         <Router>
           <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            {/* 🌐 Main Website - No suspense needed (loaded immediately) */}
+            {/* ðŸŒ Main Website - No suspense needed (loaded immediately) */}
             <Route path="/" element={<MainWebsite />} />
 
-            {/* 📅 Booking Page - Lazy loaded */}
+            {/* ðŸ“… Booking Page - Lazy loaded */}
             <Route path="/booking" element={<SmartSlotBookingPage />} />
             <Route path="/slot-booking" element={<SmartSlotBookingPage />} />
 
-            {/* 📜 Terms and Conditions */}
+            {/* ðŸ“œ Terms and Conditions */}
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 
-            {/* 🔑 Admin Login */}
+            {/* ðŸ”‘ Admin Login */}
             <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* 🛡️ Admin Protection Layer */}
+            {/* ðŸ›¡ï¸ Admin Protection Layer */}
             <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>
-              {/* 🔑 Admin Dashboard (Protected) - Lazy loaded */}
+              {/* ðŸ”‘ Admin Dashboard (Protected) - Lazy loaded */}
               <Route
                 path="/admin"
                 element={
@@ -82,7 +83,7 @@ export default function App() {
                 }
               />
 
-              {/* 🗂 Admin Management Routes - Lazy loaded */}
+              {/* ðŸ—‚ Admin Management Routes - Lazy loaded */}
               <Route
                 path="/admin/dashboard"
                 element={
@@ -154,19 +155,19 @@ export default function App() {
             </Route>
 
 
-            {/* 🚫 Redirect all other routes */}
+            {/* ðŸš« Redirect all other routes */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </Router>
 
-      {/* 🔔 Toast Notifications */}
+      {/* ðŸ”” Toast Notifications */}
       <Toaster position="top-right" richColors />
 
-      {/* 🍪 Cookie Consent Banner */}
+      {/* ðŸª Cookie Consent Banner */}
       <CookieConsent />
 
-      {/* 🧰 React Query Devtools - Only in development */}
+      {/* ðŸ§° React Query Devtools - Only in development */}
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
     </HelmetProvider>

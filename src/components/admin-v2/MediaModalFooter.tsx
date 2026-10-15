@@ -1,5 +1,4 @@
 // src/components/admin-v2/MediaModalFooter.tsx
-import React from 'react';
 import { Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
