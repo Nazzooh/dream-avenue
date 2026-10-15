@@ -14,6 +14,9 @@ export interface ImageUploadFieldProps {
   error?: string;
   maxSize?: number; // in MB
   accept?: string;
+  multiple?: boolean;
+  values?: string[];
+  onMultipleChange?: (urls: string[]) => void;
 }
 
 export function ImageUploadField({
@@ -23,6 +26,9 @@ export function ImageUploadField({
   bucket = 'facilities_images',
   folder = '',
   error,
+  multiple = false,
+  values = [],
+  onMultipleChange,
 }: ImageUploadFieldProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalInitialTab, setModalInitialTab] = useState<'library' | 'upload'>('library');
@@ -230,7 +236,10 @@ export function ImageUploadField({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSelectImage={handleSelectImage}
+        onSelectImages={onMultipleChange}
         currentValue={value}
+        currentValues={values}
+        multiple={multiple}
         bucket={bucket}
         folder={folder}
         title={`Media Library — ${label}`}

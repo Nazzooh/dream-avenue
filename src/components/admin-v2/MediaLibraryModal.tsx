@@ -6,38 +6,57 @@ import { MediaDropzone } from './MediaDropzone';
 import { MediaModalHeader } from './MediaModalHeader';
 import { MediaModalFooter } from './MediaModalFooter';
 import { DeleteMediaConfirmModal } from './DeleteMediaConfirmModal';
-import { useMediaLibrary, useUploadMedia, useDeleteMedia } from '../../src/hooks/useMediaLibrary';
+import {
+  useMediaLibrary,
+  useUploadMedia,
+  useBatchUploadMedia,
+  useDeleteMedia,
+} from '../../src/hooks/useMediaLibrary';
 import { MediaItem } from '../../src/api/media';
 
 interface MediaLibraryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectImage: (url: string) => void;
+  onSelectImage?: (url: string) => void;
+  onSelectImages?: (urls: string[]) => void;
   currentValue?: string | null;
+  currentValues?: string[];
   bucket?: string;
   folder?: string;
   title?: string;
   initialTab?: 'library' | 'upload';
+  multiple?: boolean;
 }
 
 export function MediaLibraryModal({
   isOpen,
   onClose,
   onSelectImage,
+  onSelectImages,
   currentValue,
+  currentValues = [],
   bucket = 'facilities_images',
   folder = '',
   title = 'Media Library',
   initialTab = 'library',
+  multiple = false,
 }: MediaLibraryModalProps) {
   const [activeTab, setActiveTab] = useState<'library' | 'upload'>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+  const [selectedUrls, setSelectedUrls] = useState<string[]>(() => {
+    if (multiple) {
+      if (currentValues.length > 0) return currentValues;
+      if (currentValue) return [currentValue];
+    }
+    return [];
+  });
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<MediaItem | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const { data: mediaItems = [], isLoading } = useMediaLibrary(bucket);
   const uploadMutation = useUploadMedia(bucket);
+  const batchUploadMutation = useBatchUploadMedia(bucket);
   const deleteMutation = useDeleteMedia(bucket);
 
   const filteredItems = useMemo(() => {
@@ -48,7 +67,18 @@ export function MediaLibraryModal({
     );
   }, [mediaItems, searchQuery]);
 
-  const activeUrl = selectedItem?.url || currentValue || null;
+  const activeUrl = selectedItem?.url || currentValue || (selectedUrls[0] ?? null);
+
+  const handleSelectGridItem = (item: MediaItem) => {
+    if (multiple) {
+      setSelectedUrls((prev) =>
+        prev.includes(item.url) ? prev.filter((u) => u !== item.url) : [...prev, item.url]
+      );
+      setSelectedItem(item);
+    } else {
+      setSelectedItem(item);
+    }
+  };
 
   const handleUploadFile = async (file: File) => {
     try {
@@ -62,7 +92,7 @@ export function MediaLibraryModal({
       setUploadProgress(100);
 
       setSelectedItem(newItem);
-      onSelectImage(newItem.url);
+      if (onSelectImage) onSelectImage(newItem.url);
       setTimeout(() => {
         setUploadProgress(0);
         onClose();
@@ -72,9 +102,50 @@ export function MediaLibraryModal({
     }
   };
 
+  const handleBatchUpload = async (
+    files: File[],
+    onProgress: (
+      index: number,
+      status: 'uploading' | 'completed' | 'failed',
+      item?: MediaItem,
+      error?: string
+    ) => void
+  ) => {
+    try {
+      const result = await batchUploadMutation.mutateAsync({
+        files,
+        folder,
+        onItemProgress: onProgress,
+      });
+
+      if (result.successful.length > 0) {
+        const newUrls = result.successful.map((i) => i.url);
+        if (multiple) {
+          setSelectedUrls((prev) => [...newUrls, ...prev.filter((u) => !newUrls.includes(u))]);
+        }
+        setSelectedItem(result.successful[0]);
+
+        // Automatically switch to library tab to highlight newly uploaded images
+        setTimeout(() => {
+          setActiveTab('library');
+        }, 500);
+      }
+    } catch (err) {
+      console.error('Batch upload error:', err);
+    }
+  };
+
   const handleConfirmSelect = () => {
-    if (activeUrl) {
-      onSelectImage(activeUrl);
+    if (multiple) {
+      if (selectedUrls.length > 0) {
+        onSelectImages?.(selectedUrls);
+        if (onSelectImage && selectedUrls[0]) {
+          onSelectImage(selectedUrls[0]);
+        }
+        onClose();
+      }
+    } else if (activeUrl) {
+      onSelectImage?.(activeUrl);
       onClose();
     }
   };
@@ -86,6 +157,7 @@ export function MediaLibraryModal({
       if (selectedItem?.id === deleteConfirmItem.id) {
         setSelectedItem(null);
       }
+      setSelectedUrls((prev) => prev.filter((u) => u !== deleteConfirmItem.url));
       setDeleteConfirmItem(null);
     } catch (error) {
       console.error('Delete error:', error);
@@ -173,7 +245,9 @@ export function MediaLibraryModal({
               <MediaGrid
                 items={filteredItems}
                 selectedUrl={activeUrl}
-                onSelect={(item) => setSelectedItem(item)}
+                selectedUrls={selectedUrls}
+                multiple={multiple}
+                onSelect={handleSelectGridItem}
                 onDelete={(item) => setDeleteConfirmItem(item)}
                 isLoading={isLoading}
               />
@@ -182,8 +256,11 @@ export function MediaLibraryModal({
             <div style={{ padding: '12px 0' }}>
               <MediaDropzone
                 onFileSelect={handleUploadFile}
-                uploading={uploadMutation.isPending}
+                onBatchUpload={handleBatchUpload}
+                uploading={batchUploadMutation.isPending || uploadMutation.isPending}
                 uploadProgress={uploadProgress}
+                multiple={true}
+                maxFiles={10}
               />
             </div>
           )}
@@ -191,7 +268,9 @@ export function MediaLibraryModal({
 
         <MediaModalFooter
           activeUrl={activeUrl}
+          selectedUrls={selectedUrls}
           selectedName={selectedItem?.name}
+          multiple={multiple}
           onClose={onClose}
           onConfirm={handleConfirmSelect}
         />

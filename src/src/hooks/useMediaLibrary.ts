@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getMediaItems,
   uploadMediaItem,
+  uploadMediaBatch,
   deleteMediaItem,
   mediaKeys,
   MediaItem,
+  BatchUploadResult,
 } from '../api/media';
 import { toast } from 'sonner';
 
@@ -33,6 +35,52 @@ export const useUploadMedia = (bucket = 'facilities_images') => {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to upload image');
+    },
+  });
+};
+
+export const useBatchUploadMedia = (bucket = 'facilities_images') => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      files,
+      folder,
+      onItemProgress,
+    }: {
+      files: File[];
+      folder?: string;
+      onItemProgress?: (
+        index: number,
+        status: 'uploading' | 'completed' | 'failed',
+        item?: MediaItem,
+        error?: string
+      ) => void;
+    }) => uploadMediaBatch(files, bucket, folder, onItemProgress),
+    onSuccess: (result: BatchUploadResult) => {
+      if (result.successful.length > 0) {
+        queryClient.setQueryData<MediaItem[]>(mediaKeys.bucket(bucket), (old = []) => [
+          ...result.successful,
+          ...old.filter((item) => !result.successful.some((s) => s.url === item.url)),
+        ]);
+        queryClient.invalidateQueries({ queryKey: mediaKeys.all });
+      }
+      if (result.failed.length === 0) {
+        toast.success(
+          result.successful.length === 1
+            ? 'Image uploaded successfully'
+            : `All ${result.successful.length} images uploaded successfully`
+        );
+      } else if (result.successful.length > 0) {
+        toast.warning(
+          `Uploaded ${result.successful.length} images, ${result.failed.length} failed`
+        );
+      } else {
+        toast.error('Batch upload failed. Please try again.');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to upload batch');
     },
   });
 };

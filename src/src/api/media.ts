@@ -177,6 +177,48 @@ export const uploadMediaItem = async (
   };
 };
 
+export interface BatchUploadResult {
+  successful: MediaItem[];
+  failed: { file: File; error: string }[];
+}
+
+/**
+ * Upload multiple image files to Supabase Storage with concurrency pooling
+ */
+export const uploadMediaBatch = async (
+  files: File[],
+  bucket = 'facilities_images',
+  folder = '',
+  onItemProgress?: (index: number, status: 'uploading' | 'completed' | 'failed', item?: MediaItem, error?: string) => void,
+  concurrency = 3
+): Promise<BatchUploadResult> => {
+  const successful: MediaItem[] = [];
+  const failed: { file: File; error: string }[] = [];
+
+  let nextIndex = 0;
+  const workerCount = Math.min(concurrency, files.length);
+
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (nextIndex < files.length) {
+      const currentIndex = nextIndex++;
+      const file = files[currentIndex];
+      try {
+        onItemProgress?.(currentIndex, 'uploading');
+        const item = await uploadMediaItem(file, bucket, folder);
+        successful.push(item);
+        onItemProgress?.(currentIndex, 'completed', item);
+      } catch (err: any) {
+        const errorMsg = err?.message || 'Failed to upload image';
+        failed.push({ file, error: errorMsg });
+        onItemProgress?.(currentIndex, 'failed', undefined, errorMsg);
+      }
+    }
+  });
+
+  await Promise.all(workers);
+  return { successful, failed };
+};
+
 /**
  * Delete a media file from Supabase Storage
  */

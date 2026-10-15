@@ -5,18 +5,22 @@ import { Check, Image as ImageIcon, Trash2 } from 'lucide-react';
 
 interface MediaGridProps {
   items: MediaItem[];
-  selectedUrl: string | null;
+  selectedUrl?: string | null;
+  selectedUrls?: string[];
   onSelect: (item: MediaItem) => void;
   onDelete?: (item: MediaItem) => void;
   isLoading?: boolean;
+  multiple?: boolean;
 }
 
 export function MediaGrid({
   items,
-  selectedUrl,
+  selectedUrl = null,
+  selectedUrls,
   onSelect,
   onDelete,
   isLoading = false,
+  multiple = false,
 }: MediaGridProps) {
   if (isLoading) {
     return (
@@ -104,7 +108,10 @@ export function MediaGrid({
       }}
     >
       {items.map((item) => {
-        const isSelected = selectedUrl === item.url;
+        const isSelected = multiple && selectedUrls
+          ? selectedUrls.includes(item.url)
+          : selectedUrl === item.url;
+        const selectionIndex = multiple && selectedUrls ? selectedUrls.indexOf(item.url) + 1 : 0;
 
         return (
           <div
@@ -154,8 +161,9 @@ export function MediaGrid({
                   position: 'absolute',
                   top: '6px',
                   right: '6px',
-                  width: '22px',
+                  minWidth: '22px',
                   height: '22px',
+                  padding: multiple && selectionIndex > 0 ? '0 5px' : 0,
                   borderRadius: '50%',
                   background: 'var(--admin-lime-primary, #B6F500)',
                   color: 'var(--admin-text-primary, #2A2A2A)',
@@ -163,9 +171,15 @@ export function MediaGrid({
                   alignItems: 'center',
                   justifyContent: 'center',
                   boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
                 }}
               >
-                <Check size={14} strokeWidth={3} />
+                {multiple && selectionIndex > 0 && selectedUrls && selectedUrls.length > 1 ? (
+                  selectionIndex
+                ) : (
+                  <Check size={14} strokeWidth={3} />
+                )}
               </div>
             )}
 
