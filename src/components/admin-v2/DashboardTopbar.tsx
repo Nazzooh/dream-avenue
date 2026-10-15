@@ -1,4 +1,4 @@
-﻿// src/components/admin-v2/DashboardTopbar.tsx — Redesigned Warm Editorial Luxury Topbar
+// src/components/admin-v2/DashboardTopbar.tsx — Redesigned Warm Editorial Luxury Topbar
 import { useState, useRef, useEffect } from 'react';
 import { Menu, Bell, ExternalLink, LogOut, ChevronDown, ShieldCheck, Terminal, User } from 'lucide-react';
 import { useAuth } from '../../src/auth/useAuth';
@@ -56,8 +56,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
   };
 
   const userRole = profile?.role;
-  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'DA';
-
+  
   return (
     <header className="admin-topbar-luxury">
       {/* Left: Mobile Menu + Breadcrumbs & Page Title */}
@@ -130,15 +129,15 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
             aria-expanded={isProfileMenuOpen}
             aria-label="User account menu"
           >
-            <div className="sidebar-lux-user-avatar" style={{ width: '34px', height: '34px' }}>
-              {initials}
+            <div className="topbar-lux-user-avatar">
+              <User size={16} className="text-stone-700" />
             </div>
             <div className="hidden lg:flex flex-col text-left">
               <span className="text-xs font-bold text-stone-900 leading-tight">
                 {roleLabel(userRole)}
               </span>
               <span className="text-[11px] text-stone-500 leading-tight truncate max-w-[140px]">
-                {user?.email || 'admin@dreamavenue.com'}
+                {user?.email || profile?.email || 'admin@dreamavenue.com'}
               </span>
             </div>
             <ChevronDown size={14} className="text-stone-400 hidden sm:block" />
@@ -156,7 +155,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
             >
               <div className="p-3 border-b border-stone-100 mb-1">
                 <p className="text-xs uppercase tracking-wider text-stone-400 font-bold">Signed in as</p>
-                <p className="text-sm font-bold text-stone-800 truncate mt-0.5">{user?.email}</p>
+                <p className="text-sm font-bold text-stone-800 truncate mt-0.5">{user?.email || profile?.email || "Administrator"}</p>
                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold mt-2 bg-stone-100 text-stone-700">
                   <ShieldCheck size={13} className="text-lime-700" />
                   <span>{roleLabel(userRole)}</span>
@@ -172,17 +171,6 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
                   <Terminal size={15} />
                   <span>Audit & Activity Log</span>
                 </Link>
-
-                <a
-                  href="/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setIsProfileMenuOpen(false)}
-                  className="w-full px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-950 hover:bg-stone-50 rounded-xl flex items-center gap-2.5 transition-colors"
-                >
-                  <ExternalLink size={15} />
-                  <span>Preview Public Website</span>
-                </a>
               </div>
 
               <div className="pt-1 mt-1 border-t border-stone-100">

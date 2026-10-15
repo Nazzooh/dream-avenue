@@ -167,17 +167,9 @@ export function MediaLibraryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="admin-modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
+    <div className="media-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
       <div
-        className="admin-modal"
-        style={{
-          maxWidth: '820px',
-          width: '95%',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '88vh',
-          padding: 0,
-        }}
+        className="media-modal-container"
         onClick={(e) => e.stopPropagation()}
       >
         <MediaModalHeader
@@ -188,72 +180,50 @@ export function MediaLibraryModal({
           onClose={onClose}
         />
 
-        {/* Body */}
-        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1 }}>
+        {/* Responsive Scrollable Body */}
+        <div className="p-3 sm:p-5 overflow-y-auto flex-1 flex flex-col min-h-0">
           {activeTab === 'library' ? (
             <>
-              {/* Search Bar */}
-              <div style={{ position: 'relative', marginBottom: '16px' }}>
+              {/* Touch-Friendly Search Bar */}
+              <div className="relative mb-3 sm:mb-4 flex-shrink-0">
                 <Search
                   size={16}
-                  style={{
-                    position: 'absolute',
-                    left: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--admin-text-muted, #999)',
-                  }}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
                 />
                 <input
                   type="text"
                   placeholder="Search existing images by filename..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px 10px 38px',
-                    borderRadius: '10px',
-                    border: '1.5px solid var(--admin-border, #E6E6E6)',
-                    background: 'var(--admin-bg-card, #FFFFFF)',
-                    fontSize: '0.85rem',
-                    color: 'var(--admin-text-primary, #2A2A2A)',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
+                  className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs sm:text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-lime-500/30 focus:border-lime-500 transition-all shadow-xs"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      color: 'var(--admin-text-muted, #999)',
-                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-md text-stone-400 hover:text-stone-700 bg-stone-100 hover:bg-stone-200 text-xs transition-colors"
+                    aria-label="Clear search"
                   >
-                    <X size={15} />
+                    <X size={13} />
                   </button>
                 )}
               </div>
 
-              {/* Grid */}
-              <MediaGrid
-                items={filteredItems}
-                selectedUrl={activeUrl}
-                selectedUrls={selectedUrls}
-                multiple={multiple}
-                onSelect={handleSelectGridItem}
-                onDelete={(item) => setDeleteConfirmItem(item)}
-                isLoading={isLoading}
-              />
+              {/* Responsive Grid */}
+              <div className="flex-1 overflow-y-auto">
+                <MediaGrid
+                  items={filteredItems}
+                  selectedUrl={activeUrl}
+                  selectedUrls={selectedUrls}
+                  multiple={multiple}
+                  onSelect={handleSelectGridItem}
+                  onDelete={(item) => setDeleteConfirmItem(item)}
+                  isLoading={isLoading}
+                />
+              </div>
             </>
           ) : (
-            <div style={{ padding: '12px 0' }}>
+            <div className="flex-1 overflow-y-auto py-2">
               <MediaDropzone
                 onFileSelect={handleUploadFile}
                 onBatchUpload={handleBatchUpload}

@@ -1,5 +1,5 @@
 // src/components/admin-v2/MediaModalFooter.tsx
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaModalFooterProps {
@@ -29,127 +29,99 @@ export function MediaModalFooter({
       toast.success(`${count} image URLs copied to clipboard`);
     } else if (activeUrl) {
       navigator.clipboard.writeText(activeUrl);
-      toast.success('Image URL copied');
+      toast.success('Image URL copied to clipboard');
     }
   };
 
   return (
-    <div
-      className="admin-modal-footer"
-      style={{
-        padding: '14px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'var(--admin-bg-hover, #F5F5F2)',
-        borderTop: '1px solid var(--admin-divider, #F0F0F0)',
-        margin: 0,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="media-footer-wrap">
+      {/* Selection Info Row */}
+      <div className="flex items-center justify-between sm:justify-start gap-3 min-w-0">
         {hasSelection ? (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative flex-shrink-0">
               <img
                 src={isMulti ? selectedUrls[0] : activeUrl!}
                 alt="Selected"
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '8px',
-                  objectFit: 'cover',
-                  border: '1.5px solid var(--admin-lime-secondary, #A4DD00)',
-                }}
+                className="w-10 h-10 rounded-lg object-cover border-2 border-lime-500 shadow-sm block"
               />
               {isMulti && count > 1 && (
                 <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '-4px',
-                    right: '-6px',
-                    background: 'var(--admin-lime-primary, #B6F500)',
-                    color: 'var(--admin-text-primary, #2A2A2A)',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    borderRadius: '999px',
-                    padding: '1px 5px',
-                    border: '1px solid #FFFFFF',
-                    boxShadow: 'var(--admin-shadow-sm)',
-                  }}
+                  className="absolute -bottom-1 -right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold text-stone-900 border border-white shadow-sm"
+                  style={{ background: '#B6F500' }}
                 >
                   +{count - 1}
                 </div>
               )}
             </div>
 
-            <div style={{ maxWidth: '240px' }}>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  color: 'var(--admin-text-primary, #2A2A2A)',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-bold text-stone-900 truncate leading-tight m-0">
                 {isMulti
-                  ? `${count} ${count === 1 ? 'Image' : 'Images'} Selected`
-                  : selectedName || 'Selected Image'}
+                  ? `${count} ${count === 1 ? 'image' : 'images'} selected`
+                  : selectedName || '1 image selected'}
               </p>
-              <span
-                style={{
-                  fontSize: '0.7rem',
-                  color: '#497300',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <Check size={11} strokeWidth={3} /> Ready to apply
+              <span className="text-[11px] text-lime-800 font-semibold flex items-center gap-1 mt-0.5">
+                <Check size={12} strokeWidth={3} /> Ready to apply
               </span>
             </div>
-          </>
+          </div>
         ) : (
-          <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted, #999)', fontStyle: 'italic' }}>
-            No image selected
+          <span className="text-xs text-stone-500 italic py-1">
+            Tap an image above to select it
           </span>
         )}
-      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Copy Link shortcut for mobile (compact button) */}
         {hasSelection && (
           <button
             type="button"
             onClick={handleCopyLink}
-            className="admin-btn-secondary"
-            style={{ padding: '8px 14px', fontSize: '0.8125rem' }}
+            className="sm:hidden p-2 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-200/60 transition-colors flex-shrink-0"
+            title="Copy Image URL"
+            aria-label="Copy Image URL"
           >
-            <Copy size={13} />
-            {isMulti && count > 1 ? 'Copy Links' : 'Copy Link'}
+            <Copy size={16} />
           </button>
         )}
+      </div>
+
+      {/* Touch Action Buttons */}
+      <div className="media-footer-actions">
+        {hasSelection && (
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="hidden sm:inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 bg-white border border-stone-300 hover:bg-stone-50 active:scale-95 transition-all shadow-xs"
+          >
+            <Copy size={14} />
+            <span>{isMulti && count > 1 ? 'Copy Links' : 'Copy Link'}</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onClose}
-          className="admin-btn-secondary"
-          style={{ padding: '8px 16px', fontSize: '0.8125rem' }}
+          className="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 bg-white border border-stone-300 hover:bg-stone-50 active:scale-95 transition-all shadow-xs min-h-[40px]"
         >
           Cancel
         </button>
+
         <button
           type="button"
           disabled={!hasSelection}
           onClick={onConfirm}
-          className="admin-btn-primary"
-          style={{ padding: '8px 20px', fontSize: '0.8125rem', opacity: hasSelection ? 1 : 0.5 }}
+          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-stone-900 active:scale-95 transition-all shadow-sm min-h-[40px] disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{
+            background: hasSelection ? '#B6F500' : '#EAE6DF',
+          }}
         >
-          <Check size={14} strokeWidth={2.5} />
-          {isMulti
-            ? `Use Selected (${count})`
-            : 'Use Selected Image'}
+          <Check size={16} strokeWidth={2.5} />
+          <span>
+            {isMulti
+              ? `Apply (${count})`
+              : 'Apply Image'}
+          </span>
         </button>
       </div>
     </div>

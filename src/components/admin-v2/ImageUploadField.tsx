@@ -1,4 +1,4 @@
-// src/components/admin-v2/ImageUploadField.tsx â€” Enhanced Media Library Integrated Field
+// src/components/admin-v2/ImageUploadField.tsx — Mobile-Friendly Media Library Integrated Field
 import { useState } from 'react';
 import { Upload, X, Image as ImageIcon, FolderOpen, Check } from 'lucide-react';
 import { MediaLibraryModal } from './MediaLibraryModal';
@@ -47,187 +47,112 @@ export function ImageUploadField({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <label
-          style={{
-            fontFamily: 'Poppins, sans-serif',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            color: 'var(--admin-text-primary, #2A2A2A)',
-          }}
-        >
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex items-center justify-between">
+        <label className="text-xs sm:text-sm font-semibold text-stone-800">
           {label}
         </label>
         {value && (
-          <span
-            style={{
-              fontSize: '0.75rem',
-              color: '#497300',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
+          <span className="text-xs text-lime-800 font-semibold flex items-center gap-1">
             <Check size={12} strokeWidth={3} /> Image Attached
           </span>
         )}
       </div>
 
       {value ? (
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '200px',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            border: '2px solid var(--admin-border, #E6E6E6)',
-            boxShadow: 'var(--admin-shadow-sm)',
-            background: 'var(--admin-bg-hover, #F5F5F2)',
-          }}
-        >
-          <img
-            src={value}
-            alt={label}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
+        <div className="image-field-preview-card">
+          <div className="image-field-img-wrap">
+            <img
+              src={value}
+              alt={label}
+              className="w-full h-full object-cover block"
+            />
+            {/* Attached pill badge */}
+            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-stone-900 bg-white/95 backdrop-blur-xs border border-white/60 shadow-xs flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-lime-500" />
+              <span>Attached</span>
+            </div>
+          </div>
 
-          {/* Action overlay buttons */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.55)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              padding: '12px',
-            }}
-          >
+          {/* Touch-Friendly Action Buttons Below Image */}
+          <div className="image-field-actions-bar">
             <button
               type="button"
               onClick={() => openModal('library')}
-              className="admin-btn-primary"
-              style={{ padding: '8px 16px', fontSize: '0.8125rem' }}
+              className="image-field-touch-btn bg-stone-900 text-white hover:bg-stone-800 active:scale-95 shadow-xs"
             >
               <FolderOpen size={14} />
-              Browse Library
+              <span>Change Image</span>
             </button>
             <button
               type="button"
               onClick={() => openModal('upload')}
-              className="admin-btn-secondary"
-              style={{ padding: '8px 16px', fontSize: '0.8125rem', background: '#FFFFFF' }}
+              className="image-field-touch-btn bg-white text-stone-800 border-stone-200 hover:bg-stone-50 active:scale-95 shadow-xs"
             >
               <Upload size={14} />
-              Upload New
+              <span>Upload New</span>
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="admin-btn-danger"
-              style={{ padding: '8px 14px', fontSize: '0.8125rem', background: '#FFFFFF' }}
+              className="image-field-touch-btn bg-red-50 text-red-600 border-red-200 hover:bg-red-100 active:scale-95 ml-auto"
             >
               <X size={14} />
-              Remove
+              <span>Remove</span>
             </button>
           </div>
         </div>
       ) : (
         <div
-          style={{
-            border: '2px dashed var(--admin-border, #E6E6E6)',
-            borderRadius: '16px',
-            padding: '28px 16px',
-            background: 'var(--admin-bg-hover, #F5F5F2)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '10px',
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all var(--admin-transition-base)',
-          }}
+          className="border-2 border-dashed border-stone-200 hover:border-lime-500 rounded-2xl p-6 sm:p-8 bg-[#FAF8F5] hover:bg-white flex flex-col items-center justify-center gap-3 text-center cursor-pointer transition-all shadow-xs"
           onClick={() => openModal('library')}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--admin-lime-secondary, #A4DD00)';
-            e.currentTarget.style.background = 'rgba(182, 245, 0, 0.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--admin-border, #E6E6E6)';
-            e.currentTarget.style.background = 'var(--admin-bg-hover, #F5F5F2)';
-          }}
         >
           <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-stone-900 shadow-xs"
             style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '14px',
               background: 'rgba(182, 245, 0, 0.2)',
               border: '1.5px solid rgba(182, 245, 0, 0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--admin-text-primary, #2A2A2A)',
             }}
           >
             <ImageIcon size={22} />
           </div>
 
           <div>
-            <p
-              style={{
-                margin: 0,
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                color: 'var(--admin-text-primary, #2A2A2A)',
-              }}
-            >
+            <p className="m-0 font-bold text-stone-900 text-sm sm:text-base">
               Select or Upload Image
             </p>
-            <p
-              style={{
-                margin: '3px 0 0 0',
-                fontSize: '0.75rem',
-                color: 'var(--admin-text-secondary, #666)',
-              }}
-            >
-              Browse existing database images or upload new on the fly
+            <p className="mt-1 text-xs text-stone-500 max-w-xs">
+              Choose from your media library or upload directly from your device
             </p>
           </div>
 
           <div
-            style={{ display: 'flex', gap: '8px', marginTop: '4px' }}
+            className="flex items-center gap-2 mt-1"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => openModal('library')}
-              className="admin-btn-primary"
-              style={{ padding: '7px 14px', fontSize: '0.75rem' }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-900 active:scale-95 transition-all shadow-xs min-h-[38px] cursor-pointer"
+              style={{ background: '#B6F500' }}
             >
-              <FolderOpen size={13} />
-              Browse Library
+              <FolderOpen size={14} />
+              <span>Browse Library</span>
             </button>
             <button
               type="button"
               onClick={() => openModal('upload')}
-              className="admin-btn-secondary"
-              style={{ padding: '7px 14px', fontSize: '0.75rem' }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-stone-800 bg-white border border-stone-200 hover:bg-stone-50 active:scale-95 transition-all shadow-xs min-h-[38px] cursor-pointer"
             >
-              <Upload size={13} />
-              Upload File
+              <Upload size={14} />
+              <span>Upload New</span>
             </button>
           </div>
         </div>
       )}
 
       {error && (
-        <span style={{ fontSize: '0.75rem', color: 'var(--admin-error, #FF6B6B)' }}>
+        <span className="text-xs text-red-500 font-medium mt-1">
           {error}
         </span>
       )}
@@ -242,7 +167,7 @@ export function ImageUploadField({
         multiple={multiple}
         bucket={bucket}
         folder={folder}
-        title={`Media Library â€” ${label}`}
+        title={`Media Library — ${label}`}
         initialTab={modalInitialTab}
       />
     </div>

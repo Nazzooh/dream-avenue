@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    DREAM AVENUE — WARM EDITORIAL LUXURY DESIGN SYSTEM
    Redesigned Sidebar, Topbar, and Gallery Image Cards
    ========================================================================== */
@@ -139,6 +139,68 @@
   gap: 4px;
 }
 
+.sidebar-lux-overview-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid var(--lux-border);
+  color: var(--lux-ink);
+  text-decoration: none;
+  box-shadow: var(--lux-shadow-xs);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-lux-overview-hero:hover {
+  background: #FDFBF7;
+  border-color: var(--lux-border-hover);
+  box-shadow: var(--lux-shadow-sm);
+  transform: translateY(-1px);
+}
+
+.sidebar-lux-overview-hero.active {
+  background: linear-gradient(135deg, #FAF4E8 0%, #F5ECDB 100%);
+  border-color: #E2CFB0;
+  box-shadow: 0 3px 12px rgba(184, 139, 82, 0.12);
+}
+
+.sidebar-lux-overview-hero-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--lux-gold);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-lux-overview-hero:hover .sidebar-lux-overview-hero-icon {
+  transform: scale(1.1);
+}
+
+.sidebar-lux-overview-hero-title {
+  font-family: var(--lux-font-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--lux-ink);
+  line-height: 1.2;
+}
+
+.sidebar-lux-overview-hero-sub {
+  font-size: 0.68rem;
+  color: var(--lux-muted);
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.admin-sidebar-luxury.collapsed .sidebar-lux-overview-hero {
+  padding: 10px;
+  justify-content: center;
+}
+
 .sidebar-lux-nav-heading {
   font-size: 0.65rem;
   font-weight: 750;
@@ -223,6 +285,27 @@
   background: #FFFFFF;
   border: 1px solid var(--lux-border);
   box-shadow: var(--lux-shadow-xs);
+}
+
+.sidebar-lux-user-avatar-icon,
+.topbar-lux-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: #EFEBE4;
+  border: 1px solid var(--lux-border);
+  color: var(--lux-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.sidebar-lux-user-avatar-icon:hover,
+.topbar-lux-user-avatar:hover {
+  background: #E5E0D5;
+  border-color: var(--lux-border-hover);
 }
 
 .sidebar-lux-user-avatar {
@@ -840,4 +923,269 @@
   .admin-main-content {
     margin-left: 0 !important;
   }
+}
+
+/* ==========================================================================
+   4. MOBILE & TABLET MEDIA LIBRARY MODAL REDESIGN
+   ========================================================================== */
+
+.media-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 34, 27, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  transition: opacity 0.2s ease;
+}
+
+.media-modal-container {
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 860px;
+  height: 88vh;
+  max-height: 820px;
+  border-radius: 20px;
+  border: 1px solid var(--lux-border);
+  box-shadow: var(--lux-shadow-xl);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .media-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .media-modal-container {
+    max-width: 100%;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+}
+
+/* Modal Header: Responsive layout */
+.media-header-wrap {
+  padding: 14px 16px;
+  background: #FAF8F5;
+  border-bottom: 1px solid var(--lux-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .media-header-wrap {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px;
+    gap: 16px;
+  }
+}
+
+.media-header-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .media-header-title-row {
+    width: auto;
+    justify-content: flex-start;
+  }
+}
+
+.media-header-tabs {
+  display: flex;
+  align-items: center;
+  background: #EFEBE4;
+  padding: 3px;
+  border-radius: 11px;
+  gap: 4px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .media-header-tabs {
+    width: auto;
+  }
+}
+
+.media-header-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--lux-ink-secondary);
+  transition: all 0.18s ease;
+  min-height: 38px;
+}
+
+.media-header-tab-btn.active {
+  background: #FFFFFF;
+  color: var(--lux-ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Modal Grid: Touch-optimized */
+.media-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 2px;
+}
+
+@media (min-width: 480px) {
+  .media-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .media-grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+}
+
+.media-grid-card {
+  position: relative;
+  aspect-ratio: 16/11;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--lux-border);
+  background: #FAF8F5;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  touch-action: manipulation;
+}
+
+.media-grid-card.selected {
+  border-color: #537517;
+  box-shadow: 0 0 0 2px rgba(83, 117, 23, 0.3), 0 4px 12px rgba(83, 117, 23, 0.2);
+}
+
+.media-grid-card:active {
+  transform: scale(0.98);
+}
+
+/* Modal Footer: Sticky Mobile thumb-bar */
+.media-footer-wrap {
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: #FAF8F5;
+  border-top: 1px solid var(--lux-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .media-footer-wrap {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+  }
+}
+
+.media-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .media-footer-actions {
+    width: auto;
+  }
+}
+
+.media-footer-actions > button {
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .media-footer-actions > button {
+    flex: initial;
+  }
+}
+
+/* Image Upload Field Container & Touch Controls */
+.image-field-preview-card {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid var(--lux-border);
+  background: #FAF8F5;
+  box-shadow: var(--lux-shadow-xs);
+  display: flex;
+  flex-direction: column;
+}
+
+.image-field-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: #2A332B;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .image-field-img-wrap {
+    height: 240px;
+  }
+}
+
+.image-field-actions-bar {
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border-top: 1px solid var(--lux-border);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-field-touch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 38px;
+  border: 1px solid transparent;
 }

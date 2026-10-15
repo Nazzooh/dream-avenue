@@ -1,4 +1,5 @@
 ﻿// src/components/admin-v2/DashboardSidebar.tsx — Redesigned Warm Editorial Luxury Sidebar
+import logoImage from '../../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../src/auth/useAuth';
 import { 
@@ -11,7 +12,7 @@ import {
   BookOpen,
   LogOut,
   X,
-  Sparkles,
+  User,
   UserPlus,
   TrendingUp,
   Terminal,
@@ -44,13 +45,6 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    heading: 'Core',
-    items: [
-      { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
-      { id: 'analytics', label: 'Analytics & Trends', icon: TrendingUp, path: '/admin/analytics', permission: 'analytics' },
-    ]
-  },
-  {
     heading: 'Venue & Content',
     items: [
       { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, path: '/admin/gallery', permission: 'content' },
@@ -64,6 +58,12 @@ const navSections: NavSection[] = [
       { id: 'availability', label: 'Availability Calendar', icon: CalendarCheck, path: '/admin/availability', permission: 'operations' },
       { id: 'bookings', label: 'Bookings & Events', icon: BookOpen, path: '/admin/bookings', permission: 'operations' },
       { id: 'tasks', label: 'Team Tasks', icon: ClipboardList, path: '/admin/tasks', permission: 'tasks' },
+    ]
+  },
+  {
+    heading: 'Performance & Insights',
+    items: [
+      { id: 'analytics', label: 'Analytics & Trends', icon: TrendingUp, path: '/admin/analytics', permission: 'analytics' },
     ]
   },
   {
@@ -99,7 +99,6 @@ export function DashboardSidebar({
   };
 
   const userRole = profile?.role;
-  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : 'DA';
 
   return (
     <>
@@ -116,11 +115,14 @@ export function DashboardSidebar({
         className={`admin-sidebar-luxury ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}
       >
         {/* Brand Header */}
-        <div className="sidebar-lux-brand">
-          <Link to="/admin/dashboard" className="sidebar-lux-logo-box">
-            <div className="sidebar-lux-emblem">
-              <Sparkles size={20} />
-            </div>
+        <div className="sidebar-lux-brand flex items-center justify-between">
+          <Link to="/admin/dashboard" className="sidebar-lux-logo-box flex items-center gap-3">
+            <img
+              src={logoImage}
+              alt="Dream Avenue"
+              className="sidebar-lux-logo-img"
+              style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+            />
             {!isCollapsed && (
               <div className="sidebar-lux-brand-info">
                 <h1 className="sidebar-lux-brand-title">Dream Avenue</h1>
@@ -128,6 +130,18 @@ export function DashboardSidebar({
               </div>
             )}
           </Link>
+
+          {/* Desktop Discreet Header Collapse Toggle */}
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 transition-colors"
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {isCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+            </button>
+          )}
 
           {/* Mobile Close Button */}
           <button
@@ -141,6 +155,23 @@ export function DashboardSidebar({
 
         {/* Grouped Navigation */}
         <nav className="sidebar-lux-nav">
+          {/* Prominent Overview Hero Card */}
+          <div className="mb-3 px-1">
+            <Link
+              to="/admin/dashboard"
+              className={`sidebar-lux-overview-hero ${currentPage === 'dashboard' ? 'active' : ''}`}
+              onClick={() => onClose()}
+              title={isCollapsed ? 'Overview Dashboard' : undefined}
+            >
+              <LayoutDashboard className="sidebar-lux-overview-hero-icon" size={20} />
+              {!isCollapsed && (
+                <div className="flex flex-col text-left">
+                  <span className="sidebar-lux-overview-hero-title">Overview</span>
+                  <span className="sidebar-lux-overview-hero-sub">Workspace Command Center</span>
+                </div>
+              )}
+            </Link>
+          </div>
           {navSections.map((section, sIdx) => {
             const accessibleItems = section.items.filter(
               (item) => !item.permission || can(userRole, item.permission as any)
@@ -177,48 +208,26 @@ export function DashboardSidebar({
 
         {/* Footer with User Card and Controls */}
         <div className="sidebar-lux-footer">
-          {/* User profile card (expanded mode) */}
+          {/* User profile card */}
           {!isCollapsed ? (
             <div className="sidebar-lux-user-card">
-              <div className="sidebar-lux-user-avatar">
-                {initials}
+              <div className="sidebar-lux-user-avatar-icon">
+                <User size={18} className="text-stone-700" />
               </div>
               <div className="sidebar-lux-user-info">
                 <span className="sidebar-lux-user-role">{roleLabel(userRole)}</span>
-                <span className="sidebar-lux-user-email">{user?.email || 'admin@dreamavenue.com'}</span>
+                <span className="sidebar-lux-user-email" title={user?.email || profile?.email || ''}>
+                  {user?.email || profile?.email || 'admin@dreamavenue.com'}
+                </span>
               </div>
             </div>
           ) : (
             <div 
-              className="sidebar-lux-user-avatar mx-auto mb-2" 
-              title={`${roleLabel(userRole)} (${user?.email})`}
+              className="sidebar-lux-user-avatar-icon mx-auto mb-2" 
+              title={`${roleLabel(userRole)} (${user?.email || profile?.email || 'Admin'})`}
             >
-              {initials}
+              <User size={18} className="text-stone-700" />
             </div>
-          )}
-
-          {/* Quick External Link to Live Site */}
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sidebar-lux-action-btn"
-            title={isCollapsed ? 'Visit Live Website' : undefined}
-          >
-            <ExternalLink size={16} />
-            {!isCollapsed && <span>Live Website</span>}
-          </a>
-
-          {/* Desktop Collapse Toggle */}
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className="sidebar-lux-action-btn hidden lg:flex"
-              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            >
-              {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-              {!isCollapsed && <span>Collapse Sidebar</span>}
-            </button>
           )}
 
           {/* Log Out Button */}

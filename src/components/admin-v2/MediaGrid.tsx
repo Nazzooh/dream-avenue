@@ -23,29 +23,11 @@ export function MediaGrid({
 }: MediaGridProps) {
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-          gap: '12px',
-          maxHeight: '380px',
-          overflowY: 'auto',
-          padding: '4px',
-        }}
-      >
+      <div className="media-grid-container">
         {Array.from({ length: 8 }).map((_, index) => (
           <div
             key={index}
-            style={{
-              aspectRatio: '16/10',
-              borderRadius: '12px',
-              background: 'var(--admin-bg-hover, #F5F5F2)',
-              border: '1px solid var(--admin-border, #E6E6E6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--admin-text-muted, #999)',
-            }}
+            className="aspect-[16/11] rounded-xl bg-stone-100 animate-pulse border border-stone-200/60 flex items-center justify-center text-stone-300"
           >
             <ImageIcon size={24} />
           </div>
@@ -56,56 +38,22 @@ export function MediaGrid({
 
   if (items.length === 0) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '40px 20px',
-          textAlign: 'center',
-          background: 'var(--admin-bg-hover, #F5F5F2)',
-          borderRadius: '16px',
-          border: '1px dashed var(--admin-border, #E6E6E6)',
-        }}
-      >
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-[#FAF8F5] rounded-2xl border border-dashed border-stone-300">
         <div
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'var(--admin-bg-card, #FFFFFF)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--admin-text-secondary, #666)',
-            marginBottom: '10px',
-            boxShadow: 'var(--admin-shadow-sm)',
-          }}
+          className="w-12 h-12 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-400 mb-3 shadow-sm"
         >
           <ImageIcon size={24} />
         </div>
-        <p style={{ margin: 0, fontWeight: 600, color: 'var(--admin-text-primary, #2A2A2A)', fontSize: '0.875rem' }}>
-          No images found
-        </p>
-        <p style={{ margin: '4px 0 0 0', color: 'var(--admin-text-muted, #999)', fontSize: '0.75rem' }}>
-          Upload a new image or change your search filter.
+        <p className="font-semibold text-stone-800 text-sm m-0">No images found</p>
+        <p className="text-stone-500 text-xs mt-1 mb-0 max-w-xs">
+          Upload images using the "Upload New" tab or try a different search filter.
         </p>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-        gap: '12px',
-        maxHeight: '380px',
-        overflowY: 'auto',
-        padding: '4px',
-      }}
-    >
+    <div className="media-grid-container">
       {items.map((item) => {
         const isSelected = multiple && selectedUrls
           ? selectedUrls.includes(item.url)
@@ -116,62 +64,32 @@ export function MediaGrid({
           <div
             key={item.id}
             onClick={() => onSelect(item)}
-            style={{
-              position: 'relative',
-              aspectRatio: '16/10',
-              width: '100%',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              cursor: 'pointer',
-              border: isSelected
-                ? '2.5px solid var(--admin-lime-primary, #B6F500)'
-                : '1.5px solid var(--admin-border, #E6E6E6)',
-              boxShadow: isSelected
-                ? '0 0 12px rgba(182, 245, 0, 0.45)'
-                : '0 2px 5px rgba(0, 0, 0, 0.04)',
-              background: 'var(--admin-bg-card, #FFFFFF)',
-              transition: 'transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              if (!isSelected) e.currentTarget.style.borderColor = 'var(--admin-lime-secondary, #A4DD00)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              if (!isSelected) e.currentTarget.style.borderColor = 'var(--admin-border, #E6E6E6)';
+            className={`media-grid-card ${isSelected ? 'selected' : ''}`}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isSelected}
+            aria-label={`Select ${item.name}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect(item);
+              }
             }}
           >
             <img
               src={item.url}
               alt={item.name}
               loading="lazy"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
+              className="w-full h-full object-cover block"
             />
 
             {/* Selection Check Badge */}
             {isSelected && (
               <div
+                className="absolute top-2 right-2 min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shadow-md text-xs font-bold text-stone-900"
                 style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  minWidth: '22px',
-                  height: '22px',
-                  padding: multiple && selectionIndex > 0 ? '0 5px' : 0,
-                  borderRadius: '50%',
-                  background: 'var(--admin-lime-primary, #B6F500)',
-                  color: 'var(--admin-text-primary, #2A2A2A)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
+                  background: '#B6F500',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
                 }}
               >
                 {multiple && selectionIndex > 0 && selectedUrls && selectedUrls.length > 1 ? (
@@ -182,31 +100,14 @@ export function MediaGrid({
               </div>
             )}
 
-            {/* Hover bottom title bar */}
+            {/* Bottom Title Bar + Quick Delete Button */}
             <div
+              className="absolute inset-x-0 bottom-0 p-2 pt-6 flex items-center justify-between text-white"
               style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: 0,
-                padding: '6px 8px',
-                background: 'linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3) 70%, transparent)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                color: '#FFFFFF',
+                background: 'linear-gradient(to top, rgba(15,20,16,0.92) 0%, rgba(15,20,16,0.4) 65%, transparent 100%)',
               }}
             >
-              <span
-                style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 500,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '75%',
-                }}
-              >
+              <span className="text-[11px] font-medium truncate max-w-[75%] leading-tight text-stone-100">
                 {item.name}
               </span>
 
@@ -218,21 +119,10 @@ export function MediaGrid({
                     e.stopPropagation();
                     onDelete(item);
                   }}
-                  style={{
-                    background: 'rgba(255, 107, 107, 0.85)',
-                    border: 'none',
-                    borderRadius: '6px',
-                    width: '20px',
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#FFFFFF',
-                    cursor: 'pointer',
-                    padding: 0,
-                  }}
+                  className="w-6 h-6 rounded-md bg-red-600/90 hover:bg-red-700 active:scale-95 flex items-center justify-center text-white p-0 border-0 transition-transform cursor-pointer flex-shrink-0"
+                  aria-label="Delete image from storage"
                 >
-                  <Trash2 size={11} />
+                  <Trash2 size={12} />
                 </button>
               )}
             </div>

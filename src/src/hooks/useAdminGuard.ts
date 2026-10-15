@@ -1,10 +1,10 @@
 // src/hooks/useAdminGuard.ts
 // SIMPLIFIED: Uses ONLY profile.role from database
 
-import { useEffect, useState, useRef } from "react";
-import { supabase } from "../../utils/supabase/client";
-import { AdminProfile, fetchUserProfile } from "../lib/adminAuth";
-import { useSecurityAudit } from "./useSecurityAudit";
+import { useEffect, useState, useRef } from 'react';
+import { supabase } from '../../utils/supabase/client';
+import { AdminProfile, fetchUserProfile } from '../lib/adminAuth';
+import { useSecurityAudit } from './useSecurityAudit';
 import { isAdminRole } from '../lib/adminPermissions';
 
 /**
@@ -20,6 +20,8 @@ export function useAdminGuard() {
   const [profileError, setProfileError] = useState<null | Error>(null);
   const { logEvent } = useSecurityAudit();
   
+  // Track if we already have an active verified session
+  const hasInitialSessionRef = useRef(false);
   // Prevent multiple simultaneous loads
   const isLoadingRef = useRef(false);
 
@@ -37,15 +39,16 @@ export function useAdminGuard() {
 
   async function loadProfile(isBackground = false) {
     if (isLoadingRef.current) {
-      console.log('⏭️ Already loading profile, skipping...');
+      console.log('Already loading profile, skipping...');
       return;
     }
     
+    const isSilent = isBackground || hasInitialSessionRef.current;
     isLoadingRef.current = true;
-    console.log(`🔄 ${isBackground ? 'Background' : 'Full'} loading profile...`);
+    console.log(`${isSilent ? 'Background' : 'Full'} loading profile...`);
     
-    // Only show loading screen if not a background refresh
-    if (!isBackground) {
+    // Only show loading screen if not a background refresh and no session yet
+    if (!isSilent) {
       setLoading(true);
     }
     
@@ -56,27 +59,30 @@ export function useAdminGuard() {
       );
       
       if (sessionError) {
-        console.error('❌ Session error:', sessionError);
-        setProfileError(sessionError);
-        setIsAdmin(false);
-        setUser(null);
-        setProfile(null);
+        console.error('Session error:', sessionError);
+        if (!isSilent) {
+          setProfileError(sessionError);
+          setIsAdmin(false);
+          setUser(null);
+          setProfile(null);
+        }
         setLoading(false);
         isLoadingRef.current = false;
         return;
       }
 
       if (!session?.user) {
-        console.log('❌ No session');
+        console.log('No session');
         setIsAdmin(false);
         setUser(null);
         setProfile(null);
         setLoading(false);
         isLoadingRef.current = false;
+        hasInitialSessionRef.current = false;
         return;
       }
 
-      console.log('✅ Session found:', session.user.id);
+      console.log('Session found:', session.user.id);
 
       // Fetch profile from database - SINGLE SOURCE OF TRUTH
       const userProfile = await withTimeout(
@@ -85,11 +91,13 @@ export function useAdminGuard() {
       );
 
       if (!userProfile) {
-        console.error('❌ No profile found for user');
-        setProfileError(new Error('Profile not found'));
-        setUser(session.user);
-        setIsAdmin(false);
-        setProfile(null);
+        console.error('No profile found for user');
+        if (!isSilent) {
+          setProfileError(new Error('Profile not found'));
+          setUser(session.user);
+          setIsAdmin(false);
+          setProfile(null);
+        }
         setLoading(false);
         isLoadingRef.current = false;
         return;
@@ -97,68 +105,70 @@ export function useAdminGuard() {
 
       // Check trusted internal-team role from profile only.
       const adminAccess = isAdminRole(userProfile.role);
-      console.log('🔐 Admin check:', { 
+      console.log('Admin check:', { 
         userId: userProfile.id, 
         profileRole: userProfile.role, 
         isAdmin: adminAccess 
       });
 
-      if (!adminAccess && !isBackground) {
+      if (!adminAccess && !isSilent) {
         logEvent('UNAUTHORIZED_ACCESS_ATTEMPT', { userId: userProfile.id, role: userProfile.role });
-      } else if (adminAccess && !isBackground) {
+      } else if (adminAccess && !isSilent) {
         logEvent('ADMIN_ACCESS_GRANTED', { userId: userProfile.id });
       }
 
-      // Update user, profile and admin state together atomically to avoid intermediate flashes
+      // Update user, profile and admin state together atomically
       setUser(session.user);
       setProfile(userProfile);
       setIsAdmin(adminAccess);
       setProfileError(null);
       setLoading(false);
       isLoadingRef.current = false;
-      console.log('🏁 Profile load complete');
+      hasInitialSessionRef.current = true;
+      console.log('Profile load complete');
 
     } catch (err) {
-      console.error('❌ Error loading profile:', err);
-      setProfileError(err as Error);
-      setIsAdmin(false);
-      setProfile(null);
+      console.error('Error loading profile:', err);
+      // Stale-while-revalidate: if we already have an established session,
+      // do not wipe out admin access on transient background sleep/timeouts
+      if (!isSilent) {
+        setProfileError(err as Error);
+        setIsAdmin(false);
+        setProfile(null);
+      }
       setLoading(false);
       isLoadingRef.current = false;
     }
   }
 
   useEffect(() => {
-    console.log('🎬 useAdminGuard: Initial mount');
+    console.log('useAdminGuard: Initial mount');
     loadProfile();
 
     // Listen for auth state changes
     const { data: sub } = supabase.auth.onAuthStateChange((event, _session) => {
-      console.log('🔔 Auth state change:', event);
+      console.log('Auth state change:', event);
       
-      // Only react to specific events
       if (event === "SIGNED_IN") {
-        console.log('🔄 User signed in, reloading profile');
         isLoadingRef.current = false;
-        loadProfile(); // Full reload on sign in
+        loadProfile(hasInitialSessionRef.current);
       } else if (event === "TOKEN_REFRESHED") {
-        console.log('🔄 Token refreshed, performing background profile check');
+        console.log('Token refreshed, performing background profile check');
         isLoadingRef.current = false;
         loadProfile(true); // Silent background reload
       } else if (event === "SIGNED_OUT") {
-        console.log('🚪 User signed out');
+        console.log('User signed out');
         setUser(null);
         setProfile(null);
         setIsAdmin(false);
         setLoading(false);
         isLoadingRef.current = false;
-      } else {
-        console.log('⏭️ Ignoring event:', event);
+        hasInitialSessionRef.current = false;
       }
     });
 
     return () => {
-      console.log('🧹 useAdminGuard: Cleanup');
+      console.log('useAdminGuard: Cleanup');
       sub?.subscription?.unsubscribe?.();
     };
   }, []);

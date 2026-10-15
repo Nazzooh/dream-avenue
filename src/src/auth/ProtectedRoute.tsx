@@ -50,7 +50,8 @@ export function ProtectedRoute({ children, requireAdmin = false, permission }: P
   };
 
   // Show loading state while checking auth
-  if (loading || isLoggingOut) {
+  // Only show blocking loading state on initial load when no user session exists yet
+  if ((loading && !user) || isLoggingOut) {
     console.log('🛡️ ProtectedRoute: Loading auth state...');
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--bg-cream)' }}>

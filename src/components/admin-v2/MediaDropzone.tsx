@@ -217,32 +217,36 @@ export function MediaDropzone({
             minHeight: '200px',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+          <div className="flex flex-col items-center gap-3">
             <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-stone-900 shadow-sm"
               style={{
-                width: '54px',
-                height: '54px',
-                borderRadius: '16px',
-                background: 'rgba(182, 245, 0, 0.15)',
-                border: '1.5px solid rgba(182, 245, 0, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--admin-text-primary, #2A2A2A)',
-                boxShadow: 'var(--admin-shadow-sm)',
+                background: 'rgba(182, 245, 0, 0.2)',
+                border: '1.5px solid rgba(182, 245, 0, 0.5)',
               }}
             >
-              <Upload size={24} />
+              <Upload size={26} />
             </div>
             <div>
-              <p style={{ margin: 0, fontWeight: 600, color: 'var(--admin-text-primary, #2A2A2A)', fontSize: '0.9375rem' }}>
-                Drag & drop {multiple ? 'images' : 'image'} here, or{' '}
-                <span style={{ color: '#6A9E00', textDecoration: 'underline' }}>browse</span>
+              <p className="m-0 font-bold text-stone-900 text-sm sm:text-base">
+                Choose images to upload
               </p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--admin-text-secondary, #666)' }}>
-                Supports JPG, PNG, WebP, SVG, GIF (Max {maxFiles} images, {maxSize}MB each)
+              <p className="mt-1 text-xs text-stone-500 max-w-xs sm:max-w-md">
+                Tap the button below or drag & drop. Supports JPG, PNG, WebP, SVG, GIF (Up to {maxFiles} images, {maxSize}MB each)
               </p>
             </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-stone-900 font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-sm min-h-[42px] cursor-pointer mt-1"
+              style={{ background: '#B6F500' }}
+            >
+              <Upload size={16} />
+              <span>Choose from Device / Photos</span>
+            </button>
           </div>
         </div>
       )}

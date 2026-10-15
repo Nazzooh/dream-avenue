@@ -202,18 +202,11 @@ export function MediaUploadQueue({
                 <button
                   type="button"
                   onClick={() => onRemoveItem(item.id)}
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--admin-text-muted, #999)',
-                    cursor: 'pointer',
-                    padding: '2px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors p-0 border-0 cursor-pointer"
                   title="Remove image"
+                  aria-label="Remove image from queue"
                 >
-                  <X size={14} />
+                  <X size={16} />
                 </button>
               )}
             </div>

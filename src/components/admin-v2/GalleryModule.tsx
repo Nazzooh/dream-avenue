@@ -225,29 +225,17 @@ export default function GalleryModule() {
         <div>
           <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
             <h1 className="gallery-lux-title">Photo Gallery</h1>
-            {canManage ? (
+            {!canManage && (
               <span
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
                 style={{
-                  background: 'var(--lux-olive-light)',
-                  color: 'var(--lux-olive)',
-                  border: '1px solid var(--lux-olive-border)',
-                }}
-              >
-                <ShieldCheck size={13} />
-                <span>{roleLabel(userRole)} • Manager Access</span>
-              </span>
-            ) : (
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                style={{
-                  background: 'var(--lux-gold-light)',
-                  color: 'var(--lux-gold)',
-                  border: '1px solid var(--lux-gold-border)',
+                  background: "var(--lux-gold-light)",
+                  color: "var(--lux-gold)",
+                  border: "1px solid var(--lux-gold-border)"
                 }}
               >
                 <ShieldAlert size={13} />
-                <span>{roleLabel(userRole)} • Read-Only</span>
+                <span>{roleLabel(userRole)} · Read-Only</span>
               </span>
             )}
           </div>
