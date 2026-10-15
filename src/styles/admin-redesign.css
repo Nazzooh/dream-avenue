@@ -382,6 +382,7 @@
   top: 0;
   z-index: 90;
   height: 72px;
+  overflow: visible !important;
   background: rgba(250, 248, 245, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -451,6 +452,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  overflow: visible !important;
 }
 
 .topbar-lux-status-pill {
@@ -537,6 +539,145 @@
   border-radius: 50%;
   background: var(--lux-gold);
   border: 2px solid #FFFFFF;
+}
+
+/* ==========================================================================
+   TOPBAR USER PROFILE & LUXURY DROPDOWN
+   ========================================================================== */
+
+.topbar-lux-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.topbar-lux-profile-trigger:hover,
+.topbar-lux-profile-trigger.active {
+  background: #FFFFFF;
+  border-color: var(--lux-border);
+  box-shadow: var(--lux-shadow-xs);
+}
+
+.topbar-lux-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 270px;
+  background: #FFFFFF !important;
+  border: 1px solid var(--lux-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 16px 36px -4px rgba(27, 34, 27, 0.14), 0 4px 12px rgba(27, 34, 27, 0.06) !important;
+  padding: 8px !important;
+  z-index: 1000 !important;
+  overflow: hidden;
+  animation: luxDropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes luxDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.topbar-lux-dropdown-header {
+  padding: 12px 14px 14px;
+  border-bottom: 1px solid var(--lux-border-light);
+  margin-bottom: 4px;
+}
+
+.topbar-lux-dropdown-label {
+  font-size: 0.65rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lux-muted);
+  margin: 0;
+}
+
+.topbar-lux-dropdown-email {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--lux-ink);
+  margin: 4px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-lux-dropdown-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--lux-radius-pill);
+  font-size: 0.72rem;
+  font-weight: 650;
+  background: var(--lux-olive-light);
+  color: var(--lux-olive);
+  border: 1px solid var(--lux-olive-border);
+  margin-top: 8px;
+}
+
+.topbar-lux-dropdown-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar-lux-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--lux-ink-secondary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.topbar-lux-dropdown-link:hover {
+  background: #FAF8F5;
+  color: var(--lux-ink);
+}
+
+.topbar-lux-dropdown-footer {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--lux-border-light);
+}
+
+.topbar-lux-dropdown-logout {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--lux-danger);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.topbar-lux-dropdown-logout:hover {
+  background: var(--lux-danger-light);
 }
 
 /* ==========================================================================

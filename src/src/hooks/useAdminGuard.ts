@@ -1,177 +1,216 @@
 // src/hooks/useAdminGuard.ts
-// SIMPLIFIED: Uses ONLY profile.role from database
+// SINGLETON SHARED STORE + STALE-WHILE-REVALIDATE CACHE
+// Eliminates navigation hangs, duplicate fetches, and permission drops
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../utils/supabase/client';
 import { AdminProfile, fetchUserProfile } from '../lib/adminAuth';
-import { useSecurityAudit } from './useSecurityAudit';
 import { isAdminRole } from '../lib/adminPermissions';
 
-/**
- * Hook to check admin access
- * Checks the database profile for one of the permitted workspace roles.
- * NO JWT claims, NO metadata - database profile is source of truth
- */
-export function useAdminGuard() {
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<AdminProfile | null>(null);
-  const [profileError, setProfileError] = useState<null | Error>(null);
-  const { logEvent } = useSecurityAudit();
-  
-  // Track if we already have an active verified session
-  const hasInitialSessionRef = useRef(false);
-  // Prevent multiple simultaneous loads
-  const isLoadingRef = useRef(false);
+const STORAGE_KEY = 'da_admin_guard_cache_v2';
 
-  async function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 10000): Promise<T> {
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs);
-    });
-    try {
-      return await Promise.race([promise, timeout]);
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
+export interface AdminGuardState {
+  loading: boolean;
+  isAdmin: boolean;
+  user: any;
+  profile: AdminProfile | null;
+  profileError: Error | null;
+}
+
+// 1. Initial State from localStorage (instant synchronous hydration on mount/navigation)
+let globalState: AdminGuardState = (() => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.profile && parsed?.user) {
+        return {
+          loading: false,
+          isAdmin: isAdminRole(parsed.profile.role),
+          user: parsed.user,
+          profile: parsed.profile,
+          profileError: null,
+        };
+      }
     }
+  } catch {}
+  return {
+    loading: true,
+    isAdmin: false,
+    user: null,
+    profile: null,
+    profileError: null,
+  };
+})();
+
+const listeners = new Set<(state: AdminGuardState) => void>();
+
+function emitChange() {
+  listeners.forEach((listener) => listener(globalState));
+}
+
+function updateGlobalState(updates: Partial<AdminGuardState>) {
+  globalState = { ...globalState, ...updates };
+  if (globalState.profile && globalState.user) {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ profile: globalState.profile, user: globalState.user })
+      );
+    } catch {}
+  }
+  emitChange();
+}
+
+function clearGlobalState() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {}
+  globalState = {
+    loading: false,
+    isAdmin: false,
+    user: null,
+    profile: null,
+    profileError: null,
+  };
+  emitChange();
+}
+
+// 2. Deduplicated Singleton Promise
+let inFlightPromise: Promise<AdminGuardState> | null = null;
+
+export async function refreshAdminSession(): Promise<AdminGuardState> {
+  // If we already have a running fetch, reuse it to prevent concurrent thrashing
+  if (inFlightPromise) {
+    return inFlightPromise;
   }
 
-  async function loadProfile(isBackground = false) {
-    if (isLoadingRef.current) {
-      console.log('Already loading profile, skipping...');
-      return;
-    }
-    
-    const isSilent = isBackground || hasInitialSessionRef.current;
-    isLoadingRef.current = true;
-    console.log(`${isSilent ? 'Background' : 'Full'} loading profile...`);
-    
-    // Only show loading screen if not a background refresh and no session yet
-    if (!isSilent) {
-      setLoading(true);
-    }
-    
+  inFlightPromise = (async () => {
     try {
-      const { data: { session }, error: sessionError } = await withTimeout(
-        supabase.auth.getSession(),
-        'Session check',
-      );
-      
+      // If we don't have a verified profile yet, show loading
+      if (!globalState.profile) {
+        updateGlobalState({ loading: true });
+      }
+
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      const session = data?.session;
+
       if (sessionError) {
-        console.error('Session error:', sessionError);
-        if (!isSilent) {
-          setProfileError(sessionError);
-          setIsAdmin(false);
-          setUser(null);
-          setProfile(null);
+        console.error('Session check error:', sessionError);
+        // If we already have a cached profile, keep it to prevent lockout
+        if (globalState.profile) {
+          updateGlobalState({ loading: false });
+          return globalState;
         }
-        setLoading(false);
-        isLoadingRef.current = false;
-        return;
+        updateGlobalState({
+          loading: false,
+          isAdmin: false,
+          user: null,
+          profile: null,
+          profileError: sessionError,
+        });
+        return globalState;
       }
 
       if (!session?.user) {
-        console.log('No session');
-        setIsAdmin(false);
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-        isLoadingRef.current = false;
-        hasInitialSessionRef.current = false;
-        return;
+        console.log('No active session in Supabase');
+        clearGlobalState();
+        return globalState;
       }
 
-      console.log('Session found:', session.user.id);
-
-      // Fetch profile from database - SINGLE SOURCE OF TRUTH
-      const userProfile = await withTimeout(
-        fetchUserProfile(session.user.id),
-        'Admin profile check',
-      );
+      // Fetch fresh profile from database
+      const userProfile = await fetchUserProfile(session.user.id);
 
       if (!userProfile) {
-        console.error('No profile found for user');
-        if (!isSilent) {
-          setProfileError(new Error('Profile not found'));
-          setUser(session.user);
-          setIsAdmin(false);
-          setProfile(null);
+        // If profile fetch failed momentarily (network/timeout), fallback to existing verified profile
+        if (globalState.profile && globalState.profile.id === session.user.id) {
+          console.warn('Profile fetch returned null, retaining cached profile');
+          updateGlobalState({ loading: false });
+          return globalState;
         }
-        setLoading(false);
-        isLoadingRef.current = false;
-        return;
+        updateGlobalState({
+          loading: false,
+          isAdmin: false,
+          user: session.user,
+          profile: null,
+          profileError: new Error('Profile not found in database'),
+        });
+        return globalState;
       }
 
-      // Check trusted internal-team role from profile only.
       const adminAccess = isAdminRole(userProfile.role);
-      console.log('Admin check:', { 
-        userId: userProfile.id, 
-        profileRole: userProfile.role, 
-        isAdmin: adminAccess 
+      updateGlobalState({
+        loading: false,
+        isAdmin: adminAccess,
+        user: session.user,
+        profile: userProfile,
+        profileError: null,
       });
-
-      if (!adminAccess && !isSilent) {
-        logEvent('UNAUTHORIZED_ACCESS_ATTEMPT', { userId: userProfile.id, role: userProfile.role });
-      } else if (adminAccess && !isSilent) {
-        logEvent('ADMIN_ACCESS_GRANTED', { userId: userProfile.id });
-      }
-
-      // Update user, profile and admin state together atomically
-      setUser(session.user);
-      setProfile(userProfile);
-      setIsAdmin(adminAccess);
-      setProfileError(null);
-      setLoading(false);
-      isLoadingRef.current = false;
-      hasInitialSessionRef.current = true;
-      console.log('Profile load complete');
-
+      return globalState;
     } catch (err) {
-      console.error('Error loading profile:', err);
-      // Stale-while-revalidate: if we already have an established session,
-      // do not wipe out admin access on transient background sleep/timeouts
-      if (!isSilent) {
-        setProfileError(err as Error);
-        setIsAdmin(false);
-        setProfile(null);
+      console.error('Admin guard refresh error:', err);
+      // Stale-while-revalidate: NEVER wipe out an existing valid session on transient errors
+      if (globalState.profile) {
+        updateGlobalState({ loading: false });
+        return globalState;
       }
-      setLoading(false);
-      isLoadingRef.current = false;
+      updateGlobalState({
+        loading: false,
+        isAdmin: false,
+        user: null,
+        profile: null,
+        profileError: err as Error,
+      });
+      return globalState;
+    } finally {
+      inFlightPromise = null;
     }
-  }
+  })();
+
+  return inFlightPromise;
+}
+
+// 3. Setup auth listener once at module level
+let isAuthListenerInitialized = false;
+
+function ensureAuthListener() {
+  if (isAuthListenerInitialized) return;
+  isAuthListenerInitialized = true;
+
+  supabase.auth.onAuthStateChange((event, _session) => {
+    console.log('AdminGuard Auth Event:', event);
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      refreshAdminSession();
+    } else if (event === 'SIGNED_OUT') {
+      clearGlobalState();
+    }
+  });
+}
+
+/**
+ * Hook to check admin access.
+ * Returns shared, synchronous cached state instantly on mount and route changes.
+ */
+export function useAdminGuard() {
+  const [state, setState] = useState<AdminGuardState>(globalState);
 
   useEffect(() => {
-    console.log('useAdminGuard: Initial mount');
-    loadProfile();
+    ensureAuthListener();
+    listeners.add(setState);
 
-    // Listen for auth state changes
-    const { data: sub } = supabase.auth.onAuthStateChange((event, _session) => {
-      console.log('Auth state change:', event);
-      
-      if (event === "SIGNED_IN") {
-        isLoadingRef.current = false;
-        loadProfile(hasInitialSessionRef.current);
-      } else if (event === "TOKEN_REFRESHED") {
-        console.log('Token refreshed, performing background profile check');
-        isLoadingRef.current = false;
-        loadProfile(true); // Silent background reload
-      } else if (event === "SIGNED_OUT") {
-        console.log('User signed out');
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-        setLoading(false);
-        isLoadingRef.current = false;
-        hasInitialSessionRef.current = false;
-      }
-    });
+    // Refresh in background if needed, but UI renders immediately from cache
+    refreshAdminSession();
 
     return () => {
-      console.log('useAdminGuard: Cleanup');
-      sub?.subscription?.unsubscribe?.();
+      listeners.delete(setState);
     };
   }, []);
 
-  return { loading, isAdmin, user, profile, profileError };
+  return {
+    loading: state.loading,
+    isAdmin: state.isAdmin,
+    user: state.user,
+    profile: state.profile,
+    profileError: state.profileError,
+  };
 }

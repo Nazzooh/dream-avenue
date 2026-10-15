@@ -125,7 +125,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
         <div ref={profileMenuRef} className="relative">
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-2 rounded-xl transition-all border border-transparent hover:border-[#EAE6DF] hover:bg-white"
+            className={`topbar-lux-profile-trigger ${isProfileMenuOpen ? 'active' : ''}`}
             aria-expanded={isProfileMenuOpen}
             aria-label="User account menu"
           >
@@ -136,50 +136,50 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
               <span className="text-xs font-bold text-stone-900 leading-tight">
                 {roleLabel(userRole)}
               </span>
-              <span className="text-[11px] text-stone-500 leading-tight truncate max-w-[140px]">
+              <span className="text-[11px] text-stone-500 leading-tight truncate max-w-[150px]">
                 {user?.email || profile?.email || 'admin@dreamavenue.com'}
               </span>
             </div>
-            <ChevronDown size={14} className="text-stone-400 hidden sm:block" />
+            <ChevronDown
+              size={14}
+              className={`text-stone-400 hidden sm:block transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* Profile Dropdown Menu */}
           {isProfileMenuOpen && (
-            <div
-              className="absolute right-0 mt-2 w-64 rounded-2xl shadow-xl border p-2 z-50 animate-in fade-in zoom-in-95 duration-150"
-              style={{
-                backgroundColor: '#FFFFFF',
-                borderColor: 'var(--lux-border)',
-                boxShadow: 'var(--lux-shadow-lg)',
-              }}
-            >
-              <div className="p-3 border-b border-stone-100 mb-1">
-                <p className="text-xs uppercase tracking-wider text-stone-400 font-bold">Signed in as</p>
-                <p className="text-sm font-bold text-stone-800 truncate mt-0.5">{user?.email || profile?.email || "Administrator"}</p>
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold mt-2 bg-stone-100 text-stone-700">
-                  <ShieldCheck size={13} className="text-lime-700" />
+            <div className="topbar-lux-profile-dropdown" role="menu">
+              <div className="topbar-lux-dropdown-header">
+                <p className="topbar-lux-dropdown-label">Signed in as</p>
+                <p className="topbar-lux-dropdown-email" title={user?.email || profile?.email || ''}>
+                  {user?.email || profile?.email || 'Administrator'}
+                </p>
+                <div className="topbar-lux-dropdown-role-pill">
+                  <ShieldCheck size={13} className="text-lime-700 flex-shrink-0" />
                   <span>{roleLabel(userRole)}</span>
                 </div>
               </div>
 
-              <div className="space-y-0.5">
+              <div className="topbar-lux-dropdown-links">
                 <Link
                   to="/admin/activity"
                   onClick={() => setIsProfileMenuOpen(false)}
-                  className="w-full px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-950 hover:bg-stone-50 rounded-xl flex items-center gap-2.5 transition-colors"
+                  className="topbar-lux-dropdown-link"
+                  role="menuitem"
                 >
                   <Terminal size={15} />
                   <span>Audit & Activity Log</span>
                 </Link>
               </div>
 
-              <div className="pt-1 mt-1 border-t border-stone-100">
+              <div className="topbar-lux-dropdown-footer">
                 <button
                   onClick={() => {
                     setIsProfileMenuOpen(false);
                     handleLogout();
                   }}
-                  className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2.5 transition-colors"
+                  className="topbar-lux-dropdown-logout"
+                  role="menuitem"
                 >
                   <LogOut size={15} />
                   <span>Sign Out</span>

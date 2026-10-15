@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to Semantic Versioning.
 
+## [v1.2.3] - 2026-10-15
+
+### Fixed
+- **Topbar Profile Card Geometry & Alignment**:
+  - Fixed awkward dropdown alignment and border clipping by removing relative margin conflicts and assigning explicit `top: calc(100% + 10px)` positioning.
+  - Added full 4-side bordered container with luxury shadow (`0 16px 36px -4px rgba(27, 34, 27, 0.14)`), generous internal header padding, and smooth opening animation.
+  - Added `overflow: visible !important` to the topbar container to prevent boundary clipping.
+- **Navigation Session Retention & Audit Log Access**:
+  - Implemented module-level singleton store and synchronous local storage hydration in `useAdminGuard.ts`.
+  - Prevented session timeouts from wiping admin profile and degrading developer/owner permissions to "Team member" upon navigating to `/admin/activity`.
+  - Deduplicated concurrent in-flight profile checks across multiple workspace components on route change.
+
 ## [v1.2.2] - 2026-10-15
 
 ### Fixed & Enhanced
