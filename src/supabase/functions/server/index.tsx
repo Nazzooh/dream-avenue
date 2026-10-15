@@ -33,7 +33,16 @@ const errorResponse = (error: any, status = 500) => {
   return jsonResponse({ success: false, error }, status);
 };
 
-const requireAdminAuth = async (req: Request, supabase: any) => {
+type WorkspacePermission = 'operations' | 'content' | 'analytics' | 'destructive';
+
+const hasWorkspacePermission = (role: unknown, permission: WorkspacePermission) => {
+  if (role === 'developer' || role === 'owner') return true;
+  if (role === 'manager') return permission !== 'destructive';
+  if (role === 'coordinator') return permission === 'operations';
+  return false;
+};
+
+const requireAdminAuth = async (req: Request, supabase: any, permission: WorkspacePermission = 'operations') => {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return { authorized: false, response: errorResponse('Unauthorized: Missing or invalid token', 401) };
@@ -52,8 +61,8 @@ const requireAdminAuth = async (req: Request, supabase: any) => {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profileError || !profile || profile.role !== 'admin') {
-    return { authorized: false, response: errorResponse('Forbidden: Admin access required', 403) };
+  if (profileError || !profile || !hasWorkspacePermission(profile.role, permission)) {
+    return { authorized: false, response: errorResponse('Forbidden: Your team role cannot perform this action', 403) };
   }
 
   return { authorized: true, user, profile };
@@ -105,7 +114,7 @@ serve(async (req) => {
         return successResponse(data);
       }
 
-      const auth = await requireAdminAuth(req, supabase);
+      const auth = await requireAdminAuth(req, supabase, method === 'DELETE' ? 'destructive' : 'content');
       if (!auth.authorized) return auth.response;
 
       if (method === 'POST') {
@@ -145,7 +154,7 @@ serve(async (req) => {
         return successResponse(data);
       }
 
-      const auth = await requireAdminAuth(req, supabase);
+      const auth = await requireAdminAuth(req, supabase, method === 'DELETE' ? 'destructive' : 'content');
       if (!auth.authorized) return auth.response;
 
       if (method === 'POST') {
@@ -185,7 +194,7 @@ serve(async (req) => {
         return successResponse(data);
       }
 
-      const auth = await requireAdminAuth(req, supabase);
+      const auth = await requireAdminAuth(req, supabase, method === 'DELETE' ? 'destructive' : 'content');
       if (!auth.authorized) return auth.response;
 
       if (method === 'POST') {
@@ -225,7 +234,7 @@ serve(async (req) => {
         return successResponse(data);
       }
 
-      const auth = await requireAdminAuth(req, supabase);
+      const auth = await requireAdminAuth(req, supabase, method === 'DELETE' ? 'destructive' : 'content');
       if (!auth.authorized) return auth.response;
 
       if (method === 'POST') {
@@ -300,7 +309,7 @@ serve(async (req) => {
       }
 
       // Protected admin operations
-      const auth = await requireAdminAuth(req, supabase);
+      const auth = await requireAdminAuth(req, supabase, method === 'DELETE' ? 'destructive' : 'operations');
       if (!auth.authorized) return auth.response;
 
       if (method === 'GET' && !id) {

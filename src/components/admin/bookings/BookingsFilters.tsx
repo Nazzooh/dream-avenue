@@ -1,6 +1,6 @@
 // src/components/admin/bookings/BookingsFilters.tsx
 import React from 'react';
-import { Search, X, Filter, SlidersHorizontal } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { BookingStatus } from '../../../src/schemas/bookings';
 import { Input } from '../../ui/input';
 import { Badge } from '../../ui/badge';
@@ -38,21 +38,23 @@ export function BookingsFilters({
   const hasActiveFilters = searchQuery.trim().length > 0 || statusFilter !== 'all';
 
   return (
-    <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] mb-6 transition-all">
+    <div className="mb-5 border-y border-slate-200 bg-white px-4 py-3 sm:rounded-xl sm:border sm:p-4 sm:shadow-sm">
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         {/* Search input with icon & clear button */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="relative w-full max-w-md flex-1">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <Input
             type="text"
-            placeholder="Search by client name, mobile, email..."
+            placeholder="Search bookings by client, mobile, or email"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 pr-9 h-10 rounded-xl bg-slate-50/80 border-slate-200 focus:bg-white text-xs text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-900"
+            className="h-10 rounded-xl border-slate-200 bg-slate-50/80 pl-11 pr-9 text-xs text-slate-900 placeholder:text-slate-500 focus:bg-white focus-visible:ring-1 focus-visible:ring-slate-900"
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
+              aria-label="Clear search"
+              title="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200/60"
             >
               <X className="w-3.5 h-3.5" />
@@ -70,6 +72,8 @@ export function BookingsFilters({
               <button
                 key={filter.value}
                 onClick={() => onStatusFilterChange(filter.value)}
+                aria-pressed={isActive}
+                type="button"
                 className={`relative px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
                   isActive
                     ? 'bg-slate-900 text-white shadow-sm'

@@ -4,17 +4,18 @@ import { AdminAvailabilityCalendar } from '../../components/admin/AdminAvailabil
 export function AdminAvailability() {
   return (
     <AdminLayout>
-      <div style={{ padding: '2rem' }}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: '2rem', fontWeight: '600', color: '#2A2A2A', marginBottom: '0.5rem' }}>
-            Calendar & Availability
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: '#666666' }}>
-            Manage bookings, block dates, and create manual bookings
-          </p>
+      <section className="workspace-page availability-workspace">
+        <header className="workspace-page-header">
+          <div>
+            <p className="workspace-eyebrow">Venue operations</p>
+            <h1>Calendar & Availability</h1>
+            <p>Review venue capacity, block dates, and manage the availability behind every booking.</p>
+          </div>
+        </header>
+        <div className="availability-calendar-shell">
+          <AdminAvailabilityCalendar />
         </div>
-        <AdminAvailabilityCalendar />
-      </div>
+      </section>
     </AdminLayout>
   );
 }

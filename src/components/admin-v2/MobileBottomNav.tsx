@@ -6,6 +6,8 @@ import {
   ClipboardList, 
   MoreHorizontal 
 } from 'lucide-react';
+import { useAdminGuard } from '../../src/hooks/useAdminGuard';
+import { can } from '../../src/lib/adminPermissions';
 
 interface MobileBottomNavProps {
   currentPage: string;
@@ -13,16 +15,17 @@ interface MobileBottomNavProps {
 
 const navItems = [
   { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
-  { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
-  { id: 'bookings', label: 'Bookings', icon: ClipboardList, path: '/admin/bookings' },
-  { id: 'requests', label: 'Requests', icon: ClipboardList, path: '/admin/requests' },
-  { id: 'more', label: 'More', icon: MoreHorizontal, path: '/admin/gallery' },
+  { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages', permission: 'content' },
+  { id: 'bookings', label: 'Bookings', icon: ClipboardList, path: '/admin/bookings', permission: 'operations' },
+  { id: 'requests', label: 'Requests', icon: ClipboardList, path: '/admin/requests', permission: 'access' },
+  { id: 'partners', label: 'Partners', icon: MoreHorizontal, path: '/admin/partners', permission: 'partners' },
 ];
 
 export function MobileBottomNav({ currentPage }: MobileBottomNavProps) {
+  const { profile } = useAdminGuard();
   return (
     <nav className="mobile-bottom-nav">
-      {navItems.map(item => {
+      {navItems.filter((item) => !item.permission || can(profile?.role, item.permission as any)).map(item => {
         const Icon = item.icon;
         const isActive = currentPage === item.id;
         

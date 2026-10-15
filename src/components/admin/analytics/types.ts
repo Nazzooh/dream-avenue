@@ -21,6 +21,7 @@ export interface MetricCardData {
 export interface ChartDataPoint {
   date: string;
   label: string;
+  timestamp: number | null;
   revenue: number;
   bookingsCount: number;
 }

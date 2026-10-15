@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  User, Phone, Mail, Calendar, Clock, Users, Eye, Ban, Sparkles, MapPin, Tag, ChevronRight 
+  Phone, Mail, Calendar, Clock, Users, Eye, Ban
 } from 'lucide-react';
 import { StatusBadge } from '../../admin-v2/StatusBadge';
 import { Booking } from '../../../src/schemas/bookings';
@@ -41,15 +41,14 @@ export function BookingCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay, ease: [0.16, 1, 0.3, 1] }}
-      onClick={() => onView(booking)}
-      className="group relative bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-slate-300 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.08)] transition-all cursor-pointer"
+      className="group relative border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow-md sm:rounded-xl"
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         
         {/* Left section: Client Avatar + Main Details */}
         <div className="flex items-start gap-4 flex-1 min-w-0">
           {/* Client Avatar with gradient fill */}
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-[#B6F500] font-bold text-sm flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold text-[#B6F500] shadow-sm transition-transform group-hover:scale-105">
             {initials}
           </div>
 
@@ -122,7 +121,7 @@ export function BookingCard({
         </div>
 
         {/* Right section: Action Buttons */}
-        <div className="flex items-center gap-2 border-t lg:border-t-0 border-slate-100 pt-3 lg:pt-0 justify-end">
+        <div className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-slate-100 pt-3 lg:w-auto lg:border-t-0 lg:pt-0">
           <Button
             size="sm"
             variant="outline"
@@ -130,6 +129,7 @@ export function BookingCard({
               e.stopPropagation();
               onView(booking);
             }}
+            aria-label={`View booking details for ${booking.full_name || 'unnamed client'}`}
             className="h-9 px-3 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-900 hover:text-white font-medium text-xs gap-1.5 transition-all"
           >
             <Eye className="w-3.5 h-3.5" />
@@ -151,9 +151,6 @@ export function BookingCard({
             </Button>
           )}
 
-          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all ml-1">
-            <ChevronRight className="w-4 h-4" />
-          </div>
         </div>
 
       </div>

@@ -7,6 +7,10 @@
 }
 
 @media (max-width: 1023px) {
+  .admin-main-content > main {
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom)) !important;
+  }
+
   .mobile-bottom-nav {
     display: flex;
     position: fixed;
@@ -16,6 +20,7 @@
     background: var(--admin-bg-card);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
     z-index: 100;
+    min-height: 4.5rem;
     padding-bottom: env(safe-area-inset-bottom);
     border-top: 1px solid var(--admin-border);
   }

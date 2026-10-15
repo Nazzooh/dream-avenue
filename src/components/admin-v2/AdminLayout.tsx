@@ -4,7 +4,6 @@ import { useLocation, Navigate } from 'react-router-dom';
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardTopbar } from './DashboardTopbar';
 import { MobileBottomNav } from './MobileBottomNav';
-import { useAdmin } from '../../src/auth/useAdmin';
 import { AutoLogout } from './AutoLogout';
 
 // Map routes to page info
@@ -18,6 +17,10 @@ const routeMap: Record<string, { title: string; id: string }> = {
   '/admin/availability': { title: 'Availability Management', id: 'availability' },
   '/admin/requests': { title: 'Admin Access Requests', id: 'requests' },
   '/admin/bookings': { title: 'Bookings Management', id: 'bookings' },
+  '/admin/analytics': { title: 'Analytics & Insights', id: 'analytics' },
+  '/admin/partners': { title: 'Partner Network', id: 'partners' },
+  '/admin/activity': { title: 'Activity & Audit', id: 'activity' },
+  '/admin/tasks': { title: 'Team Tasks', id: 'tasks' },
 };
 
 interface AdminLayoutProps {
@@ -28,20 +31,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
-  const { loading, isAdmin } = useAdmin();
+  // Admin routes are protected by ProtectedRoute in App.tsx. Keeping the
+  // layout presentational prevents a second auth/profile request on navigation.
+  const loading = false;
+  const isAdmin = true;
 
   // Show loading state while checking auth
   if (loading) {
     console.log('🎨 AdminLayout: Loading auth state...');
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg-cream)' }}>
-        <div className="text-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#f7f8f5] px-6">
+        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <motion.div
             animate={{ rotate: [0, 360] }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"
+            className="mx-auto h-10 w-10 rounded-full border-2 border-slate-200 border-t-slate-900"
           />
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-sm font-semibold text-slate-900">Checking admin access</p>
+          <p className="mt-1 text-xs text-slate-500">Preparing your workspace...</p>
         </div>
       </div>
     );

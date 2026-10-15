@@ -30,11 +30,11 @@ export function MetricCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -3, transition: { duration: 0.2 } }}
-      className="relative overflow-hidden rounded-2xl bg-white/90 backdrop-blur-md p-5 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_30px_-6px_rgba(0,0,0,0.08)] transition-all group"
+      className="relative overflow-hidden rounded-xl bg-white p-5 border border-slate-200 shadow-sm transition-shadow hover:shadow-md group"
     >
       {/* Top accent glow line */}
       <div 
-        className="absolute top-0 left-0 right-0 h-1 transition-all duration-300"
+        className="absolute inset-x-0 top-0 h-0.5 transition-all duration-300"
         style={{ backgroundColor: color }}
       />
 
@@ -54,7 +54,7 @@ export function MetricCard({
       </div>
 
       <div className="flex items-baseline gap-2 mb-1">
-        <span className="text-3xl font-bold tracking-tight text-slate-900 font-sans">
+        <span className="text-2xl font-bold tracking-tight text-slate-900 font-sans">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </span>
         {change && (

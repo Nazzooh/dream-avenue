@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../utils/supabase/client";
 import { log } from "../lib/logger";
+import { isAdminRole } from '../lib/adminPermissions';
 
 export function useAuth() {
   const [session, setSession] = useState<any>(null);
@@ -50,7 +51,7 @@ export function useAuth() {
   }
 
   // Only database profile role is the trusted source of truth for authorization
-  const isAdmin = profile?.role === "admin";
+  const isAdmin = isAdminRole(profile?.role);
 
   async function signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({

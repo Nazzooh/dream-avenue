@@ -46,7 +46,7 @@ export const AnalyticsDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-0">
+    <div className="analytics-dashboard space-y-0">
       <AnalyticsHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}

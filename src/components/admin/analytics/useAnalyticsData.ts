@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useBookings } from '../../../src/hooks/useBookings';
 import { usePackages } from '../../../src/hooks/usePackages';
 import { useAnalyticsSummary } from '../../../src/hooks/useAnalyticsSummary';
+import type { Booking } from '../../../src/schemas/bookings';
 import { 
   DateRangeFilter, 
   AnalyticsSummaryStats, 
@@ -20,23 +21,37 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
   const { data: showcaseSummary, isLoading: isSummaryLoading, refetch: refetchShowcase } = useAnalyticsSummary();
 
   const packageMap = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, { name: string; price: number }>();
     packages.forEach(pkg => {
-      if (pkg.id) map.set(pkg.id, pkg.name);
+      if (pkg.id) map.set(pkg.id, { name: pkg.name, price: Number(pkg.price) || 0 });
     });
     return map;
   }, [packages]);
+
+  const getBookingRevenue = useMemo(() => (booking: Booking) => {
+    const recordedTotal = Number(booking.final_price) || 0;
+    if (recordedTotal > 0) return recordedTotal;
+
+    const packagePrice = booking.package_id ? packageMap.get(booking.package_id)?.price || 0 : 0;
+    const cleaningCost = booking.floor_cleaning === false
+      ? 0
+      : Number(booking.floor_cleaning_cost) || 3000;
+    const extras = Number(booking.extra_services_total) || 0;
+    const adjustment = Number(booking.admin_price_adjustment) || 0;
+
+    return packagePrice + cleaningCost + extras + adjustment;
+  }, [packageMap]);
 
   // Filter bookings based on selected date range
   const filteredBookings = useMemo(() => {
     if (!allBookings.length) return [];
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
 
     return allBookings.filter((b) => {
-      if (!b.booking_date) return true;
-      const bDate = new Date(b.booking_date);
-      const bDateStr = b.booking_date;
+      if (!b.booking_date) return dateFilter.preset === 'all';
+      const bDateStr = b.booking_date.slice(0, 10);
+      const bDate = new Date(`${bDateStr}T00:00:00`);
 
       switch (dateFilter.preset) {
         case 'today':
@@ -44,21 +59,25 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
         case '7d': {
           const past = new Date();
           past.setDate(now.getDate() - 7);
+          past.setHours(0, 0, 0, 0);
           return bDate >= past;
         }
         case '30d': {
           const past = new Date();
           past.setDate(now.getDate() - 30);
+          past.setHours(0, 0, 0, 0);
           return bDate >= past;
         }
         case '90d': {
           const past = new Date();
           past.setDate(now.getDate() - 90);
+          past.setHours(0, 0, 0, 0);
           return bDate >= past;
         }
         case 'year': {
           const past = new Date();
           past.setFullYear(now.getFullYear() - 1);
+          past.setHours(0, 0, 0, 0);
           return bDate >= past;
         }
         case 'all':
@@ -78,7 +97,7 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
     let totalGuests = 0;
 
     filteredBookings.forEach((b) => {
-      const price = Number(b.final_price) || 0;
+      const price = getBookingRevenue(b);
       if (b.status !== 'cancelled') {
         grossRevenue += price;
       }
@@ -120,7 +139,7 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
       occupancyRate,
       activeGuests: totalGuests,
     };
-  }, [filteredBookings]);
+  }, [filteredBookings, getBookingRevenue]);
 
   // Generate chart data series over timeline
   const chartData: ChartDataPoint[] = useMemo(() => {
@@ -136,7 +155,7 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
     sorted.forEach((b) => {
       const dateKey = b.booking_date || 'Unscheduled';
       const prev = dateMap.get(dateKey) || { revenue: 0, count: 0 };
-      const rev = b.status !== 'cancelled' ? (Number(b.final_price) || 0) : 0;
+      const rev = b.status !== 'cancelled' ? getBookingRevenue(b) : 0;
       dateMap.set(dateKey, {
         revenue: prev.revenue + rev,
         count: prev.count + 1,
@@ -145,29 +164,32 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
 
     return Array.from(dateMap.entries()).map(([dateStr, data]) => {
       let label = dateStr;
+      let timestamp: number | null = null;
       try {
         const d = new Date(dateStr);
         label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        timestamp = Number.isNaN(d.getTime()) ? null : d.getTime();
       } catch {
         label = dateStr;
       }
       return {
         date: dateStr,
         label,
+        timestamp,
         revenue: data.revenue,
         bookingsCount: data.count,
       };
     });
-  }, [filteredBookings]);
+  }, [filteredBookings, getBookingRevenue]);
 
   // Category & Package Distribution
   const categoryBreakdown: CategoryBreakdown[] = useMemo(() => {
     const map = new Map<string, { count: number; revenue: number }>();
 
     filteredBookings.forEach((b) => {
-      const pkgName = (b.package_id && packageMap.get(b.package_id)) || b.event_type || 'Custom Booking';
+      const pkgName = (b.package_id && packageMap.get(b.package_id)?.name) || b.event_type || 'Custom Booking';
       const prev = map.get(pkgName) || { count: 0, revenue: 0 };
-      const rev = b.status !== 'cancelled' ? (Number(b.final_price) || 0) : 0;
+      const rev = b.status !== 'cancelled' ? getBookingRevenue(b) : 0;
       map.set(pkgName, {
         count: prev.count + 1,
         revenue: prev.revenue + rev,
@@ -181,7 +203,7 @@ export function useAnalyticsData(dateFilter: DateRangeFilter) {
       revenue: val.revenue,
       color: CATEGORY_COLORS[idx % CATEGORY_COLORS.length],
     }));
-  }, [filteredBookings, packageMap]);
+  }, [filteredBookings, packageMap, getBookingRevenue]);
 
   // Day of week distribution (Occupancy pattern)
   const dayOfWeekDistribution: DayOfWeekDistribution[] = useMemo(() => {

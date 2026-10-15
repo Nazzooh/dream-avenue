@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase/client';
+import { isAdminRole } from '../src/lib/adminPermissions';
 
 export interface NotificationItem {
   id: string;
@@ -60,7 +61,7 @@ export function useNotifications(): UseNotificationsReturn {
           console.log('Profile check error:', profileError);
           setIsAdmin(false);
         } else {
-          setIsAdmin(profile?.role === 'admin');
+          setIsAdmin(isAdminRole(profile?.role));
         }
       } catch (error) {
         console.error('Error checking admin status:', error);

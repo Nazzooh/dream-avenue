@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../utils/supabase/client';
 import { toast } from 'sonner';
+import { isAdminRole } from '../lib/adminPermissions';
 
 export interface BookingNotification {
   id: string;
@@ -57,12 +58,10 @@ export function useBookingNotifications(): UseBookingNotificationsReturn {
         .maybeSingle();
 
       // 🔥 TEMPORARY PATCH: Check both JWT root role AND metadata role as fallback
-      const jwtRole = user.role;
-      const metadataRole = user.user_metadata?.role;
-      const profileIsAdmin = profile?.role === 'admin';
+      const profileIsAdmin = isAdminRole(profile?.role);
       
-      // Accept admin role from any of these sources
-      const isAdmin = profileIsAdmin || jwtRole === 'admin' || metadataRole === 'admin';
+      // The database profile is the only trusted role source.
+      const isAdmin = profileIsAdmin;
       
       if (!isAdmin) {
         console.log('🔔 User is not admin - notifications disabled');

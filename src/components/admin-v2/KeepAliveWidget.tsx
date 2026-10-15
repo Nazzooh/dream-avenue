@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../utils/supabase/client';
+import { useAuth } from '../../src/auth/useAuth';
 
 export function KeepAliveWidget() {
+  const { profile } = useAuth();
   const [lastPing, setLastPing] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -60,6 +62,10 @@ export function KeepAliveWidget() {
       setClicks(0);
     }
   };
+
+  if (profile?.role !== 'developer') {
+    return null;
+  }
 
   if (!isVisible) {
     return (

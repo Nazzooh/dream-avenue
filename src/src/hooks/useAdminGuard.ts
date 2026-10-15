@@ -5,10 +5,11 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../utils/supabase/client";
 import { AdminProfile, fetchUserProfile } from "../lib/adminAuth";
 import { useSecurityAudit } from "./useSecurityAudit";
+import { isAdminRole } from '../lib/adminPermissions';
 
 /**
  * Hook to check admin access
- * SIMPLIFIED: Only checks profile.role === 'admin' from database
+ * Checks the database profile for one of the permitted workspace roles.
  * NO JWT claims, NO metadata - database profile is source of truth
  */
 export function useAdminGuard() {
@@ -21,6 +22,18 @@ export function useAdminGuard() {
   
   // Prevent multiple simultaneous loads
   const isLoadingRef = useRef(false);
+
+  async function withTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 10000): Promise<T> {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeout]);
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
+  }
 
   async function loadProfile(isBackground = false) {
     if (isLoadingRef.current) {
@@ -37,7 +50,10 @@ export function useAdminGuard() {
     }
     
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await withTimeout(
+        supabase.auth.getSession(),
+        'Session check',
+      );
       
       if (sessionError) {
         console.error('❌ Session error:', sessionError);
@@ -60,15 +76,18 @@ export function useAdminGuard() {
         return;
       }
 
-      setUser(session.user);
       console.log('✅ Session found:', session.user.id);
 
       // Fetch profile from database - SINGLE SOURCE OF TRUTH
-      const userProfile = await fetchUserProfile(session.user.id);
+      const userProfile = await withTimeout(
+        fetchUserProfile(session.user.id),
+        'Admin profile check',
+      );
 
       if (!userProfile) {
         console.error('❌ No profile found for user');
         setProfileError(new Error('Profile not found'));
+        setUser(session.user);
         setIsAdmin(false);
         setProfile(null);
         setLoading(false);
@@ -76,10 +95,8 @@ export function useAdminGuard() {
         return;
       }
 
-      setProfile(userProfile);
-
-      // Check admin role from profile ONLY
-      const adminAccess = userProfile.role === 'admin';
+      // Check trusted internal-team role from profile only.
+      const adminAccess = isAdminRole(userProfile.role);
       console.log('🔐 Admin check:', { 
         userId: userProfile.id, 
         profileRole: userProfile.role, 
@@ -88,10 +105,13 @@ export function useAdminGuard() {
 
       if (!adminAccess && !isBackground) {
         logEvent('UNAUTHORIZED_ACCESS_ATTEMPT', { userId: userProfile.id, role: userProfile.role });
-      } else if (adminAccess && !isBackground && !isAdmin) {
+      } else if (adminAccess && !isBackground) {
         logEvent('ADMIN_ACCESS_GRANTED', { userId: userProfile.id });
       }
 
+      // Update user, profile and admin state together atomically to avoid intermediate flashes
+      setUser(session.user);
+      setProfile(userProfile);
       setIsAdmin(adminAccess);
       setProfileError(null);
       setLoading(false);
@@ -119,9 +139,11 @@ export function useAdminGuard() {
       // Only react to specific events
       if (event === "SIGNED_IN") {
         console.log('🔄 User signed in, reloading profile');
+        isLoadingRef.current = false;
         loadProfile(); // Full reload on sign in
       } else if (event === "TOKEN_REFRESHED") {
         console.log('🔄 Token refreshed, performing background profile check');
+        isLoadingRef.current = false;
         loadProfile(true); // Silent background reload
       } else if (event === "SIGNED_OUT") {
         console.log('🚪 User signed out');

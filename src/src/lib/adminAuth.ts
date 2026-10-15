@@ -3,6 +3,7 @@
 // NO JWT claims checking - profile.role is the single source of authority
 
 import { supabase } from '../../utils/supabase/client';
+import { AdminPermission, can, isAdminRole } from './adminPermissions';
 
 export interface AdminProfile {
   id: string;
@@ -36,9 +37,7 @@ export async function fetchUserProfile(userId: string): Promise<AdminProfile | n
 }
 
 /**
- * Check if current user is admin
- * SIMPLIFIED: Only checks profile.role === 'admin'
- * NO JWT claims, NO metadata, ONLY database profile.role
+ * Check if the current user belongs to the trusted internal team.
  */
 export async function isAdmin(): Promise<boolean> {
   try {
@@ -56,7 +55,7 @@ export async function isAdmin(): Promise<boolean> {
       return false;
     }
 
-    const isAdminUser = profile.role === 'admin';
+    const isAdminUser = isAdminRole(profile.role);
     console.log('🔐 Admin check:', { userId: profile.id, role: profile.role, isAdmin: isAdminUser });
     
     return isAdminUser;
@@ -83,7 +82,7 @@ export async function assertAdmin(action?: string): Promise<AdminProfile> {
     throw new Error('Profile not found');
   }
 
-  if (profile.role !== 'admin') {
+  if (!isAdminRole(profile.role)) {
     const message = action 
       ? `You are not authorized as admin to ${action}`
       : 'You are not authorized as admin';
@@ -119,4 +118,12 @@ export async function getCurrentProfile(): Promise<AdminProfile | null> {
 export async function getAdminIdOrThrow(): Promise<string> {
   const profile = await assertAdmin();
   return profile.id;
+}
+
+export async function assertPermission(permission: AdminPermission, action?: string): Promise<AdminProfile> {
+  const profile = await assertAdmin(action);
+  if (!can(profile.role, permission)) {
+    throw new Error(`You are not authorized to ${action || 'perform this action'}`);
+  }
+  return profile;
 }

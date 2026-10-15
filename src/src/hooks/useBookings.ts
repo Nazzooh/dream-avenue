@@ -21,6 +21,7 @@ import {
 import { BookingCreate, BookingUpdate, BookingStatus } from "../schemas/bookings";
 import { toast } from "sonner";
 import { supabase } from "../lib/supabase";
+import { isAdminRole } from '../lib/adminPermissions';
 
 // GET all bookings with filters
 export const useBookings = (filters?: {
@@ -168,7 +169,7 @@ export const useCancelBooking = () => {
         .eq('id', user.id)
         .single();
       
-      if (!profile || profile.role !== 'admin') {
+      if (!profile || !isAdminRole(profile.role)) {
         throw new Error('Admin access required');
       }
       

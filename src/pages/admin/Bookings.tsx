@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 
 import { MetricCard } from '../../components/admin/bookings/MetricCard';
 import { BookingCard } from '../../components/admin/bookings/BookingCard';
+import { BookingTable } from '../../components/admin/bookings/BookingTable';
 import { BookingsHeader } from '../../components/admin/bookings/BookingsHeader';
 import { BookingsFilters } from '../../components/admin/bookings/BookingsFilters';
 import { BookingDetailsModal } from '../../components/admin/bookings/BookingDetailsModal';
@@ -28,7 +29,6 @@ export function AdminBookings() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'compact'>('list');
   const limit = 20;
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -139,8 +139,6 @@ export function AdminBookings() {
           pendingCount={stats.pending} 
           totalCount={stats.total}
           onExportCSV={handleExportCSV}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
         />
 
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
@@ -228,8 +226,16 @@ export function AdminBookings() {
             </motion.div>
           ) : (
             <>
-              {/* Cards Grid / List */}
-              <div className={viewMode === 'compact' ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "grid grid-cols-1 gap-3"}>
+              <BookingTable
+                bookings={paginatedData.data}
+                onView={(booking) => { setSelectedBooking(booking); setIsViewModalOpen(true); }}
+                onCancel={(booking) => { setBookingToCancel(booking); setIsCancelModalOpen(true); }}
+                formatDate={formatDate}
+                formatTime={formatTime}
+              />
+
+              {/* Mobile presentation */}
+              <div className="grid grid-cols-1 gap-3 md:hidden">
                 {paginatedData.data.map((booking: Booking, index: number) => (
                   <BookingCard 
                     key={booking.id} 

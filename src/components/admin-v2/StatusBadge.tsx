@@ -34,9 +34,12 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
     }
   };
 
+  const label = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
   return (
-    <span className={`admin-badge ${getStatusClass()} ${className}`}>
-      {status}
+    <span className={`admin-badge ${getStatusClass()} ${className}`} aria-label={`Status: ${label}`}>
+      <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+      {label}
     </span>
   );
 }

@@ -31,8 +31,8 @@ export async function createAdminRequest(request: CreateAdminRequest): Promise<A
   const { data, error } = await supabase
     .from('admin_requests')
     .insert([{
-      full_name: request.full_name,
-      email: request.email,
+      full_name: request.full_name.trim(),
+      email: request.email.trim().toLowerCase(),
       phone: request.phone || null,
       message: request.message,
       status: 'Pending',
@@ -85,20 +85,13 @@ export async function deleteAdminRequest(id: string): Promise<void> {
 }
 
 export async function approveAdminRequest(id: string, email: string): Promise<void> {
-  const { assertAdmin } = await import('../lib/adminAuth');
-  await assertAdmin('approve admin request');
+  const { assertPermission } = await import('../lib/adminAuth');
+  await assertPermission('access', 'approve an admin request');
 
-  // First, update the request status
-  await updateAdminRequestStatus({ id, status: 'Approved' });
-
-  // Then, update the user's profile role
-  const { error } = await supabase
-    .from('profiles')
-    .update({ role: 'admin' })
-    .eq('email', email);
+  const { error } = await supabase.rpc('approve_admin_request', { request_id: id });
 
   if (error) {
     console.error('Error granting admin access:', error);
-    throw new Error('Failed to grant admin access');
+    throw new Error(error.message || `Failed to grant coordinator access to ${email}`);
   }
 }

@@ -1,11 +1,10 @@
 // src/components/admin/analytics/AnalyticsCharts.tsx
 // Revenue & Booking trend charts + Category donut using Recharts + shadcn Card
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar,
-  Tooltip as RechartsTooltip, Legend
+  Tooltip as RechartsTooltip
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../../ui/tabs';
@@ -21,22 +20,24 @@ interface AnalyticsChartsProps {
 }
 
 function formatRevenue(value: number): string {
-  if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
-  if (value >= 1000) return `₹${(value / 1000).toFixed(0)}K`;
-  return `₹${value}`;
+  if (value >= 100000) return `INR ${(value / 100000).toFixed(1)}L`;
+  if (value >= 1000) return `INR ${(value / 1000).toFixed(0)}K`;
+  return `INR ${value.toLocaleString('en-IN')}`;
 }
 
-/* Custom frosted tooltip for Area chart */
+/* Keep the tooltip explicit because the x-axis uses numeric timestamps. */
 function CustomAreaTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
+  const point = payload[0]?.payload;
+  const displayLabel = point?.label || label;
   return (
-    <div className="bg-white/95 backdrop-blur-md border border-[#E0C097]/40 rounded-xl px-4 py-3 shadow-lg">
-      <p className="text-xs font-semibold text-[#1A1A1A] mb-1.5">{label}</p>
+    <div className="border border-slate-200 bg-white px-4 py-3 shadow-lg">
+      <p className="mb-1.5 text-xs font-semibold text-slate-900">{displayLabel}</p>
       {payload.map((entry: any, i: number) => (
         <div key={i} className="flex items-center gap-2 text-xs">
           <span className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
-          <span className="text-muted-foreground">{entry.name}:</span>
-          <span className="font-semibold text-[#1A1A1A]">
+          <span className="text-slate-600">{entry.name}:</span>
+          <span className="font-semibold text-slate-900">
             {entry.name === 'Revenue' ? formatRevenue(entry.value) : entry.value}
           </span>
         </div>
@@ -50,9 +51,9 @@ function CustomPieTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="bg-white/95 backdrop-blur-md border border-[#E0C097]/40 rounded-xl px-4 py-3 shadow-lg">
-      <p className="text-xs font-semibold text-[#1A1A1A]">{d.name}</p>
-      <p className="text-xs text-muted-foreground">{d.value} bookings · {formatRevenue(d.payload.revenue)}</p>
+    <div className="border border-slate-200 bg-white px-4 py-3 shadow-lg">
+      <p className="text-xs font-semibold text-slate-900">{d.name}</p>
+      <p className="text-xs text-slate-600">{d.value} bookings - {formatRevenue(d.payload.revenue)}</p>
     </div>
   );
 }
@@ -71,23 +72,23 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
       {/* ── Main Trend Chart (2/3 width) ── */}
-      <Card className="xl:col-span-2 border-[#E0C097]/25 bg-white/70 backdrop-blur-xl overflow-hidden">
+      <Card className="xl:col-span-2 overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-bold text-[#1A1A1A]">
+              <CardTitle className="text-base font-bold text-slate-900">
                 Performance Trend
               </CardTitle>
-              <CardDescription className="text-xs mt-0.5">
+              <CardDescription className="mt-0.5 text-xs text-slate-500">
                 {chartMetric === 'revenue' ? 'Revenue flow' : 'Booking volume'} over time
               </CardDescription>
             </div>
             <Tabs value={chartMetric} onValueChange={(v) => setChartMetric(v as 'revenue' | 'bookings')}>
-              <TabsList className="h-8 bg-[#FAFAF7] border border-[#E0C097]/20 p-0.5 rounded-lg">
-                <TabsTrigger value="revenue" className="text-[10px] px-3 h-7 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold">
+               <TabsList className="h-8 rounded-lg border border-slate-200 bg-slate-100 p-0.5">
+                 <TabsTrigger value="revenue" className="h-7 rounded-md px-3 text-[10px] font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm">
                   Revenue
                 </TabsTrigger>
-                <TabsTrigger value="bookings" className="text-[10px] px-3 h-7 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm font-semibold">
+                 <TabsTrigger value="bookings" className="h-7 rounded-md px-3 text-[10px] font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm">
                   Bookings
                 </TabsTrigger>
               </TabsList>
@@ -97,86 +98,81 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
         <CardContent className="pt-0 pb-4 px-4">
           {noData ? (
-            <div className="flex items-center justify-center h-[240px] text-sm text-muted-foreground">
-              No booking data available for the selected period
+            <div className="flex h-[240px] flex-col items-center justify-center px-6 text-center">
+              <p className="text-sm font-semibold text-slate-700">No booking data for this period</p>
+              <p className="mt-1 max-w-xs text-xs text-slate-500">Try a wider date range or check back after new bookings arrive.</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
-              <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C29A5D" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#C29A5D" stopOpacity={0.02} />
-                  </linearGradient>
-                  <linearGradient id="gradBookings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#B6F500" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#B6F500" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E0C097" strokeOpacity={0.2} vertical={false} />
+              <LineChart data={chartData.filter((point) => point.timestamp !== null)} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                <CartesianGrid stroke="#E2E8F0" strokeOpacity={0.8} vertical={false} />
                 <XAxis
-                  dataKey="label"
-                  tick={{ fill: '#999', fontSize: 10 }}
+                  dataKey="timestamp"
+                  type="number"
+                  scale="time"
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  tick={{ fill: '#64748B', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: '#999', fontSize: 10 }}
+                  allowDecimals={chartMetric === 'revenue'}
+                  domain={chartMetric === 'bookings' ? [0, 'dataMax'] : ['auto', 'auto']}
+                  tick={{ fill: '#64748B', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => chartMetric === 'revenue' ? formatRevenue(v) : v}
                 />
                 <RechartsTooltip content={<CustomAreaTooltip />} />
                 {chartMetric === 'revenue' ? (
-                  <Area
-                    type="monotone"
+                  <Line
+                    type="linear"
                     dataKey="revenue"
                     name="Revenue"
                     stroke="#C29A5D"
-                    strokeWidth={2.5}
-                    fill="url(#gradRevenue)"
-                    dot={false}
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: '#C29A5D', stroke: '#fff', strokeWidth: 2 }}
                     activeDot={{ r: 5, fill: '#C29A5D', stroke: '#fff', strokeWidth: 2 }}
                   />
                 ) : (
-                  <Area
-                    type="monotone"
+                  <Line
+                    type="linear"
                     dataKey="bookingsCount"
                     name="Bookings"
                     stroke="#75A000"
-                    strokeWidth={2.5}
-                    fill="url(#gradBookings)"
-                    dot={false}
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: '#75A000', stroke: '#fff', strokeWidth: 2 }}
                     activeDot={{ r: 5, fill: '#75A000', stroke: '#fff', strokeWidth: 2 }}
                   />
                 )}
-              </AreaChart>
+              </LineChart>
             </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
 
       {/* ── Category Donut (1/3 width) ── */}
-      <Card className="border-[#E0C097]/25 bg-white/70 backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-bold text-[#1A1A1A]">
+          <CardTitle className="text-base font-bold text-slate-900">
             Package Distribution
           </CardTitle>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-slate-500">
             Revenue & volume split by category
           </CardDescription>
         </CardHeader>
 
         <CardContent className="pt-0 pb-4">
           {categoryBreakdown.length === 0 ? (
-            <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
-              No category data
+            <div className="flex h-[200px] flex-col items-center justify-center px-6 text-center">
+              <p className="text-sm font-semibold text-slate-700">No package data yet</p>
+              <p className="mt-1 text-xs text-slate-500">Package distribution will appear here once bookings are recorded.</p>
             </div>
           ) : (
             <>
               <div className="flex justify-center">
-                <ResponsiveContainer width={180} height={180}>
-                  <PieChart>
+                <PieChart width={180} height={180}>
                     <Pie
                       data={categoryBreakdown}
                       cx="50%"
@@ -193,8 +189,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
                       ))}
                     </Pie>
                     <RechartsTooltip content={<CustomPieTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
+                </PieChart>
               </div>
 
               {/* Legend */}
@@ -217,14 +212,14 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
       </Card>
 
       {/* ── Day-of-Week Distribution (full width) ── */}
-      <Card className="xl:col-span-3 border-[#E0C097]/25 bg-white/70 backdrop-blur-xl overflow-hidden">
+      <Card className="xl:col-span-3 overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-bold text-[#1A1A1A]">
+              <CardTitle className="text-base font-bold text-slate-900">
                 Peak Booking Days
               </CardTitle>
-              <CardDescription className="text-xs">
+              <CardDescription className="text-xs text-slate-500">
                 Demand distribution across the week
               </CardDescription>
             </div>
@@ -237,15 +232,17 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
         <CardContent className="pt-0 pb-4 px-4">
           <ResponsiveContainer width="100%" height={140}>
             <BarChart data={dayOfWeekDistribution} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E0C097" strokeOpacity={0.15} vertical={false} />
+              <CartesianGrid stroke="#E2E8F0" strokeOpacity={0.8} vertical={false} />
               <XAxis
                 dataKey="day"
-                tick={{ fill: '#999', fontSize: 11, fontWeight: 600 }}
+                tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fill: '#999', fontSize: 10 }}
+                allowDecimals={false}
+                domain={[0, 'dataMax']}
+                tick={{ fill: '#475569', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
               />

@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../utils/supabase/client';
 import { toast } from 'sonner';
+import { isAdminRole } from '../lib/adminPermissions';
 
 export interface NotificationItem {
   id: string;
@@ -54,7 +55,7 @@ export function useNotifications(): UseNotificationsReturn {
         .eq('id', user.id)
         .maybeSingle();
 
-      const isAdmin = profile?.role === 'admin';
+      const isAdmin = isAdminRole(profile?.role);
 
       if (!isAdmin) {
         console.log('📢 User is not admin - notifications disabled');
@@ -175,7 +176,7 @@ export function useNotifications(): UseNotificationsReturn {
         .eq('id', user.id)
         .maybeSingle();
 
-      const isAdmin = profile?.role === 'admin';
+      const isAdmin = isAdminRole(profile?.role);
 
       if (!isAdmin) {
         setIsLoading(false);

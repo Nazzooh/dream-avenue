@@ -1,7 +1,7 @@
 // src/components/admin/analytics/AnalyticsHeader.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Download, RefreshCw, Calendar, Sparkles, SlidersHorizontal, BarChart3 } from 'lucide-react';
+import { Download, RefreshCw, Calendar, SlidersHorizontal, BarChart3 } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { 
   Select, 
@@ -33,25 +33,24 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
   isLoading,
 }) => {
   return (
-    <div className="flex flex-col gap-6 mb-8">
-      {/* Top Banner with Luxury Glass Accent */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-white/70 backdrop-blur-xl border border-[#E0C097]/30 shadow-sm">
+    <div className="mb-8 flex flex-col gap-5">
+      <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#C29A5D]/20 via-[#B6F500]/20 to-[#FFFADC] flex items-center justify-center border border-[#C29A5D]/30 shadow-inner">
-            <Sparkles className="w-6 h-6 text-[#C29A5D]" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-[#B6F500] shadow-sm">
+            <BarChart3 className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A] font-serif">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                 Analytics & Insights
               </h1>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#B6F500]/30 text-[#476000] border border-[#B6F500]/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#75A000] animate-pulse mr-1.5" />
+                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-sm font-medium text-emerald-700">
+                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Live
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Comprehensive real-time business performance & website showcase statistics
+            <p className="mt-0.5 text-sm text-slate-500">
+              Track demand, revenue, and booking performance at a glance.
             </p>
           </div>
         </div>
@@ -60,21 +59,21 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
         <div className="flex flex-wrap items-center gap-3">
           {activeTab === 'bi' && (
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-muted-foreground hidden sm:block" />
+              <Calendar className="hidden h-4 w-4 text-slate-400 sm:block" aria-hidden="true" />
               <Select
                 value={dateFilter.preset}
                 onValueChange={(val) => onDateFilterChange(val as DateRangePreset)}
               >
-                <SelectTrigger className="w-[140px] h-9 bg-white/80 border-[#E0C097]/40 text-xs font-medium shadow-none hover:border-[#C29A5D] transition-colors">
+               <SelectTrigger className="h-10 w-[150px] border-slate-200 bg-white text-sm font-medium shadow-none hover:border-slate-400">
                   <SelectValue placeholder="Period" />
                 </SelectTrigger>
-                <SelectContent className="bg-white/95 backdrop-blur-md border-[#E0C097]/40">
-                  <SelectItem value="today" className="text-xs">Today</SelectItem>
-                  <SelectItem value="7d" className="text-xs">Last 7 Days</SelectItem>
-                  <SelectItem value="30d" className="text-xs">Last 30 Days</SelectItem>
-                  <SelectItem value="90d" className="text-xs">Last Quarter</SelectItem>
-                  <SelectItem value="year" className="text-xs">This Year</SelectItem>
-                  <SelectItem value="all" className="text-xs">All Time</SelectItem>
+                 <SelectContent className="border-slate-200 bg-white">
+                  <SelectItem value="today" className="text-sm">Today</SelectItem>
+                  <SelectItem value="7d" className="text-sm">Last 7 Days</SelectItem>
+                  <SelectItem value="30d" className="text-sm">Last 30 Days</SelectItem>
+                  <SelectItem value="90d" className="text-sm">Last Quarter</SelectItem>
+                  <SelectItem value="year" className="text-sm">This Year</SelectItem>
+                  <SelectItem value="all" className="text-sm">All Time</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -85,7 +84,7 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
               variant="outline"
               size="sm"
               onClick={onExport}
-              className="h-9 gap-1.5 text-xs font-medium bg-white/80 border-[#E0C097]/40 text-[#1A1A1A] hover:bg-[#FFFADC]/60 hover:text-[#C29A5D] shadow-none"
+              className="h-10 gap-1.5 border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-none hover:bg-slate-50"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -97,30 +96,30 @@ export const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = ({
             size="sm"
             onClick={onRefresh}
             disabled={isLoading}
-            className="h-9 w-9 p-0 text-muted-foreground hover:text-[#1A1A1A] hover:bg-white/60"
-            title="Refresh analytics data"
+             className="h-9 w-9 p-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            aria-label="Refresh analytics data"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#C29A5D]' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin text-[#C29A5D]' : ''}`} aria-hidden="true" />
           </Button>
         </div>
       </div>
 
       {/* Tabs Bar using shadcn Tabs */}
-      <div className="flex items-center justify-between border-b border-[#E0C097]/20 pb-2">
+      <div className="flex items-center justify-between">
         <Tabs value={activeTab} onValueChange={(val) => onTabChange(val as 'bi' | 'showcase')} className="w-full">
-          <TabsList className="bg-white/60 backdrop-blur-md p-1 border border-[#E0C097]/30 rounded-xl h-11">
+           <TabsList className="h-10 rounded-lg border border-slate-200 bg-slate-100 p-1">
             <TabsTrigger
               value="bi"
-              className="gap-2 text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#1A1A1A] data-[state=active]:shadow-sm transition-all"
+               className="gap-2 rounded-md px-4 py-2 text-sm font-semibold text-slate-500 transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
             >
-              <BarChart3 className="w-4 h-4 text-[#C29A5D]" />
+               <BarChart3 className="h-4 w-4" />
               Executive BI Performance
             </TabsTrigger>
             <TabsTrigger
               value="showcase"
-              className="gap-2 text-xs font-semibold px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#1A1A1A] data-[state=active]:shadow-sm transition-all"
+               className="gap-2 rounded-md px-4 py-2 text-sm font-semibold text-slate-500 transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
             >
-              <SlidersHorizontal className="w-4 h-4 text-[#B6F500]" />
+               <SlidersHorizontal className="h-4 w-4" />
               Public Showcase Editor
             </TabsTrigger>
           </TabsList>

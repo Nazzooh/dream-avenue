@@ -30,6 +30,9 @@ const AdminAvailability = lazy(() => import('./pages/admin/Availability').then(m
 const AdminRequests = lazy(() => import('./pages/admin/Requests').then(m => ({ default: m.AdminRequests })));
 const AdminBookings = lazy(() => import('./pages/admin/Bookings').then(m => ({ default: m.AdminBookings })));
 const AnalyticsSettings = lazy(() => import('./pages/admin/AnalyticsSettings').then(m => ({ default: m.AnalyticsSettings })));
+const AdminPartners = lazy(() => import('./pages/admin/Partners').then(m => ({ default: m.AdminPartners })));
+const AdminActivity = lazy(() => import('./pages/admin/Activity').then(m => ({ default: m.AdminActivity })));
+const AdminTasks = lazy(() => import('./pages/admin/Tasks').then(m => ({ default: m.AdminTasks })));
 
 // 🔐 Auth
 import { ProtectedRoute } from './src/auth/ProtectedRoute';
@@ -38,6 +41,7 @@ import { ProtectedRoute } from './src/auth/ProtectedRoute';
 import './styles/admin-dashboard.css';        // Admin Dashboard - Light pastel neon theme
 import './styles/admin-login-pastel.css';     // Admin Login - Pastel theme
 import './styles/new-booking-page.css';       // Booking Page - Elegant Split Layout (Pastel Luxury)
+import './styles/admin-workspace.css';
 
 export default function App() {
   // Initialize performance optimizations on mount
@@ -91,7 +95,7 @@ export default function App() {
                 path="/admin/packages"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminPackages /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="content"><AdminPackages /></ProtectedRoute>
                   </Suspense>
                 }
               />
@@ -99,7 +103,7 @@ export default function App() {
                 path="/admin/facilities"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminFacilities /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="content"><AdminFacilities /></ProtectedRoute>
                   </Suspense>
                 }
               />
@@ -107,7 +111,7 @@ export default function App() {
                 path="/admin/gallery"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminGallery /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="content"><AdminGallery /></ProtectedRoute>
                   </Suspense>
                 }
               />
@@ -116,7 +120,7 @@ export default function App() {
                 path="/admin/availability"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminAvailability /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="operations"><AdminAvailability /></ProtectedRoute>
                   </Suspense>
                 }
               />
@@ -124,7 +128,7 @@ export default function App() {
                 path="/admin/requests"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminRequests /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="access"><AdminRequests /></ProtectedRoute>
                   </Suspense>
                 }
               />
@@ -132,7 +136,7 @@ export default function App() {
                 path="/admin/bookings"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminBookings /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="operations"><AdminBookings /></ProtectedRoute>
                   </Suspense>
                 }
               />
@@ -140,10 +144,13 @@ export default function App() {
                 path="/admin/analytics"
                 element={
                   <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AnalyticsSettings /></ProtectedRoute>
+                    <ProtectedRoute requireAdmin={true} permission="analytics"><AnalyticsSettings /></ProtectedRoute>
                   </Suspense>
                 }
               />
+              <Route path="/admin/partners" element={<Suspense fallback={<AdminLoadingFallback />}><ProtectedRoute requireAdmin={true} permission="partners"><AdminPartners /></ProtectedRoute></Suspense>} />
+              <Route path="/admin/activity" element={<Suspense fallback={<AdminLoadingFallback />}><ProtectedRoute requireAdmin={true} permission="audit"><AdminActivity /></ProtectedRoute></Suspense>} />
+              <Route path="/admin/tasks" element={<Suspense fallback={<AdminLoadingFallback />}><ProtectedRoute requireAdmin={true} permission="tasks"><AdminTasks /></ProtectedRoute></Suspense>} />
             </Route>
 
 

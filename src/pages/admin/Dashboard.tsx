@@ -7,6 +7,7 @@ import AdminLayout from '../../components/admin-v2/AdminLayout';
 import { EnhancedAnalyticsDashboard } from '../../components/admin-v2/EnhancedAnalyticsDashboard';
 import { useBookings } from '../../src/hooks/useBookings';
 import { usePackages } from '../../src/hooks/usePackages';
+import { OperationsPulse } from '../../components/admin-v2/OperationsPulse';
 
 interface MetricCardProps {
   title: string;
@@ -212,6 +213,8 @@ export function AdminDashboard() {
           delay={0.6}
         />
       </div>
+
+      <OperationsPulse />
 
       {/* Recent Activity Section - Fluid */}
       <motion.div

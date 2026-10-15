@@ -135,12 +135,12 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       {/* ── Metric Editor Cards ── */}
       <div className="xl:col-span-2 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-[#1A1A1A]">
+              <h3 className="text-lg font-bold text-slate-900">
               Public Website Statistics
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -153,7 +153,7 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
               size="sm"
               onClick={handleReset}
               disabled={!hasChanges}
-              className="h-8 text-xs text-muted-foreground hover:text-[#1A1A1A]"
+              className="h-8 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             >
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
               Discard
@@ -162,7 +162,7 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
               size="sm"
               onClick={handleSave}
               disabled={!hasChanges || insertMutation.isPending}
-              className="h-8 text-xs bg-[#1A1A1A] text-white hover:bg-[#333] gap-1.5"
+              className="h-8 gap-1.5 bg-slate-900 text-xs text-white hover:bg-slate-800"
             >
               <Save className="w-3.5 h-3.5" />
               {insertMutation.isPending ? 'Saving...' : 'Save Snapshot'}
@@ -180,7 +180,7 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
                 whileHover={{ y: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card className={`border ${metric.borderColor} bg-white/80 backdrop-blur-md hover:shadow-md transition-all`}>
+                <Card className="border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
                   <CardContent className="p-5">
                     <div className={`w-10 h-10 rounded-xl ${metric.bgColor} flex items-center justify-center mb-3`}>
                       <Icon className="w-5 h-5" style={{ color: metric.color }} />
@@ -259,11 +259,11 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
 
       {/* ── History & Cleanup Panel ── */}
       <div className="space-y-4">
-        <Card className="border-[#E0C097]/25 bg-white/70 backdrop-blur-xl">
+        <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-[#C29A5D]" />
-              <CardTitle className="text-sm font-bold text-[#1A1A1A]">
+              <CardTitle className="text-sm font-bold text-slate-900">
                 Snapshot History
               </CardTitle>
             </div>
@@ -304,15 +304,15 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
                       <div className="grid grid-cols-3 gap-1.5">
                         <div className="text-[10px]">
                           <span className="text-muted-foreground">Events:</span>{' '}
-                          <span className="font-semibold text-[#1A1A1A]">{entry.events_hosted}</span>
+                          <span className="font-semibold text-slate-900">{entry.events_hosted}</span>
                         </div>
                         <div className="text-[10px]">
                           <span className="text-muted-foreground">Guests:</span>{' '}
-                          <span className="font-semibold text-[#1A1A1A]">{entry.guests_served}</span>
+                          <span className="font-semibold text-slate-900">{entry.guests_served}</span>
                         </div>
                         <div className="text-[10px]">
                           <span className="text-muted-foreground">Sat:</span>{' '}
-                          <span className="font-semibold text-[#1A1A1A]">{entry.client_satisfaction}%</span>
+                          <span className="font-semibold text-slate-900">{entry.client_satisfaction}%</span>
                         </div>
                       </div>
                     </div>
@@ -324,14 +324,14 @@ export const AnalyticsShowcaseEditor: React.FC = () => {
         </Card>
 
         {/* Cleanup Action */}
-        <Card className="border-[#E0C097]/25 bg-white/70 backdrop-blur-xl">
+        <Card className="border-slate-200 bg-white shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
                 <Trash2 className="w-4 h-4 text-red-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-[#1A1A1A] mb-0.5">Database Cleanup</p>
+                <p className="text-xs font-semibold text-slate-900 mb-0.5">Database Cleanup</p>
                 <p className="text-[10px] text-muted-foreground mb-3">
                   Remove old snapshots, keeping only the latest record
                 </p>

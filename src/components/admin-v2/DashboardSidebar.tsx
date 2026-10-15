@@ -18,8 +18,11 @@ import {
   TrendingUp,
   Terminal,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Users
 } from 'lucide-react';
+import { useAdminGuard } from '../../src/hooks/useAdminGuard';
+import { can } from '../../src/lib/adminPermissions';
 
 interface DashboardSidebarProps {
   currentPage: string;
@@ -31,23 +34,27 @@ interface DashboardSidebarProps {
 
 const navItems = [
   { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
-  { id: 'analytics', label: 'Analytics', icon: TrendingUp, path: '/admin/analytics' },
-  { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
-  { id: 'facilities', label: 'Facilities', icon: Building2, path: '/admin/facilities' },
-  { id: 'gallery', label: 'Gallery', icon: Image, path: '/admin/gallery' },
-  { id: 'availability', label: 'Availability', icon: CalendarCheck, path: '/admin/availability' },
-  { id: 'bookings', label: 'Bookings', icon: BookOpen, path: '/admin/bookings' },
-  { id: 'requests', label: 'Admin Requests', icon: UserPlus, path: '/admin/requests' },
+  { id: 'analytics', label: 'Analytics', icon: TrendingUp, path: '/admin/analytics', permission: 'analytics' },
+  { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages', permission: 'content' },
+  { id: 'facilities', label: 'Facilities', icon: Building2, path: '/admin/facilities', permission: 'content' },
+  { id: 'gallery', label: 'Gallery', icon: Image, path: '/admin/gallery', permission: 'content' },
+  { id: 'availability', label: 'Availability', icon: CalendarCheck, path: '/admin/availability', permission: 'operations' },
+  { id: 'bookings', label: 'Bookings', icon: BookOpen, path: '/admin/bookings', permission: 'operations' },
+  { id: 'tasks', label: 'Team Tasks', icon: ClipboardList, path: '/admin/tasks', permission: 'tasks' },
+  { id: 'partners', label: 'Partner Network', icon: Users, path: '/admin/partners', permission: 'partners' },
+  { id: 'requests', label: 'Admin Requests', icon: UserPlus, path: '/admin/requests', permission: 'access' },
+  { id: 'activity', label: 'Activity & Audit', icon: Terminal, path: '/admin/activity', permission: 'audit' },
 ];
 
 export function DashboardSidebar({ currentPage, isOpen, onClose, isCollapsed = false, onToggleCollapse }: DashboardSidebarProps) {
   const navigate = useNavigate();
-  const { supabase } = useAuth();
+  const { signOut } = useAuth();
+  const { profile } = useAdminGuard();
 
   const handleLogout = async () => {
     if (confirm('Are you sure you want to logout?')) {
       try {
-        await supabase.auth.signOut();
+        await signOut();
         navigate('/admin/login');
       } catch (error) {
         console.error('Logout error:', error);
@@ -116,7 +123,7 @@ export function DashboardSidebar({ currentPage, isOpen, onClose, isCollapsed = f
 
           {/* Navigation */}
           <nav className="admin-sidebar-nav overflow-y-auto">
-            {navItems.map(item => {
+            {navItems.filter((item) => !item.permission || can(profile?.role, item.permission as any)).map(item => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
               

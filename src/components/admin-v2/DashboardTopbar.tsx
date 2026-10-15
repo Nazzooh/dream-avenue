@@ -1,4 +1,4 @@
-import { Menu, Bell, Settings, Search, LogOut } from 'lucide-react';
+import { Menu, Bell, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../../src/auth/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
@@ -101,16 +101,6 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
         >
           {pageTitle}
         </h2>
-      </div>
-
-      {/* Center: Search Bar */}
-      <div className="admin-search-bar">
-        <Search className="admin-search-icon" />
-        <input 
-          type="text"
-          placeholder="Search..."
-          className="admin-search-input"
-        />
       </div>
 
       {/* Right: Actions */}
