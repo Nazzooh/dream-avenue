@@ -1,4 +1,4 @@
-export const adminRoles = ['developer', 'owner', 'manager', 'coordinator'] as const;
+﻿export const adminRoles = ['developer', 'owner', 'manager', 'coordinator'] as const;
 
 export type AdminRole = (typeof adminRoles)[number];
 export type AdminPermission =
@@ -25,6 +25,10 @@ export function can(role: unknown, permission: AdminPermission): boolean {
   if (role === 'manager') return managerPermissions.includes(permission);
   if (role === 'coordinator') return coordinatorPermissions.includes(permission);
   return false;
+}
+
+export function canManageGallery(role: unknown): boolean {
+  return role === 'developer' || role === 'owner' || role === 'manager';
 }
 
 export function roleLabel(role: unknown): string {

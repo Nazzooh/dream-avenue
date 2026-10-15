@@ -1,4 +1,4 @@
-// src/auth/useAdmin.ts — Simplified hook for admin access checking
+﻿// src/auth/useAdmin.ts — Simplified hook for admin access checking
 import { useAdminGuard } from '../hooks/useAdminGuard';
 
 /**
@@ -6,12 +6,14 @@ import { useAdminGuard } from '../hooks/useAdminGuard';
  * Uses the robust useAdminGuard with proper token refresh handling
  */
 export function useAdmin() {
-  const { loading, isAdmin, user, profileError } = useAdminGuard();
+  const { loading, isAdmin, user, profile, profileError } = useAdminGuard();
 
   return {
     loading,
     isAdmin,
     user,
+    profile,
+    role: profile?.role,
     error: profileError
   };
 }

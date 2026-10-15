@@ -1,12 +1,11 @@
-// src/api/gallery.ts — Gallery CRUD API functions
+﻿// src/api/gallery.ts — Gallery CRUD API functions
 import { supabase } from "../../utils/supabase/client";
 import { GalleryItem, GalleryCreate, GalleryUpdate, gallerySchema } from "../schemas/gallery";
 
 // GET all gallery items with optional category filter
-
 export const getGalleryItems = async (category?: string): Promise<GalleryItem[]> => {
   let query = supabase.from('gallery').select('*').order('created_at', { ascending: false });
-  if (category) query = query.eq('category', category);
+  if (category && category !== 'all') query = query.eq('category', category);
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   return gallerySchema.array().parse(data || []);
@@ -34,7 +33,7 @@ export const createGalleryItem = async (galleryData: GalleryCreate): Promise<Gal
 
   if (error) {
     if (error.code === '42501') {
-      throw new Error('Gallery upload is not authorized. Run the gallery admin RLS migration in Supabase.');
+      throw new Error('Gallery creation is not authorized. Only Owner, Developer, or Manager accounts can add gallery items.');
     }
     throw new Error(error.message);
   }
@@ -45,14 +44,14 @@ export const createGalleryItem = async (galleryData: GalleryCreate): Promise<Gal
 export const updateGalleryItem = async (id: string, galleryData: GalleryUpdate): Promise<GalleryItem> => {
   const { data, error } = await supabase
     .from('gallery')
-    .update(galleryData)
+    .update({ ...galleryData, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();
 
   if (error) {
     if (error.code === '42501') {
-      throw new Error('Gallery update is not authorized. Run the gallery admin RLS migration in Supabase.');
+      throw new Error('Gallery update is not authorized. Only Owner, Developer, or Manager accounts can edit gallery items and details.');
     }
     throw new Error(error.message);
   }
@@ -68,7 +67,7 @@ export const deleteGalleryItem = async (id: string): Promise<void> => {
 
   if (error) {
     if (error.code === '42501') {
-      throw new Error('Gallery delete is not authorized. Run the gallery admin RLS migration in Supabase.');
+      throw new Error('Gallery deletion is not authorized. Only Owner, Developer, or Manager accounts can delete gallery items.');
     }
     throw new Error(error.message);
   }

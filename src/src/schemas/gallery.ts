@@ -1,10 +1,10 @@
-// src/schemas/gallery.ts — Gallery validation schemas
+﻿// src/schemas/gallery.ts — Gallery validation schemas
 import { z } from "zod";
 
 export const gallerySchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(1, "Title is required"),
-  image_url: z.string().url("Valid image URL is required"),
+  image_url: z.string().min(1, "Image URL or upload is required"),
   category: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   event_type: z.string().optional().nullable(),
