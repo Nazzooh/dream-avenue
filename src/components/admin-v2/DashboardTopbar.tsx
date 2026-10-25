@@ -1,8 +1,8 @@
 // src/components/admin-v2/DashboardTopbar.tsx — Redesigned Warm Editorial Luxury Topbar
 import { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, ExternalLink, LogOut, ChevronDown, ShieldCheck, Terminal, User } from 'lucide-react';
+import { Menu, Bell, ExternalLink, LogOut, ChevronDown, User } from 'lucide-react';
 import { useAuth } from '../../src/auth/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import { NotificationDropdown } from './NotificationDropdown';
 import { useAdminGuard } from '../../src/hooks/useAdminGuard';
@@ -149,30 +149,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
           {/* Profile Dropdown Menu */}
           {isProfileMenuOpen && (
             <div className="topbar-lux-profile-dropdown" role="menu">
-              <div className="topbar-lux-dropdown-header">
-                <p className="topbar-lux-dropdown-label">Signed in as</p>
-                <p className="topbar-lux-dropdown-email" title={user?.email || profile?.email || ''}>
-                  {user?.email || profile?.email || 'Administrator'}
-                </p>
-                <div className="topbar-lux-dropdown-role-pill">
-                  <ShieldCheck size={13} className="text-lime-700 flex-shrink-0" />
-                  <span>{roleLabel(userRole)}</span>
-                </div>
-              </div>
-
-              <div className="topbar-lux-dropdown-links">
-                <Link
-                  to="/admin/activity"
-                  onClick={() => setIsProfileMenuOpen(false)}
-                  className="topbar-lux-dropdown-link"
-                  role="menuitem"
-                >
-                  <Terminal size={15} />
-                  <span>Audit & Activity Log</span>
-                </Link>
-              </div>
-
-              <div className="topbar-lux-dropdown-footer">
+              <div className="topbar-lux-dropdown-footer topbar-lux-dropdown-footer-only">
                 <button
                   onClick={() => {
                     setIsProfileMenuOpen(false);

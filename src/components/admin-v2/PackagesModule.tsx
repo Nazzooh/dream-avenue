@@ -1,398 +1,178 @@
-import React, { useState } from 'react';
-import AdminLayout from './AdminLayout';
-import { AdminGrid } from './AdminGrid';
-import { Modal } from './Modal';
-import { FormInput } from './FormInput';
-import { FormTextarea } from './FormTextarea';
-import { FormSelect } from './FormSelect';
-import { Button } from './Button';
-import { ImageUploadField } from './ImageUploadField';
-import { PackageReorderModal } from './PackageReorderModal';
+import { FormEvent, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { 
-  useAllPackages, 
-  useCreatePackage, 
-  useUpdatePackage, 
-  useDeletePackage 
-} from '../../src/hooks/usePackages';
-import { Loader2, Package, Edit2, Trash2, Plus, IndianRupee, CheckCircle2, ArrowUpDown } from 'lucide-react';
-import { motion } from 'motion/react';
+import { ArrowUpDown, Check, Edit3, Image as ImageIcon, IndianRupee, ListPlus, Loader2, PackageOpen, Plus, Search, Trash2, X } from 'lucide-react';
+import { useAllPackages, useCreatePackage, useDeletePackage, useUpdatePackage } from '../../src/hooks/usePackages';
+import type { Package as PackageData } from '../../src/schemas/packages';
 import { AdminLoadingFallback } from '../LoadingFallback';
+import { Button } from './Button';
+import { FormInput } from './FormInput';
+import { FormSelect } from './FormSelect';
+import { FormTextarea } from './FormTextarea';
+import { ImageUploadField } from './ImageUploadField';
+import { Modal } from './Modal';
+import { PackageReorderModal } from './PackageReorderModal';
+import { AdminActionButton } from './AdminActionButton';
+import { AdminSelect } from './AdminSelect';
+
+const priceFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+
+function displayPrice(pkg: PackageData) {
+  if (typeof pkg.price === 'number') return priceFormatter.format(pkg.price);
+  if (typeof pkg.price_min === 'number' && typeof pkg.price_max === 'number') return `${priceFormatter.format(pkg.price_min)} – ${priceFormatter.format(pkg.price_max)}`;
+  if (typeof pkg.price_min === 'number') return `From ${priceFormatter.format(pkg.price_min)}`;
+  if (typeof pkg.price_max === 'number') return `Up to ${priceFormatter.format(pkg.price_max)}`;
+  return 'Price on request';
+}
 
 export default function PackagesModule() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
-  const [editingPackage, setEditingPackage] = useState<any>(null);
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isReorderOpen, setIsReorderOpen] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<PackageData | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [features, setFeatures] = useState<string[]>([]);
-
-  // React Query hooks
+  const [search, setSearch] = useState('');
+  const [visibility, setVisibility] = useState<'all' | 'active' | 'hidden'>('all');
   const { data: packages = [], isLoading } = useAllPackages();
   const createMutation = useCreatePackage();
   const updateMutation = useUpdatePackage();
   const deleteMutation = useDeletePackage();
 
-  const handleEdit = (pkg: any) => {
-    setEditingPackage(pkg);
-    setImageUrl(pkg.image_url || '');
-    setFeatures(pkg.features || []);
-    setIsModalOpen(true);
-  };
+  const visiblePackages = useMemo(() => packages.filter((pkg) => {
+    const content = `${pkg.name} ${pkg.description || ''} ${(pkg.features || []).join(' ')}`.toLowerCase();
+    const matchingSearch = content.includes(search.trim().toLowerCase());
+    const matchingVisibility = visibility === 'all' || (visibility === 'active' ? pkg.is_active : !pkg.is_active);
+    return matchingSearch && matchingVisibility;
+  }), [packages, search, visibility]);
 
-  const handleDelete = async (pkg: any) => {
-    if (confirm(`Are you sure you want to delete "${pkg.name}"?`)) {
-      try {
-        await deleteMutation.mutateAsync(pkg.id);
-        toast.success('Package deleted successfully');
-      } catch (error) {
-        console.error('Delete error:', error);
-        toast.error('Failed to delete package');
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    
-    const packageData: any = {
-      name: formData.get('name') as string,
-      description: formData.get('description') as string,
-      price: parseInt(formData.get('price') as string),
-      features: features,
-      image_url: imageUrl || '',
-      is_active: formData.get('status') === 'Active',
-    };
-
-    try {
-      if (editingPackage) {
-        await updateMutation.mutateAsync({ 
-          id: editingPackage.id, 
-          data: packageData 
-        });
-        toast.success('Package updated successfully');
-      } else {
-        await createMutation.mutateAsync(packageData);
-        toast.success('Package created successfully');
-      }
-      setIsModalOpen(false);
-      setEditingPackage(null);
-      setImageUrl('');
-      setFeatures([]);
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error('Operation failed');
-    }
-  };
-
-  const handleAddNew = () => {
+  const closeEditor = () => {
+    setIsEditorOpen(false);
     setEditingPackage(null);
     setImageUrl('');
     setFeatures([]);
-    setIsModalOpen(true);
   };
 
-  const addFeature = () => {
-    setFeatures([...features, '']);
+  const openEditor = (pkg?: PackageData) => {
+    setEditingPackage(pkg || null);
+    setImageUrl(pkg?.image_url || '');
+    setFeatures(pkg?.features || []);
+    setIsEditorOpen(true);
   };
 
-  const updateFeature = (index: number, value: string) => {
-    const newFeatures = [...features];
-    newFeatures[index] = value;
-    setFeatures(newFeatures);
+  const savePackage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const priceInput = String(form.get('price') || '').trim();
+    const data = {
+      name: String(form.get('name') || ''),
+      description: String(form.get('description') || ''),
+      price: priceInput ? Number(priceInput) : null,
+      features: features.map((feature) => feature.trim()).filter(Boolean),
+      image_url: imageUrl || '',
+      is_active: form.get('status') === 'Active',
+    };
+    try {
+      if (editingPackage?.id) await updateMutation.mutateAsync({ id: editingPackage.id, data });
+      else await createMutation.mutateAsync(data);
+      toast.success(editingPackage ? 'Package updated' : 'Package created');
+      closeEditor();
+    } catch {
+      toast.error('Unable to save this package');
+    }
   };
 
-  const removeFeature = (index: number) => {
-    setFeatures(featurelist => featurelist.filter((_, i) => i !== index));
+  const removePackage = async (pkg: PackageData) => {
+    if (!pkg.id || !confirm(`Delete “${pkg.name}”? This cannot be undone.`)) return;
+    try {
+      await deleteMutation.mutateAsync(pkg.id);
+      toast.success('Package deleted');
+    } catch {
+      toast.error('Unable to delete this package');
+    }
   };
 
-  if (isLoading) {
-    return (
-      <AdminLayout>
-        <AdminLoadingFallback />
-      </AdminLayout>
-    );
-  }
+  const toggleVisibility = async (pkg: PackageData) => {
+    if (!pkg.id) return;
+    try {
+      await updateMutation.mutateAsync({ id: pkg.id, data: { is_active: !pkg.is_active } });
+      toast.success(pkg.is_active ? 'Package hidden from the website' : 'Package is now live');
+    } catch {
+      toast.error('Unable to update package visibility');
+    }
+  };
+
+  const updateFeature = (index: number, value: string) => setFeatures((current) => current.map((feature, position) => position === index ? value : feature));
+
+  if (isLoading) return <AdminLoadingFallback />;
+  const liveCount = packages.filter((pkg) => pkg.is_active).length;
+  const hasFilters = search.trim() || visibility !== 'all';
 
   return (
-    <AdminLayout>
-      {/* Page Header */}
-      <div className="admin-page-header">
+    <section className="da-catalogue-workspace da-packages-workspace">
+      <header className="da-operations-header">
         <div>
-          <h1 className="admin-page-title" style={{ fontFamily: 'var(--admin-font-serif)' }}>Package Management</h1>
-          <p className="admin-page-description">
-            Manage event packages, pricing, and features for your venue
-          </p>
+          <p className="da-page-eyebrow">Offer builder</p>
+          <h1>Packages & pricing</h1>
+          <p className="da-header-copy">Shape clear, elegant offers that make it easy for clients to compare what Dream Avenue provides.</p>
         </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={() => setIsReorderModalOpen(true)} 
-            className="admin-btn admin-btn-outline"
-            disabled={packages.length === 0}
-          >
-            <ArrowUpDown size={20} />
-            Reorder
-          </button>
-          <button onClick={handleAddNew} className="admin-btn admin-btn-primary">
-            <Plus size={20} />
-            Add Package
-          </button>
+        <div className="da-operations-actions">
+          <AdminActionButton type="button" icon={<ArrowUpDown size={17} />} onClick={() => setIsReorderOpen(true)} disabled={!packages.length}>Reorder</AdminActionButton>
+          <AdminActionButton type="button" data-admin-shortcut="new-package" variant="primary" icon={<Plus size={17} />} onClick={() => openEditor()}>Add package</AdminActionButton>
         </div>
+      </header>
+
+      <div className="da-catalogue-summary" aria-label="Packages summary">
+        <span><strong>{packages.length}</strong> total offers</span>
+        <span><strong>{liveCount}</strong> live on the website</span>
+        <span><strong>{packages.length - liveCount}</strong> hidden drafts</span>
       </div>
 
-      {/* Packages Grid - 3/2/1 Column Layout */}
-      <AdminGrid columns="3">
-        {packages.map((pkg, index) => (
-          <motion.div
-            key={pkg.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.04, duration: 0.4 }}
-            className="admin-card"
-          >
-            {/* Package Image */}
-            {pkg.image_url && (
-              <div className="relative h-48 -mx-8 -mt-8 mb-6 overflow-hidden rounded-t-[20px]">
-                <img
-                  src={pkg.image_url}
-                  alt={pkg.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-4 left-6 right-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-white text-glow">
-                      {pkg.name}
-                    </h3>
-                    {pkg.is_active ? (
-                      <span className="admin-badge admin-badge-neon">Active</span>
-                    ) : (
-                      <span className="admin-badge admin-badge-danger">Inactive</span>
-                    )}
+      <section className="da-catalogue-panel">
+        <div className="da-catalogue-toolbar">
+          <label className="da-booking-search"><Search size={18} aria-hidden="true" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search offers or inclusions" /></label>
+          <AdminSelect value={visibility} onValueChange={(value) => setVisibility(value as typeof visibility)} ariaLabel="Filter package visibility" options={[{ value: 'all', label: 'All visibility' }, { value: 'active', label: 'Live only' }, { value: 'hidden', label: 'Hidden only' }]} className="da-catalogue-select" />
+        </div>
+
+        {!visiblePackages.length ? (
+          <div className="da-catalogue-empty"><PackageOpen size={34} /><h2>No packages found</h2><p>{hasFilters ? 'Try changing the current search or visibility filter.' : 'Create your first offer to help clients understand your venue options.'}</p>{hasFilters ? <Button type="button" variant="outline" onClick={() => { setSearch(''); setVisibility('all'); }}>Clear filters</Button> : <Button type="button" onClick={() => openEditor()}><Plus size={16} /> Add package</Button>}</div>
+        ) : (
+          <div className="da-package-collection">
+            {visiblePackages.map((pkg) => (
+              <article className="da-package-card" key={pkg.id}>
+                <div className="da-package-image">
+                  {pkg.image_url ? <img src={pkg.image_url} alt="" /> : <div className="da-image-placeholder"><PackageOpen size={29} /></div>}
+                  <span className={pkg.is_active ? 'da-status-chip live' : 'da-status-chip'}>{pkg.is_active ? 'Live offer' : 'Hidden draft'}</span>
+                </div>
+                <div className="da-package-content">
+                  <div className="da-package-title-row"><div><h2>{pkg.name}</h2><p className="da-package-price"><IndianRupee size={16} />{displayPrice(pkg).replace('₹', '')}</p></div></div>
+                  <p className="da-package-description">{pkg.description || 'No package description has been added.'}</p>
+                  <ul className="da-package-features">
+                    {(pkg.features || []).slice(0, 4).map((feature, index) => <li key={`${pkg.id}-${index}`}><Check size={15} />{feature}</li>)}
+                    {(pkg.features || []).length > 4 && <li className="is-more">+{(pkg.features || []).length - 4} more inclusions</li>}
+                  </ul>
+                  <div className="da-package-actions">
+                    <button type="button" onClick={() => toggleVisibility(pkg)}>{pkg.is_active ? 'Hide' : 'Publish'}</button>
+                    <button type="button" onClick={() => openEditor(pkg)}><Edit3 size={16} /> Edit</button>
+                    <button type="button" className="is-danger" onClick={() => removePackage(pkg)} aria-label={`Delete ${pkg.name}`}><Trash2 size={16} /></button>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* No Image Fallback */}
-            {!pkg.image_url && (
-              <div className="flex items-center justify-between mb-6 pb-6" style={{ borderBottom: '1px solid rgba(0, 255, 65, 0.2)' }}>
-                <h3 className="text-2xl font-bold" style={{ color: 'var(--dream-text-primary)' }}>
-                  {pkg.name}
-                </h3>
-                {pkg.is_active ? (
-                  <span className="admin-badge admin-badge-neon">Active</span>
-                ) : (
-                  <span className="admin-badge admin-badge-danger">Inactive</span>
-                )}
-              </div>
-            )}
-
-            {/* Package Description */}
-            <p className="mb-6 leading-relaxed" style={{ color: 'var(--dream-text-secondary)' }}>
-              {pkg.description}
-            </p>
-
-            {/* Pricing */}
-            <div className="flex items-center gap-2 mb-6 p-4 rounded-xl" style={{ background: 'rgba(0, 255, 65, 0.1)', border: '1px solid rgba(0, 255, 65, 0.3)' }}>
-              <IndianRupee size={24} style={{ color: 'var(--dream-neon-green)' }} />
-              <span className="text-3xl font-bold" style={{ color: 'var(--dream-neon-green)' }}>
-                {pkg.price?.toLocaleString('en-IN')}
-              </span>
-            </div>
-
-            {/* Features List */}
-            {pkg.features && pkg.features.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-bold uppercase mb-3" style={{ color: 'var(--dream-gold)', letterSpacing: '1px' }}>
-                  Features Included
-                </h4>
-                <ul className="space-y-2">
-                  {pkg.features.slice(0, 4).map((feature: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--dream-neon-green)' }} />
-                      <span className="text-sm" style={{ color: 'var(--dream-text-secondary)' }}>
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                  {pkg.features.length > 4 && (
-                    <li className="text-sm italic" style={{ color: 'var(--dream-text-muted)' }}>
-                      +{pkg.features.length - 4} more features
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-6" style={{ borderTop: '1px solid rgba(0, 255, 65, 0.2)' }}>
-              <button
-                onClick={() => handleEdit(pkg)}
-                className="admin-btn admin-btn-outline admin-btn-sm flex-1"
-              >
-                <Edit2 size={16} />
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(pkg)}
-                className="admin-btn admin-btn-danger admin-btn-sm flex-1"
-              >
-                <Trash2 size={16} />
-                Delete
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </AdminGrid>
-
-      {/* Empty State */}
-      {packages.length === 0 && (
-        <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6" 
-               style={{ background: 'rgba(0, 255, 65, 0.1)', border: '2px solid rgba(0, 255, 65, 0.3)' }}>
-            <Package size={48} style={{ color: 'var(--dream-neon-green)' }} />
+              </article>
+            ))}
           </div>
-          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--dream-text-primary)' }}>
-            No packages available
-          </h3>
-          <p style={{ color: 'var(--dream-text-secondary)' }}>
-            Create your first event package
-          </p>
-          <button onClick={handleAddNew} className="admin-btn admin-btn-primary mt-6">
-            <Plus size={20} />
-            Add First Package
-          </button>
-        </div>
-      )}
+        )}
+      </section>
 
-      {/* Reorder Modal */}
-      <PackageReorderModal
-        isOpen={isReorderModalOpen}
-        onClose={() => setIsReorderModalOpen(false)}
-        packages={packages}
-      />
-
-      {/* Add/Edit Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingPackage(null);
-          setImageUrl('');
-          setFeatures([]);
-        }}
-        title={editingPackage ? 'Edit Package' : 'Create New Package'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <FormInput
-            name="name"
-            label="Package Name"
-            placeholder="e.g., Premium Wedding Package"
-            defaultValue={editingPackage?.name}
-            required
-          />
-
-          <FormTextarea
-            name="description"
-            label="Description"
-            placeholder="Describe what's included in this package..."
-            defaultValue={editingPackage?.description}
-            required
-          />
-
-          <FormInput
-            name="price"
-            label="Price (₹)"
-            type="number"
-            placeholder="e.g., 50000"
-            defaultValue={editingPackage?.price}
-            required
-          />
-
-          <ImageUploadField
-            label="Package Image (Optional)"
-            value={imageUrl}
-            onChange={(url) => setImageUrl(url || '')}
-          />
-
-          {/* Features Manager */}
-          <div className="admin-form-group">
-            <label className="admin-label">Features</label>
-            <div className="space-y-3">
-              {features.map((feature, index) => (
-                <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={feature}
-                    onChange={(e) => updateFeature(index, e.target.value)}
-                    placeholder={`Feature ${index + 1}`}
-                    className="admin-input flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeFeature(index)}
-                    className="admin-btn admin-btn-danger admin-btn-icon"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addFeature}
-                className="admin-btn admin-btn-outline admin-btn-sm"
-              >
-                <Plus size={16} />
-                Add Feature
-              </button>
-            </div>
-          </div>
-
-          <FormSelect
-            name="status"
-            label="Status"
-            defaultValue={editingPackage?.is_active ? 'Active' : 'Inactive'}
-            options={[
-              { value: 'Active', label: 'Active' },
-              { value: 'Inactive', label: 'Inactive' },
-            ]}
-            required
-          />
-
-          <div className="flex gap-3 justify-end pt-6 border-t" style={{ borderColor: 'rgba(0, 255, 65, 0.2)' }}>
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={() => {
-                setIsModalOpen(false);
-                setEditingPackage(null);
-                setImageUrl('');
-                setFeatures([]);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              variant="primary"
-              disabled={createMutation.isPending || updateMutation.isPending}
-            >
-              {(createMutation.isPending || updateMutation.isPending) ? (
-                <>
-                  <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block' }}>
-                    <Loader2 size={16} className="mr-2" />
-                  </motion.div>
-                  Saving...
-                </>
-              ) : (
-                editingPackage ? 'Update Package' : 'Create Package'
-              )}
-            </Button>
-          </div>
+      <PackageReorderModal isOpen={isReorderOpen} onClose={() => setIsReorderOpen(false)} packages={packages} />
+      <Modal isOpen={isEditorOpen} onClose={closeEditor} title={editingPackage ? 'Edit package' : 'Create package'}>
+        <form onSubmit={savePackage} className="da-catalogue-form">
+          <FormInput name="name" label="Package name" placeholder="e.g. Garden wedding" defaultValue={editingPackage?.name} required />
+          <FormTextarea name="description" label="Description" placeholder="Help clients understand this offer at a glance." defaultValue={editingPackage?.description || ''} required />
+          <FormInput name="price" label="Price (₹)" type="number" min="0" placeholder="e.g. 85000" defaultValue={editingPackage?.price ?? ''} />
+          <ImageUploadField label="Package image (optional)" value={imageUrl} onChange={(url) => setImageUrl(url || '')} />
+          <fieldset className="da-package-editor-features"><legend>Inclusions</legend>{features.map((feature, index) => <div key={`${index}-${feature}`}><input value={feature} onChange={(event) => updateFeature(index, event.target.value)} placeholder={`Inclusion ${index + 1}`} /><button type="button" onClick={() => setFeatures((current) => current.filter((_, position) => position !== index))} aria-label={`Remove inclusion ${index + 1}`}><X size={16} /></button></div>)}<button type="button" className="da-add-feature" onClick={() => setFeatures((current) => [...current, ''])}><ListPlus size={16} /> Add inclusion</button></fieldset>
+          <FormSelect name="status" label="Website visibility" defaultValue={editingPackage?.is_active === false ? 'Inactive' : 'Active'} options={[{ value: 'Active', label: 'Live on the website' }, { value: 'Inactive', label: 'Hidden draft' }]} required />
+          <div className="da-catalogue-form-actions"><Button type="button" variant="outline" onClick={closeEditor}>Cancel</Button><Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>{createMutation.isPending || updateMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Saving</> : editingPackage ? 'Save changes' : 'Create package'}</Button></div>
         </form>
       </Modal>
-    </AdminLayout>
+    </section>
   );
 }

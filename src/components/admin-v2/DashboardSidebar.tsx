@@ -71,6 +71,7 @@ const navSections: NavSection[] = [
     items: [
       { id: 'partners', label: 'Partner Network', icon: Users, path: '/admin/partners', permission: 'partners' },
       { id: 'requests', label: 'Access Requests', icon: UserPlus, path: '/admin/requests', permission: 'access' },
+      { id: 'staff', label: 'Staff Directory', icon: Users, path: '/admin/staff', permission: 'access' },
       { id: 'activity', label: 'Security & Audit', icon: Terminal, path: '/admin/activity', permission: 'audit' },
     ]
   }

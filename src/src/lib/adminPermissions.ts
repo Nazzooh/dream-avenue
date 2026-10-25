@@ -8,12 +8,13 @@ export type AdminPermission =
   | 'referrals'
   | 'tasks'
   | 'analytics'
+  | 'finance'
   | 'audit'
   | 'access'
   | 'publish'
   | 'destructive';
 
-const managerPermissions: AdminPermission[] = ['operations', 'content', 'partners', 'referrals', 'tasks', 'analytics'];
+const managerPermissions: AdminPermission[] = ['operations', 'content', 'partners', 'referrals', 'tasks', 'analytics', 'finance'];
 const coordinatorPermissions: AdminPermission[] = ['operations', 'partners', 'referrals', 'tasks'];
 
 export function isAdminRole(role: unknown): role is AdminRole {

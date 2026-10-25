@@ -35,6 +35,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { AdminLoadingFallback } from '../LoadingFallback';
 import { GalleryItem } from '../../src/schemas/gallery';
+import { AdminSelect } from './AdminSelect';
 
 const categoryOptions = [
   { value: 'weddings', label: 'Weddings' },
@@ -325,16 +326,7 @@ export default function GalleryModule() {
           <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
             <SlidersHorizontal size={14} />
             <span>Sort:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-white border border-[#EAE6DF] rounded-lg px-2.5 py-1.5 text-xs font-medium text-stone-800 cursor-pointer focus:outline-none focus:border-stone-400"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="featured">Featured First</option>
-              <option value="title">Title (A-Z)</option>
-            </select>
+            <AdminSelect value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)} ariaLabel="Sort gallery photos" options={[{ value: 'newest', label: 'Newest First' }, { value: 'oldest', label: 'Oldest First' }, { value: 'featured', label: 'Featured First' }, { value: 'title', label: 'Title (A-Z)' }]} className="w-[145px]" />
           </div>
 
           <span className="text-xs font-semibold text-stone-400">
@@ -439,11 +431,6 @@ export default function GalleryModule() {
 
               {/* Card Footer — Strict Alignment and Spacing */}
               <div className="gallery-lux-card-footer">
-                <span className="gallery-footer-category">
-                  <span className="gallery-footer-dot" />
-                  <span>{image.category || 'General'}</span>
-                </span>
-
                 {image.created_at && (
                   <span className="gallery-footer-date">
                     <Calendar size={13} style={{ opacity: 0.6 }} />

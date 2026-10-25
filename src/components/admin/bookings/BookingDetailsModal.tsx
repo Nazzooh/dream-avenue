@@ -338,27 +338,28 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center"
+      className="da-booking-drawer-backdrop"
       style={{ 
         background: 'rgba(0, 0, 0, 0.6)', 
         backdropFilter: 'blur(8px)',
         zIndex: 9999,
-        padding: 'clamp(0.75rem,3vw,1.5rem)'
+        padding: 0
       }}
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.95, y: 20 }}
-        className="rounded-3xl overflow-hidden flex flex-col"
+        initial={{ x: 36, opacity: 0.6 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: 36, opacity: 0 }}
+        className="da-booking-drawer"
         style={{
           background: 'white',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          width: '100%',
-          maxWidth: 'min(56rem, 95vw)',
-          maxHeight: 'min(90vh, 1000px)',
-          margin: '0 auto'
+          width: 'min(46rem, 100vw)',
+          maxWidth: '100vw',
+          height: '100dvh',
+          maxHeight: '100dvh',
+          margin: 0
         }}
         onClick={(e) => e.stopPropagation()}
       >

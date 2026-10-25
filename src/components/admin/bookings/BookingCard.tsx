@@ -41,7 +41,7 @@ export function BookingCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow-md sm:rounded-xl"
+      className="da-booking-mobile-card group relative border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow-md sm:rounded-xl"
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         

@@ -1,51 +1,53 @@
-import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
-import AdminErrorBoundary from './components/admin-v2/AdminErrorBoundary';
-
+import { Suspense, lazy, type ReactNode, useEffect } from 'react';
+import { BrowserRouter as Router, Outlet, Route, Routes } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'sonner';
+import AdminErrorBoundary from './components/admin-v2/AdminErrorBoundary';
+import { AdminWorkspaceShell } from './components/admin-v2/AdminLayout';
+import { CookieConsent } from './components/CookieConsent';
+import { AdminLoadingFallback, LoadingFallback } from './components/LoadingFallback';
+import { MainWebsite } from './pages/MainWebsite';
+import { ProtectedRoute } from './src/auth/ProtectedRoute';
+import type { AdminPermission } from './src/lib/adminPermissions';
 import { queryClient } from './src/lib/queryClient';
-import { LoadingFallback, AdminLoadingFallback } from './components/LoadingFallback';
 import { initializePerformanceOptimizations } from './src/utils/performanceOptimizations';
 
-// ðŸŒ¿ Main Website - Load immediately (critical path)
-import { MainWebsite } from './pages/MainWebsite';
-import { CookieConsent } from './components/CookieConsent';
+import './styles/admin-dashboard.css';
+import './styles/admin-login-pastel.css';
+import './styles/new-booking-page.css';
+import './styles/admin-workspace.css';
+import './styles/admin-redesign.css';
+import './styles/admin-completion.css';
+import './styles/admin-responsive.css';
 
-// ðŸ“… Booking Page - Lazy load (user action required)
 const SmartSlotBookingPage = lazy(() => import('./pages/SmartSlotBookingPage'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const AdminLogin = lazy(() => import('./pages/admin/Login').then((m) => ({ default: m.AdminLogin })));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then((m) => ({ default: m.AdminDashboard })));
+const AdminPackages = lazy(() => import('./pages/admin/Packages').then((m) => ({ default: m.AdminPackages })));
+const AdminFacilities = lazy(() => import('./pages/admin/Facilities').then((m) => ({ default: m.AdminFacilities })));
+const AdminGallery = lazy(() => import('./pages/admin/Gallery').then((m) => ({ default: m.AdminGallery })));
+const AdminAvailability = lazy(() => import('./pages/admin/Availability').then((m) => ({ default: m.AdminAvailability })));
+const AdminRequests = lazy(() => import('./pages/admin/Requests').then((m) => ({ default: m.AdminRequests })));
+const AdminBookings = lazy(() => import('./pages/admin/Bookings').then((m) => ({ default: m.AdminBookings })));
+const AnalyticsSettings = lazy(() => import('./pages/admin/AnalyticsSettings').then((m) => ({ default: m.AnalyticsSettings })));
+const AdminPartners = lazy(() => import('./pages/admin/Partners').then((m) => ({ default: m.AdminPartners })));
+const AdminActivity = lazy(() => import('./pages/admin/Activity').then((m) => ({ default: m.AdminActivity })));
+const AdminTasks = lazy(() => import('./pages/admin/Tasks').then((m) => ({ default: m.AdminTasks })));
+const AdminStaffDirectory = lazy(() => import('./pages/admin/StaffDirectory').then((m) => ({ default: m.AdminStaffDirectory })));
 
-// ðŸ§© Admin Pages - Lazy load (auth required)
-const AdminLogin = lazy(() => import('./pages/admin/Login').then(m => ({ default: m.AdminLogin })));
-const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then(m => ({ default: m.AdminDashboard })));
-const AdminPackages = lazy(() => import('./pages/admin/Packages').then(m => ({ default: m.AdminPackages })));
-const AdminFacilities = lazy(() => import('./pages/admin/Facilities').then(m => ({ default: m.AdminFacilities })));
-const AdminGallery = lazy(() => import('./pages/admin/Gallery').then(m => ({ default: m.AdminGallery })));
-
-const AdminAvailability = lazy(() => import('./pages/admin/Availability').then(m => ({ default: m.AdminAvailability })));
-const AdminRequests = lazy(() => import('./pages/admin/Requests').then(m => ({ default: m.AdminRequests })));
-const AdminBookings = lazy(() => import('./pages/admin/Bookings').then(m => ({ default: m.AdminBookings })));
-const AnalyticsSettings = lazy(() => import('./pages/admin/AnalyticsSettings').then(m => ({ default: m.AnalyticsSettings })));
-const AdminPartners = lazy(() => import('./pages/admin/Partners').then(m => ({ default: m.AdminPartners })));
-const AdminActivity = lazy(() => import('./pages/admin/Activity').then(m => ({ default: m.AdminActivity })));
-const AdminTasks = lazy(() => import('./pages/admin/Tasks').then(m => ({ default: m.AdminTasks })));
-
-// ðŸ” Auth
-import { ProtectedRoute } from './src/auth/ProtectedRoute';
-
-// ðŸŽ¨ Styles
-import './styles/admin-dashboard.css';        // Admin Dashboard - Light pastel neon theme
-import './styles/admin-login-pastel.css';     // Admin Login - Pastel theme
-import './styles/new-booking-page.css';       // Booking Page - Elegant Split Layout (Pastel Luxury)
-import './styles/admin-workspace.css';
-import './styles/admin-redesign.css';
+function protectedAdminPage(page: ReactNode, permission?: AdminPermission) {
+  return (
+    <Suspense fallback={<AdminLoadingFallback />}>
+      <ProtectedRoute requireAdmin={true} permission={permission}>{page}</ProtectedRoute>
+    </Suspense>
+  );
+}
 
 export default function App() {
-  // Initialize performance optimizations on mount
   useEffect(() => {
     initializePerformanceOptimizations();
   }, []);
@@ -55,121 +57,40 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            {/* ðŸŒ Main Website - No suspense needed (loaded immediately) */}
-            <Route path="/" element={<MainWebsite />} />
+            <Routes>
+              <Route path="/" element={<MainWebsite />} />
+              <Route path="/booking" element={<SmartSlotBookingPage />} />
+              <Route path="/slot-booking" element={<SmartSlotBookingPage />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* ðŸ“… Booking Page - Lazy loaded */}
-            <Route path="/booking" element={<SmartSlotBookingPage />} />
-            <Route path="/slot-booking" element={<SmartSlotBookingPage />} />
+              <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>
+                <Route path="/admin" element={<AdminWorkspaceShell />}>
+                  <Route index element={protectedAdminPage(<AdminDashboard />)} />
+                  <Route path="dashboard" element={protectedAdminPage(<AdminDashboard />)} />
+                  <Route path="packages" element={protectedAdminPage(<AdminPackages />, 'content')} />
+                  <Route path="facilities" element={protectedAdminPage(<AdminFacilities />, 'content')} />
+                  <Route path="gallery" element={protectedAdminPage(<AdminGallery />, 'content')} />
+                  <Route path="availability" element={protectedAdminPage(<AdminAvailability />, 'operations')} />
+                  <Route path="requests" element={protectedAdminPage(<AdminRequests />, 'access')} />
+                  <Route path="bookings" element={protectedAdminPage(<AdminBookings />, 'operations')} />
+                  <Route path="analytics" element={protectedAdminPage(<AnalyticsSettings />, 'analytics')} />
+                  <Route path="partners" element={protectedAdminPage(<AdminPartners />, 'partners')} />
+                  <Route path="activity" element={protectedAdminPage(<AdminActivity />, 'audit')} />
+                  <Route path="tasks" element={protectedAdminPage(<AdminTasks />, 'tasks')} />
+                  <Route path="staff" element={protectedAdminPage(<AdminStaffDirectory />, 'access')} />
+                </Route>
+              </Route>
 
-            {/* ðŸ“œ Terms and Conditions */}
-            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </Router>
 
-            {/* ðŸ”‘ Admin Login */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-
-            {/* ðŸ›¡ï¸ Admin Protection Layer */}
-            <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>
-              {/* ðŸ”‘ Admin Dashboard (Protected) - Lazy loaded */}
-              <Route
-                path="/admin"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  </Suspense>
-                }
-              />
-
-              {/* ðŸ—‚ Admin Management Routes - Lazy loaded */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true}><AdminDashboard /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/admin/packages"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="content"><AdminPackages /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/admin/facilities"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="content"><AdminFacilities /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/admin/gallery"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="content"><AdminGallery /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-
-              <Route
-                path="/admin/availability"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="operations"><AdminAvailability /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/admin/requests"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="access"><AdminRequests /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/admin/bookings"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="operations"><AdminBookings /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/admin/analytics"
-                element={
-                  <Suspense fallback={<AdminLoadingFallback />}>
-                    <ProtectedRoute requireAdmin={true} permission="analytics"><AnalyticsSettings /></ProtectedRoute>
-                  </Suspense>
-                }
-              />
-              <Route path="/admin/partners" element={<Suspense fallback={<AdminLoadingFallback />}><ProtectedRoute requireAdmin={true} permission="partners"><AdminPartners /></ProtectedRoute></Suspense>} />
-              <Route path="/admin/activity" element={<Suspense fallback={<AdminLoadingFallback />}><ProtectedRoute requireAdmin={true} permission="audit"><AdminActivity /></ProtectedRoute></Suspense>} />
-              <Route path="/admin/tasks" element={<Suspense fallback={<AdminLoadingFallback />}><ProtectedRoute requireAdmin={true} permission="tasks"><AdminTasks /></ProtectedRoute></Suspense>} />
-            </Route>
-
-
-            {/* ðŸš« Redirect all other routes */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </Router>
-
-      {/* ðŸ”” Toast Notifications */}
-      <Toaster position="top-right" richColors />
-
-      {/* ðŸª Cookie Consent Banner */}
-      <CookieConsent />
-
-      {/* ðŸ§° React Query Devtools - Only in development */}
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
+        <Toaster position="top-right" richColors />
+        <CookieConsent />
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
     </HelmetProvider>
   );
 }

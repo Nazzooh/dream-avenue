@@ -1,340 +1,219 @@
-// src/pages/admin/Bookings.tsx
-import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { 
-  CalendarDays, Clock, CheckCircle, Package, RefreshCw, ChevronLeft, ChevronRight, Inbox
+import { useState, type ReactNode } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import {
+  CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleX, Clock3,
+  Download, Inbox, RefreshCw, Search, UsersRound, X,
 } from 'lucide-react';
-import AdminLayout from '../../components/admin-v2/AdminLayout';
-import { 
-  useAdminPaginatedBookings, 
-  useAdminBookingStats, 
-  useCancelBooking, 
-  useUpdateBookingStatus, 
-  useDeleteBooking 
+import { toast } from 'sonner';
+import {
+  useAdminPaginatedBookings,
+  useAdminBookingStats,
+  useCancelBooking,
+  useDeleteBooking,
+  useUpdateBookingStatus,
 } from '../../src/hooks/useBookings';
 import { Booking, BookingStatus } from '../../src/schemas/bookings';
-import { toast } from 'sonner';
-
-import { MetricCard } from '../../components/admin/bookings/MetricCard';
 import { BookingCard } from '../../components/admin/bookings/BookingCard';
-import { BookingTable } from '../../components/admin/bookings/BookingTable';
-import { BookingsHeader } from '../../components/admin/bookings/BookingsHeader';
-import { BookingsFilters } from '../../components/admin/bookings/BookingsFilters';
 import { BookingDetailsModal } from '../../components/admin/bookings/BookingDetailsModal';
+import { BookingTable } from '../../components/admin/bookings/BookingTable';
+import { Button } from '../../components/ui/button';
 import { ConfirmationModal } from '../../components/admin-v2/ConfirmationModal';
 import { exportBookingsToCSV } from '../../components/admin/bookings/exportBookingsUtils';
-import { Button } from '../../components/ui/button';
+import { AdminActionButton } from '../../components/admin-v2/AdminActionButton';
+
+const statusFilters: Array<{ value: BookingStatus | 'all'; label: string; count: keyof BookingStats }> = [
+  { value: 'all', label: 'All', count: 'total' },
+  { value: 'pending', label: 'Needs review', count: 'pending' },
+  { value: 'confirmed', label: 'Confirmed', count: 'confirmed' },
+  { value: 'completed', label: 'Completed', count: 'completed' },
+  { value: 'cancelled', label: 'Cancelled', count: 'cancelled' },
+];
+
+type BookingStats = { total: number; pending: number; confirmed: number; completed: number; cancelled: number };
+
+function BookingMetric({ label, value, note, tone, icon }: {
+  label: string; value: number; note: string; tone: 'default' | 'attention' | 'success' | 'muted'; icon: ReactNode;
+}) {
+  return (
+    <article className={`da-booking-metric da-booking-metric-${tone}`}>
+      <div className="da-booking-metric-icon" aria-hidden="true">{icon}</div>
+      <div>
+        <p>{label}</p>
+        <strong>{value}</strong>
+        <span>{note}</span>
+      </div>
+    </article>
+  );
+}
 
 export function AdminBookings() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const limit = 20;
-
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+  const limit = 20;
 
-  const { 
-    data: paginatedData, 
-    isLoading: isBookingsLoading, 
-    refetch: refetchBookings 
-  } = useAdminPaginatedBookings({
-    page,
-    limit,
-    status: statusFilter,
-    searchQuery
+  const { data: paginatedData, isLoading: isBookingsLoading, refetch: refetchBookings } = useAdminPaginatedBookings({
+    page, limit, status: statusFilter, searchQuery,
   });
-
-  const { 
-    data: stats = { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 }, 
-    isLoading: isStatsLoading,
-    refetch: refetchStats
-  } = useAdminBookingStats();
-
+  const { data: stats = { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 }, isLoading: isStatsLoading, refetch: refetchStats } = useAdminBookingStats();
   const cancelBookingMutation = useCancelBooking();
   const deleteBookingMutation = useDeleteBooking();
   const updateStatusMutation = useUpdateBookingStatus();
+  const isLoading = isBookingsLoading || isStatsLoading;
+  const totalPages = Math.ceil((paginatedData?.count || 0) / limit);
 
-  const handleRefresh = () => {
+  const refresh = () => {
     refetchBookings();
     refetchStats();
-    toast.info("Refreshed booking status", { duration: 1500 });
+    toast.info('Bookings refreshed', { duration: 1500 });
   };
 
-  const handleExportCSV = () => {
-    if (!paginatedData?.data?.length) {
-      toast.error("No bookings data available to export");
-      return;
-    }
-    exportBookingsToCSV(paginatedData.data, `bookings-${statusFilter}-${new Date().toISOString().slice(0,10)}.csv`);
-    toast.success("CSV report exported successfully");
+  const openBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setIsViewModalOpen(true);
   };
 
-  const handleConfirmCancel = async () => {
-    if (!bookingToCancel) return;
-    try {
-      await cancelBookingMutation.mutateAsync(bookingToCancel.id!);
-      setIsCancelModalOpen(false);
-      setBookingToCancel(null);
-      handleRefresh();
-      toast.success("Booking cancelled successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to cancel booking");
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!bookingToDelete) return;
-    try {
-      await deleteBookingMutation.mutateAsync(bookingToDelete.id!);
-      setIsDeleteModalOpen(false);
-      setBookingToDelete(null);
-      setIsViewModalOpen(false);
-      handleRefresh();
-      toast.success("Booking deleted permanently");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete booking");
-    }
-  };
-
-  const handleStatusUpdate = async (bookingId: string, status: BookingStatus) => {
+  const updateStatus = async (bookingId: string, status: BookingStatus) => {
     try {
       await updateStatusMutation.mutateAsync({ id: bookingId, status });
       setIsViewModalOpen(false);
       setSelectedBooking(null);
-      handleRefresh();
+      refresh();
       toast.success(`Booking marked as ${status}`);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update status");
+    } catch {
+      toast.error('Unable to update this booking');
     }
   };
 
-  // Helper formatters
-  const formatDate = (dateStr: any) => dateStr ? new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
-  const formatTime = (timeStr: any) => {
-    if (!timeStr?.includes(':')) return 'N/A';
-    const [h, m] = timeStr.split(':');
-    const hour = parseInt(h);
-    return `${hour % 12 || 12}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+  const cancelBooking = async () => {
+    if (!bookingToCancel?.id) return;
+    try {
+      await cancelBookingMutation.mutateAsync(bookingToCancel.id);
+      setBookingToCancel(null);
+      refresh();
+      toast.success('Booking cancelled');
+    } catch {
+      toast.error('Unable to cancel this booking');
+    }
   };
-  const formatEventType = (et: any) => et?.replace(/_/g, ' ').split(' ').map((w:any) => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ') || 'Not specified';
-  const timeSlotMap: Record<string, string> = { morning: 'Morning', evening: 'Evening', night: 'Night', full_day: 'Full Day', short_duration: 'Short Duration' };
-  const formatTimeSlot = (ts: any) => (typeof ts === 'string' ? timeSlotMap[ts] : null) || ts || 'Not selected';
 
-  const totalPages = Math.ceil((paginatedData?.count || 0) / limit);
+  const deleteBooking = async () => {
+    if (!bookingToDelete?.id) return;
+    try {
+      await deleteBookingMutation.mutateAsync(bookingToDelete.id);
+      setBookingToDelete(null);
+      setIsViewModalOpen(false);
+      refresh();
+      toast.success('Booking deleted permanently');
+    } catch {
+      toast.error('Unable to delete this booking');
+    }
+  };
+
+  const exportCsv = () => {
+    if (!paginatedData?.data?.length) return toast.error('No bookings in this view to export');
+    exportBookingsToCSV(paginatedData.data, `dream-avenue-bookings-${new Date().toISOString().slice(0, 10)}.csv`);
+    toast.success('CSV report exported');
+  };
+
+  const formatDate = (date: string | null | undefined) => date
+    ? new Date(date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+    : 'Date pending';
+  const formatTime = (time: string | null | undefined) => {
+    if (!time?.includes(':')) return 'Time pending';
+    const [hour, minute] = time.split(':');
+    const numericHour = Number(hour);
+    return `${numericHour % 12 || 12}:${minute} ${numericHour >= 12 ? 'PM' : 'AM'}`;
+  };
+  const formatEventType = (value: string | null | undefined) => value?.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Not specified';
+  const formatTimeSlot = (value: string | null | undefined) => ({ morning: 'Morning', evening: 'Evening', night: 'Night', full_day: 'Full day', short_duration: 'Short duration' }[value || ''] || value || 'Not selected');
+  const clearFilters = () => { setSearchQuery(''); setStatusFilter('all'); setPage(1); };
+  const hasFilters = Boolean(searchQuery.trim()) || statusFilter !== 'all';
 
   return (
-    <AdminLayout>
-      <div className="min-h-screen bg-slate-50/60 pb-16">
-        <BookingsHeader 
-          isLoading={isBookingsLoading || isStatsLoading} 
-          onRefresh={handleRefresh} 
-          pendingCount={stats.pending} 
-          totalCount={stats.total}
-          onExportCSV={handleExportCSV}
-        />
-
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
-          {/* Top KPI Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <MetricCard 
-              title="Total Volume" 
-              value={stats.total} 
-              icon={<CalendarDays className="w-5 h-5" />} 
-              color="#0F172A" 
-              delay={0.05}
-              subtitle="All time venue requests"
-            />
-            <MetricCard 
-              title="Pending Review" 
-              value={stats.pending} 
-              icon={<Clock className="w-5 h-5" />} 
-              color="#F59E0B" 
-              delay={0.1}
-              change={stats.pending > 0 ? "Requires action" : "All clear"}
-              trend={stats.pending > 0 ? 'up' : 'down'}
-              subtitle="Awaiting admin response"
-            />
-            <MetricCard 
-              title="Confirmed" 
-              value={stats.confirmed} 
-              icon={<CheckCircle className="w-5 h-5" />} 
-              color="#10B981" 
-              delay={0.15}
-              subtitle="Scheduled & active"
-            />
-            <MetricCard 
-              title="Completed" 
-              value={stats.completed} 
-              icon={<Package className="w-5 h-5" />} 
-              color="#6366F1" 
-              delay={0.2}
-              subtitle="Successfully hosted"
-            />
+    <section className="da-bookings-workspace">
+      <header className="da-operations-header">
+        <div>
+          <p className="da-page-eyebrow">Venue operations</p>
+          <div className="da-title-row">
+            <h1>Bookings</h1>
+            <span className={stats.pending ? 'da-live-badge attention' : 'da-live-badge'}>
+              {stats.pending ? `${stats.pending} awaiting review` : 'All caught up'}
+            </span>
           </div>
-
-          {/* Filter Bar */}
-          <BookingsFilters 
-            searchQuery={searchQuery} 
-            onSearchChange={(v) => { setSearchQuery(v); setPage(1); }} 
-            statusFilter={statusFilter} 
-            onStatusFilterChange={(s) => { setStatusFilter(s); setPage(1); }} 
-            counts={stats}
-          />
-
-          {/* Bookings List Area */}
-          {isBookingsLoading ? (
-            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-slate-200/80">
-              <RefreshCw className="w-8 h-8 animate-spin text-slate-800 mb-3" />
-              <p className="text-xs font-semibold text-slate-500">Loading bookings data...</p>
-            </div>
-          ) : !paginatedData?.data?.length ? (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-dashed border-slate-200 text-center px-4"
-            >
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
-                <Inbox className="w-8 h-8" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 mb-1">No bookings match your criteria</h3>
-              <p className="text-xs text-slate-500 max-w-sm mb-4">
-                {searchQuery || statusFilter !== 'all' 
-                  ? "Try clearing filters or changing your search query." 
-                  : "New booking requests submitted by users will appear right here."}
-              </p>
-              {(searchQuery || statusFilter !== 'all') && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setStatusFilter('all');
-                  }}
-                  className="rounded-xl text-xs"
-                >
-                  Reset Filters
-                </Button>
-              )}
-            </motion.div>
-          ) : (
-            <>
-              <BookingTable
-                bookings={paginatedData.data}
-                onView={(booking) => { setSelectedBooking(booking); setIsViewModalOpen(true); }}
-                onCancel={(booking) => { setBookingToCancel(booking); setIsCancelModalOpen(true); }}
-                formatDate={formatDate}
-                formatTime={formatTime}
-              />
-
-              {/* Mobile presentation */}
-              <div className="grid grid-cols-1 gap-3 md:hidden">
-                {paginatedData.data.map((booking: Booking, index: number) => (
-                  <BookingCard 
-                    key={booking.id} 
-                    booking={booking} 
-                    onView={(b) => { setSelectedBooking(b); setIsViewModalOpen(true); }} 
-                    onCancel={(b) => { setBookingToCancel(b); setIsCancelModalOpen(true); }} 
-                    formatDate={formatDate} 
-                    formatTime={formatTime} 
-                    delay={index * 0.02} 
-                  />
-                ))}
-              </div>
-
-              {/* Pagination controls */}
-              {totalPages > 1 && (
-                <div className="mt-8 flex items-center justify-between border-t border-slate-200/80 pt-5 px-2">
-                  <span className="text-xs text-slate-500 font-medium">
-                    Showing <span className="font-bold text-slate-800">{((page - 1) * limit) + 1}</span> to <span className="font-bold text-slate-800">{Math.min(page * limit, paginatedData.count)}</span> of <span className="font-bold text-slate-800">{paginatedData.count}</span> results
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      disabled={page === 1}
-                      onClick={() => setPage(p => p - 1)}
-                      className="h-8 px-3 rounded-xl border-slate-200 text-xs font-semibold"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5 mr-1" />
-                      Previous
-                    </Button>
-                    <span className="text-xs font-bold px-3 py-1 bg-slate-900 text-white rounded-lg">
-                      {page} / {totalPages}
-                    </span>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      disabled={page === totalPages}
-                      onClick={() => setPage(p => p + 1)}
-                      className="h-8 px-3 rounded-xl border-slate-200 text-xs font-semibold"
-                    >
-                      Next
-                      <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+          <p className="da-header-copy">Prioritise client requests and keep each event moving from enquiry to completion.</p>
         </div>
+        <div className="da-operations-actions">
+          <AdminActionButton type="button" data-admin-shortcut="refresh" icon={<RefreshCw size={17} />} onClick={refresh} loading={isLoading}>Refresh</AdminActionButton>
+          <AdminActionButton type="button" data-admin-shortcut="export" variant="primary" icon={<Download size={17} />} onClick={exportCsv}>Export CSV</AdminActionButton>
+        </div>
+      </header>
+
+      <div className="da-booking-metrics" aria-label="Booking summary">
+        <BookingMetric label="All bookings" value={stats.total} note="All venue requests" tone="default" icon={<CalendarDays size={20} />} />
+        <BookingMetric label="Needs review" value={stats.pending} note={stats.pending ? 'Action required' : 'Nothing waiting'} tone="attention" icon={<Clock3 size={20} />} />
+        <BookingMetric label="Confirmed" value={stats.confirmed} note="Scheduled events" tone="success" icon={<CheckCircle2 size={20} />} />
+        <BookingMetric label="Completed" value={stats.completed} note="Successfully hosted" tone="default" icon={<UsersRound size={20} />} />
+        <BookingMetric label="Cancelled" value={stats.cancelled} note="Closed requests" tone="muted" icon={<CircleX size={20} />} />
       </div>
 
-      {/* Modals */}
-      <AnimatePresence>
-        {isViewModalOpen && selectedBooking && (
-          <BookingDetailsModal
-            booking={selectedBooking} 
-            onClose={() => { setIsViewModalOpen(false); setSelectedBooking(null); }}
-            onStatusUpdate={handleStatusUpdate} 
-            onCancel={(b) => { setBookingToCancel(b); setIsCancelModalOpen(true); }}
-            onDelete={(b) => { setBookingToDelete(b); setIsDeleteModalOpen(true); }}
-            formatDate={formatDate} 
-            formatTime={formatTime} 
-            formatEventType={formatEventType} 
-            formatTimeSlot={formatTimeSlot}
-            updateStatusMutation={updateStatusMutation} 
-            refetchBookings={handleRefresh}
-          />
+      <section className="da-booking-list-panel" aria-label="Bookings list">
+        <div className="da-booking-toolbar">
+          <label className="da-booking-search">
+            <Search size={18} aria-hidden="true" />
+            <input data-admin-search value={searchQuery} onChange={(event) => { setSearchQuery(event.target.value); setPage(1); }} placeholder="Search client, phone, or email" />
+            {searchQuery && <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear booking search"><X size={16} /></button>}
+          </label>
+          <div className="da-booking-filters" role="group" aria-label="Filter bookings by status">
+            {statusFilters.map((filter) => (
+              <button key={filter.value} type="button" aria-pressed={statusFilter === filter.value}
+                className={statusFilter === filter.value ? 'is-active' : ''}
+                onClick={() => { setStatusFilter(filter.value); setPage(1); }}>
+                {filter.label}<span>{stats[filter.count]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {isBookingsLoading ? (
+          <div className="da-booking-empty"><RefreshCw size={28} className="animate-spin" /><p>Loading booking operations…</p></div>
+        ) : !paginatedData?.data.length ? (
+          <div className="da-booking-empty">
+            <Inbox size={34} /><h2>No bookings in this view</h2>
+            <p>{hasFilters ? 'Try clearing the current search or status filter.' : 'New client enquiries will appear here.'}</p>
+            {hasFilters && <Button type="button" variant="outline" onClick={clearFilters}>Clear filters</Button>}
+          </div>
+        ) : (
+          <>
+            <BookingTable bookings={paginatedData.data} onView={openBooking} onCancel={setBookingToCancel} formatDate={formatDate} formatTime={formatTime} />
+            <div className="da-booking-mobile-list">
+              {paginatedData.data.map((booking, index) => <BookingCard key={booking.id} booking={booking} onView={openBooking} onCancel={setBookingToCancel} formatDate={formatDate} formatTime={formatTime} delay={index * 0.02} />)}
+            </div>
+          </>
         )}
-      </AnimatePresence>
+
+        {totalPages > 1 && (
+          <nav className="da-booking-pagination" aria-label="Bookings pages">
+            <p>Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, paginatedData?.count || 0)} of {paginatedData?.count || 0}</p>
+            <div>
+              <Button type="button" variant="outline" disabled={page === 1} onClick={() => setPage((value) => value - 1)}><ChevronLeft size={16} /> Previous</Button>
+              <span>Page {page} of {totalPages}</span>
+              <Button type="button" variant="outline" disabled={page === totalPages} onClick={() => setPage((value) => value + 1)}>Next <ChevronRight size={16} /></Button>
+            </div>
+          </nav>
+        )}
+      </section>
 
       <AnimatePresence>
-        {isCancelModalOpen && bookingToCancel && (
-          <ConfirmationModal
-            title="Cancel Booking" 
-            message={`Are you sure you want to cancel the booking for ${bookingToCancel.full_name}?`}
-            confirmText="Yes, Cancel" 
-            cancelText="No, Keep" 
-            onConfirm={handleConfirmCancel} 
-            onCancel={() => { setIsCancelModalOpen(false); setBookingToCancel(null); }} 
-            isDangerous
-          />
-        )}
+        {isViewModalOpen && selectedBooking && <BookingDetailsModal booking={selectedBooking} onClose={() => { setIsViewModalOpen(false); setSelectedBooking(null); }} onStatusUpdate={updateStatus} onCancel={setBookingToCancel} onDelete={setBookingToDelete} formatDate={formatDate} formatTime={formatTime} formatEventType={formatEventType} formatTimeSlot={formatTimeSlot} updateStatusMutation={updateStatusMutation} refetchBookings={refresh} />}
+        {bookingToCancel && <ConfirmationModal title="Cancel booking" message={`Cancel the booking for ${bookingToCancel.full_name}?`} confirmText="Cancel booking" cancelText="Keep booking" onConfirm={cancelBooking} onCancel={() => setBookingToCancel(null)} isDangerous />}
+        {bookingToDelete && <ConfirmationModal title="Delete permanently" message={`Delete the booking for ${bookingToDelete.full_name}? This cannot be undone.`} confirmText="Delete booking" cancelText="Keep booking" onConfirm={deleteBooking} onCancel={() => setBookingToDelete(null)} isDangerous />}
       </AnimatePresence>
-
-      <AnimatePresence>
-        {isDeleteModalOpen && bookingToDelete && (
-          <ConfirmationModal
-            title="Delete Permanently" 
-            message={`Delete booking for ${bookingToDelete.full_name}? This action cannot be undone.`}
-            confirmText="Yes, Delete" 
-            cancelText="Cancel" 
-            onConfirm={handleConfirmDelete}
-            onCancel={() => { setIsDeleteModalOpen(false); setBookingToDelete(null); }} 
-            isDangerous
-          />
-        )}
-      </AnimatePresence>
-    </AdminLayout>
+    </section>
   );
 }
 
