@@ -1,0 +1,316 @@
+/* ==========================================================================
+   Dream Avenue - Warm Editorial Minimal Design System
+   For Main Landing Page & Client Booking Concierge
+   ========================================================================== */
+
+:root {
+  /* Editorial Color Palette */
+  --hall-bg: #FAF8F5;
+  --hall-bg-warm: #F4EFEB;
+  --hall-card: #FFFFFF;
+  --hall-card-alt: #F8F5EF;
+  --hall-card-hover: #FCFAF7;
+  
+  --hall-border: #E8E3DA;
+  --hall-border-subtle: #F0EBE2;
+  --hall-border-gold: #DFCAAB;
+  
+  --hall-ink: #1B221B;
+  --hall-ink-secondary: #485247;
+  --hall-ink-muted: #737E72;
+  --hall-ink-faint: #A5AFA4;
+  
+  --hall-olive: #537517;
+  --hall-olive-dark: #3E5811;
+  --hall-olive-light: #EDF6DE;
+  --hall-olive-subtle: #F4FAE8;
+  
+  --hall-gold: #B88B52;
+  --hall-gold-light: #FAF4EB;
+  --hall-gold-border: #D8B786;
+  
+  --hall-cream: #FFFDF9;
+  
+  /* Elevation Shadows */
+  --hall-shadow-sm: 0 2px 8px rgba(27, 34, 27, 0.04);
+  --hall-shadow-md: 0 8px 24px rgba(27, 34, 27, 0.06);
+  --hall-shadow-lg: 0 20px 48px -12px rgba(27, 34, 27, 0.08);
+  --hall-shadow-gold: 0 12px 32px rgba(184, 139, 82, 0.15);
+  --hall-shadow-olive: 0 12px 32px rgba(83, 117, 23, 0.15);
+
+  /* Fonts */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Global Reset & Body Styles */
+.editorial-page {
+  background-color: var(--hall-bg);
+  color: var(--hall-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Typography Helpers */
+.editorial-serif {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+.editorial-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--hall-olive-light);
+  border: 1px solid rgba(83, 117, 23, 0.25);
+  border-radius: 999px;
+  color: var(--hall-olive-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.editorial-tag-gold {
+  background: var(--hall-gold-light);
+  border-color: var(--hall-gold-border);
+  color: #8C6228;
+}
+
+/* Editorial Glass Navbar */
+.editorial-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(232, 227, 218, 0.6);
+}
+
+.editorial-nav.scrolled {
+  background: rgba(250, 248, 245, 0.95);
+  border-bottom: 1px solid var(--hall-border);
+  box-shadow: 0 4px 20px rgba(27, 34, 27, 0.04);
+}
+
+/* Editorial Buttons */
+.btn-editorial-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--hall-olive);
+  color: #FFFFFF;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(83, 117, 23, 0.25);
+  text-decoration: none;
+}
+
+.btn-editorial-primary:hover {
+  background: var(--hall-olive-dark);
+  box-shadow: 0 8px 24px rgba(83, 117, 23, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-editorial-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  color: var(--hall-ink);
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: 1px solid var(--hall-border-gold);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-editorial-outline:hover {
+  background: #FFFFFF;
+  border-color: var(--hall-gold);
+  color: var(--hall-gold);
+  transform: translateY(-1px);
+  box-shadow: var(--hall-shadow-sm);
+}
+
+/* Editorial Section Container */
+.editorial-section {
+  padding: 100px 24px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .editorial-section {
+    padding: 64px 16px;
+  }
+}
+
+.editorial-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Hero Date Peek Widget */
+.hero-date-peek {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--hall-border-gold);
+  border-radius: 20px;
+  padding: 16px 20px;
+  box-shadow: 0 20px 48px rgba(27, 34, 27, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .hero-date-peek {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+/* Booking Concierge Steps */
+.booking-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.step-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid var(--hall-border);
+  background: var(--hall-card);
+  color: var(--hall-ink-muted);
+}
+
+.step-indicator.active .step-circle {
+  background: var(--hall-olive);
+  border-color: var(--hall-olive);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 6px var(--hall-olive-light);
+}
+
+.step-indicator.completed .step-circle {
+  background: var(--hall-olive-dark);
+  border-color: var(--hall-olive-dark);
+  color: #FFFFFF;
+}
+
+.step-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--hall-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.step-indicator.active .step-label {
+  color: var(--hall-ink);
+  font-weight: 700;
+}
+
+/* Digital Booking Pass (Post-Booking Slip) */
+.booking-pass-card {
+  background: #FFFFFF;
+  border: 1px solid var(--hall-border-gold);
+  border-radius: 24px;
+  box-shadow: 0 24px 64px -12px rgba(27, 34, 27, 0.12);
+  overflow: hidden;
+  position: relative;
+}
+
+.booking-pass-perforated {
+  position: relative;
+  border-bottom: 2px dashed var(--hall-border);
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+
+.booking-pass-perforated::before,
+.booking-pass-perforated::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  width: 26px;
+  height: 26px;
+  background: var(--hall-bg);
+  border-radius: 50%;
+  border: 1px solid var(--hall-border-gold);
+  z-index: 2;
+}
+
+.booking-pass-perforated::before {
+  left: -34px;
+}
+
+.booking-pass-perforated::after {
+  right: -34px;
+}
+
+/* Editorial Live Folio (Sticky Booking Summary) */
+.editorial-folio {
+  background: var(--hall-cream);
+  border: 1px solid var(--hall-border-gold);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--hall-shadow-md);
+  position: sticky;
+  top: 100px;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .step-label {
+    display: none;
+  }
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8125rem;
+  }
+}

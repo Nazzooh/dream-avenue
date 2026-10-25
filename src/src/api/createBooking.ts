@@ -1,4 +1,4 @@
-import { supabase } from '../../utils/supabase/client';
+﻿import { supabase } from '../../utils/supabase/client';
 
 // Public booking creation payload
 export type BookingPayload = {
@@ -15,12 +15,14 @@ export type BookingPayload = {
   user_id?: string | null;   // public user or null
 };
 
-// Converts UI slot → scalar times
+// Converts UI slot to scalar times
 export function normalizeTimes(slot: string) {
   switch (slot) {
     case 'morning':
+    case 'half_day_morning':
       return { start: '10:00', end: '14:00' };
     case 'evening':
+    case 'half_day_evening':
       return { start: '14:00', end: '18:00' };
     case 'night':
       return { start: '18:00', end: '22:00' };

@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Linkedin, Cookie } from 'lucide-react';
+﻿import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Linkedin, Cookie, Calendar, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { revokeConsent } from './CookieConsent';
 import logoImage from '../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
@@ -10,7 +10,7 @@ export function Footer() {
 
   // Secret admin access: Triple-click on copyright text
   const handleSecretAccess = (e: React.MouseEvent) => {
-    if (e.detail === 3) { // Triple-click detection
+    if (e.detail === 3) {
       navigate('/admin/dashboard');
     }
   };
@@ -30,155 +30,123 @@ export function Footer() {
   };
 
   return (
-    <footer className="site-footer">
-      <div className="container">
+    <footer 
+      style={{
+        background: '#151D15',
+        color: '#FAF8F5',
+        padding: '80px 24px 36px 24px',
+        borderTop: '1px solid rgba(223, 202, 171, 0.2)',
+      }}
+    >
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Footer Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
-          gap: 'clamp(2rem, 3vw, 3rem)',
-          alignItems: 'start',
-        }}>
+        <div 
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '48px',
+            alignItems: 'start',
+            marginBottom: '64px',
+          }}
+        >
           {/* Brand Section */}
-          <div style={{ minWidth: 0 }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'clamp(0.75rem, 2vw, 1rem)',
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
-            }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
               <img
                 src={logoImage}
-                alt="Dream Avenue Logo"
-                style={{
-                  width: 'clamp(40px, 10vw, 48px)',
-                  height: 'clamp(40px, 10vw, 48px)',
-                  objectFit: 'contain',
-                  flexShrink: 0
-                }}
+                alt="Dream Avenue Event Hall Logo"
+                style={{ width: '44px', height: '44px', objectFit: 'contain' }}
               />
-              <div style={{ minWidth: 0 }}>
-                <div style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: 'clamp(1.125rem, 2.5vw, 1.25rem)',
-                  color: 'var(--white)',
-                  lineHeight: 1.2,
-                }}>
+              <div>
+                <div 
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: '1.35rem',
+                    color: '#FAF8F5',
+                    fontWeight: 700,
+                    lineHeight: 1.1,
+                  }}
+                >
                   Dream Avenue
                 </div>
-                <div style={{
-                  fontSize: 'clamp(0.6875rem, 1.5vw, 0.75rem)',
-                  color: 'var(--gray-300)',
-                  letterSpacing: '0.5px',
-                  marginTop: '2px',
-                }}>
-                  CONVENTION CENTER
+                <div 
+                  style={{
+                    fontSize: '0.6875rem',
+                    color: '#DFCAAB',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    marginTop: '2px',
+                    fontWeight: 600,
+                  }}
+                >
+                  EVENT HALL
                 </div>
               </div>
             </div>
-            <p style={{
-              color: 'var(--gray-300)',
-              fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
-              lineHeight: 1.65,
-              marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
-              margin: 0,
-            }}>
-              Creating unforgettable moments for weddings, corporate events, and grand celebrations.
+            <p style={{ color: 'rgba(250, 248, 245, 0.75)', fontSize: '0.9375rem', lineHeight: 1.65, margin: '0 0 24px 0' }}>
+              Curating cherished memories for weddings, receptions, corporate summits, and milestone gatherings in Calicut.
             </p>
 
-            {/* Social Links */}
-            <div style={{
-              display: 'flex',
-              gap: 'clamp(0.625rem, 1.5vw, 0.75rem)',
-              marginTop: 'clamp(1.25rem, 3vw, 1.75rem)',
-              flexWrap: 'wrap',
-            }}>
-              {[
-                // TODO: Replace with actual Dream Avenue social profile URLs
-                { icon: Facebook, url: '#' },
-                { icon: Instagram, url: '#' },
-                { icon: Twitter, url: '#' },
-                { icon: Linkedin, url: '#' }
-              ].map(({ icon: Icon, url }, index) => (
-                <a
-                  key={index}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Visit our ${['Facebook', 'Instagram', 'Twitter', 'LinkedIn'][index]} page`}
-                  style={{
-                    width: 'clamp(36px, 8vw, 40px)',
-                    height: 'clamp(36px, 8vw, 40px)',
-                    borderRadius: '50%',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--white)',
-                    transition: 'all 0.3s ease',
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--lime-primary)';
-                    e.currentTarget.style.color = 'var(--dark-text)';
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                    e.currentTarget.style.color = 'var(--white)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <Icon size={18} />
-                </a>
-              ))}
-            </div>
+            <button
+              onClick={() => navigate('/booking')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                background: '#537517',
+                color: '#FFFFFF',
+                borderRadius: '10px',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#3E5811')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#537517')}
+            >
+              <Calendar size={15} />
+              <span>Reserve Hall Online</span>
+            </button>
           </div>
 
           {/* Quick Links */}
-          <div style={{ minWidth: 0 }}>
-            <h4 style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(1rem, 2.25vw, 1.125rem)',
-              color: 'var(--white)',
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
-              fontWeight: 600,
-              margin: 0,
-            }}>
-              Quick Links
+          <div>
+            <h4 
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: '1.125rem',
+                color: '#FAF8F5',
+                marginBottom: '20px',
+                fontWeight: 600,
+              }}
+            >
+              Quick Navigation
             </h4>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'clamp(0.625rem, 1.5vw, 0.875rem)'
-            }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { label: 'Home', href: '#home' },
-                { label: 'Facilities', href: '#facilities' },
-                { label: 'Packages', href: '#packages' },
-                { label: 'Events', href: '#events' },
-                { label: 'Gallery', href: '#gallery' }
+                { label: 'The Hall', href: '#home' },
+                { label: 'Spaces & Facilities', href: '#facilities' },
+                { label: 'Curated Packages', href: '#packages' },
+                { label: 'Occasions & Calendar', href: '#events' },
+                { label: 'Photo Gallery', href: '#gallery' },
+                { label: 'Frequently Asked Questions', href: '#faq' },
+                { label: 'Location & Map', href: '#location' },
               ].map(({ label, href }) => (
                 <a
                   key={href}
                   href={href}
                   onClick={(e) => handleNavClick(e, href)}
                   style={{
-                    color: 'var(--gray-300)',
-                    fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
+                    color: 'rgba(250, 248, 245, 0.7)',
+                    fontSize: '0.9375rem',
                     textDecoration: 'none',
-                    transition: 'all 0.3s ease',
-                    display: 'inline-block',
+                    transition: 'color 0.2s ease',
                     width: 'fit-content',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--lime-primary)';
-                    e.currentTarget.style.paddingLeft = '8px';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--gray-300)';
-                    e.currentTarget.style.paddingLeft = '0';
-                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#DFCAAB')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(250, 248, 245, 0.7)')}
                 >
                   {label}
                 </a>
@@ -186,203 +154,97 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Services */}
-          <div style={{ minWidth: 0 }}>
-            <h4 style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(1rem, 2.25vw, 1.125rem)',
-              color: 'var(--white)',
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
-              fontWeight: 600,
-              margin: 0,
-            }}>
-              Services
+          {/* Contact Details */}
+          <div>
+            <h4 
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: '1.125rem',
+                color: '#FAF8F5',
+                marginBottom: '20px',
+                fontWeight: 600,
+              }}
+            >
+              Direct Concierge
             </h4>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'clamp(0.625rem, 1.5vw, 0.875rem)'
-            }}>
-              {[
-                { label: 'Wedding Packages', href: '#packages' },
-                { label: 'Corporate Events', href: '#packages' },
-                { label: 'Birthday Parties', href: '#packages' },
-                { label: 'Social Gatherings', href: '#packages' },
-                { label: 'Catering Services', href: '#facilities' },
-                { label: 'Event Planning', href: '#facilities' }
-              ].map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  onClick={(e) => handleNavClick(e, href)}
-                  style={{
-                    color: 'var(--gray-300)',
-                    fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
-                    textDecoration: 'none',
-                    transition: 'all 0.3s ease',
-                    display: 'inline-block',
-                    width: 'fit-content',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--lime-primary)';
-                    e.currentTarget.style.paddingLeft = '8px';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--gray-300)';
-                    e.currentTarget.style.paddingLeft = '0';
-                  }}
-                >
-                  {label}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'rgba(250, 248, 245, 0.75)', fontSize: '0.9375rem' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <MapPin size={18} style={{ color: '#DFCAAB', flexShrink: 0, marginTop: '3px' }} />
+                <span>{CONTACT_INFO.address.street}, {CONTACT_INFO.address.area}, {CONTACT_INFO.address.city}, {CONTACT_INFO.address.state}</span>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <Phone size={18} style={{ color: '#DFCAAB', flexShrink: 0 }} />
+                <a href={`tel:${CONTACT_INFO.phones.main}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  {CONTACT_INFO.phones.main}
                 </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div style={{ minWidth: 0 }}>
-            <h4 style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 'clamp(1rem, 2.25vw, 1.125rem)',
-              color: 'var(--white)',
-              marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)',
-              fontWeight: 600,
-              margin: 0,
-            }}>
-              Contact Us
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.875rem, 2vw, 1.25rem)' }}>
-              {/* Address */}
-              <div style={{ display: 'flex', gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', alignItems: 'flex-start' }}>
-                <MapPin size={18} style={{ color: 'var(--lime-primary)', flexShrink: 0, marginTop: '3px' }} />
-                <span style={{
-                  color: 'var(--gray-300)',
-                  fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)',
-                  lineHeight: 1.6,
-                }}>
-                  Feroke Road, Karuvanthiruthy<br />
-                  Kozhikode, Kerala 673631<br />
-                  <span style={{ fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)', color: 'var(--gray-400)' }}>
-                    (Ground Floor Office)
-                  </span>
-                </span>
               </div>
-
-              {/* Phone */}
-              <div style={{ display: 'flex', gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', alignItems: 'flex-start' }}>
-                <Phone size={18} style={{ color: 'var(--lime-primary)', flexShrink: 0, marginTop: '3px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 }}>
-                  <a
-                    href={`tel:${CONTACT_INFO.phones.main}`}
-                    style={{
-                      color: 'var(--gray-300)',
-                      fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)',
-                      textDecoration: 'none',
-                      transition: 'color 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--lime-primary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray-300)'}
-                  >
-                    {CONTACT_INFO.phones.main}
-                  </a>
-                  <a
-                    href={`tel:${CONTACT_INFO.phones.booking}`}
-                    style={{
-                      color: 'var(--gray-300)',
-                      fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)',
-                      textDecoration: 'none',
-                      transition: 'color 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--lime-primary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray-300)'}
-                  >
-                    {CONTACT_INFO.phones.bookingFormatted} (Booking)
-                  </a>
-                </div>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <MessageCircle size={18} style={{ color: '#537517', flexShrink: 0 }} />
+                <a 
+                  href={CONTACT_INFO.links.whatsapp} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ color: '#EDF6DE', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  WhatsApp: {CONTACT_INFO.phones.whatsapp}
+                </a>
               </div>
-
-              {/* Email */}
-              <div style={{ display: 'flex', gap: 'clamp(0.625rem, 1.5vw, 0.75rem)', alignItems: 'flex-start' }}>
-                <Mail size={18} style={{ color: 'var(--lime-primary)', flexShrink: 0, marginTop: '3px' }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
-                  <a
-                    href={`mailto:${CONTACT_INFO.emails.primary}`}
-                    style={{
-                      color: 'var(--gray-300)',
-                      fontSize: 'clamp(0.8125rem, 1.5vw, 0.875rem)',
-                      textDecoration: 'none',
-                      transition: 'color 0.3s ease',
-                      wordBreak: 'break-word',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--lime-primary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray-300)'}
-                  >
-                    {CONTACT_INFO.emails.primary}
-                  </a>
-                  <a
-                    href={`mailto:${CONTACT_INFO.emails.secondary}`}
-                    style={{
-                      color: 'var(--gray-300)',
-                      fontSize: 'clamp(0.75rem, 1.25vw, 0.8125rem)',
-                      textDecoration: 'none',
-                      transition: 'color 0.3s ease',
-                      wordBreak: 'break-word',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--lime-primary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray-300)'}
-                  >
-                    {CONTACT_INFO.emails.secondary}
-                  </a>
-                </div>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <Mail size={18} style={{ color: '#DFCAAB', flexShrink: 0 }} />
+                <a href={`mailto:${CONTACT_INFO.emails.primary}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  {CONTACT_INFO.emails.primary}
+                </a>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer Bottom */}
-        <div className="footer-bottom">
-          <div style={{
+        <div 
+          style={{
+            paddingTop: '28px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
-            flexDirection: 'column',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '12px',
-          }}>
-            <p onClick={handleSecretAccess}>© {currentYear} Dream Avenue Convention Center. All rights reserved.</p>
+            gap: '16px',
+            fontSize: '0.8125rem',
+            color: 'rgba(250, 248, 245, 0.5)',
+          }}
+        >
+          <p 
+            onClick={handleSecretAccess}
+            style={{ margin: 0, cursor: 'pointer', userSelect: 'none' }}
+            title="Dream Avenue Event Hall"
+          >
+            &copy; {currentYear} Dream Avenue Event Hall. All rights reserved.
+          </p>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <button
               onClick={revokeConsent}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                color: 'var(--gray-400)',
-                fontSize: '0.75rem',
+                gap: '6px',
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(250, 248, 245, 0.6)',
+                fontSize: '0.8125rem',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                fontFamily: 'inherit',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.color = 'var(--white)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.color = 'var(--gray-400)';
               }}
             >
               <Cookie size={14} />
-              Manage Cookie Preferences
+              <span>Cookie Preferences</span>
             </button>
 
-            <p style={{ margin: 0 }}>
-              Made with <span style={{ color: 'var(--lime-primary)' }}>♥</span> for creating beautiful moments
-            </p>
-            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--gray-400)' }}>
-              Designed and developed by <a href="https://nasooh.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime-primary)', textDecoration: 'none', fontWeight: 600 }}>Nasooh</a>
-            </p>
+            <a 
+              href="/terms" 
+              style={{ color: 'rgba(250, 248, 245, 0.6)', textDecoration: 'none' }}
+            >
+              Terms & Policies
+            </a>
           </div>
         </div>
       </div>

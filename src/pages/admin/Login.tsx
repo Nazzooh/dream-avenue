@@ -87,7 +87,7 @@ export function AdminLogin() {
                 Admin Control Panel
               </p>
               <p className="admin-login-welcome-description">
-                Manage your convention center with elegance and efficiency
+                Manage your event hall with elegance and efficiency
               </p>
             </div>
 
@@ -188,7 +188,7 @@ export function AdminLogin() {
             {/* Card Footer */}
             <div className="admin-login-card-footer">
               <p className="admin-login-footer-text">
-                © Dream Avenue Convention Center · 2025
+                © Dream Avenue Event Hall · 2025
               </p>
               <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'rgba(0,0,0,0.4)', textAlign: 'center' }}>
                 Designed and developed by <a href="https://nasooh.in" target="_blank" rel="noopener noreferrer" style={{ color: '#B6F500', textDecoration: 'none', fontWeight: 600 }}>Nasooh</a>

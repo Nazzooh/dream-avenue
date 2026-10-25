@@ -130,7 +130,7 @@ export function EnhancedAnalyticsDashboard() {
         </div>
         
         <p style={{ fontSize: '0.9375rem', color: '#666666', margin: 0 }}>
-          Live metrics from your Dream Avenue Convention Center
+          Live metrics from your Dream Avenue Event Hall
         </p>
       </div>
 

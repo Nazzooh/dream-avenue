@@ -13,9 +13,9 @@ interface SEOHeadProps {
 }
 
 export const SEOHead: React.FC<SEOHeadProps> = ({
-  title = 'Dream Avenue Convention Center - Luxury Event Venue',
-  description = 'Premium luxury event venue in Calicut (Kozhikode) offering world-class facilities for weddings, corporate events, and grand celebrations. Capacity 500+ guests with modern amenities.',
-  keywords = 'event venue, convention center, luxury venue, wedding hall, corporate events, Dream Avenue, banquet hall, Calicut events, wedding destination',
+  title = 'Dream Avenue Event Hall | Bespoke Event Venue in Calicut',
+  description = 'Premier contemporary event hall in Calicut (Kozhikode) offering refined spaces for weddings, receptions, corporate conclaves, and celebrations. Capacity 1,000+ guests with modern amenities.',
+  keywords = 'event hall, wedding hall, Calicut function hall, reception hall, banquet hall, Dream Avenue Event Hall, Calicut events, Kozhikode event venue',
   image = '/og-image.jpg',
   url = 'https://dreamavenue.in',
   type = 'website',
@@ -28,13 +28,13 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     schemaData = {
       "@context": "https://schema.org",
       "@type": "EventVenue",
-      "name": "Dream Avenue Convention Center",
+      "name": "Dream Avenue Event Hall",
       "description": description,
       "url": url,
       "image": image,
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Dream Avenue",
+        "streetAddress": "Dream Avenue, Kozhikode Bypass",
         "addressLocality": "Calicut",
         "addressRegion": "Kerala",
         "addressCountry": "India"
@@ -53,16 +53,21 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
         },
         {
           "@type": "LocationFeatureSpecification",
-          "name": "Parking",
+          "name": "Parking Plaza",
           "value": true
         },
         {
           "@type": "LocationFeatureSpecification",
-          "name": "Catering",
+          "name": "Dining Banquet",
+          "value": true
+        },
+        {
+          "@type": "LocationFeatureSpecification",
+          "name": "Bridal Suite",
           "value": true
         }
       ],
-      "maximumAttendeeCapacity": 500
+      "maximumAttendeeCapacity": 1000
     };
   } else if (type === 'article') {
     schemaData = {
@@ -78,7 +83,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     schemaData = {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": title,
+      "name": "Dream Avenue Event Hall",
       "description": description,
       "url": url
     };
@@ -97,7 +102,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       <meta property="og:image" content={image} />
       <meta property="og:url" content={url} />
       <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="Dream Avenue Convention Center" />
+      <meta property="og:site_name" content="Dream Avenue Event Hall" />
       
       {/* Twitter Card tags */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -115,4 +120,3 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     </Helmet>
   );
 };
-

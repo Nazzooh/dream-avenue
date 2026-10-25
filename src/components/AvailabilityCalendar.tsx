@@ -1,21 +1,23 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCalendarMonth } from '../src/hooks/useCalendar';
 import type { CalendarDaySlots } from '../src/api/calendar';
 
 interface DateCellProps {
   date: Date;
+  dateStr: string;
   isCurrentMonth: boolean;
   isToday: boolean;
   isPast: boolean;
   status: 'available' | 'booked' | 'partial' | null;
+  onSelectDate: (dateStr: string) => void;
 }
 
-function DateCell({ date, isCurrentMonth, isToday, isPast, status }: DateCellProps) {
+function DateCell({ date, dateStr, isCurrentMonth, isToday, isPast, status, onSelectDate }: DateCellProps) {
   const day = date.getDate();
 
-  // Determine cell styling with pastel colors
   let cellStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -24,132 +26,122 @@ function DateCell({ date, isCurrentMonth, isToday, isPast, status }: DateCellPro
     aspectRatio: '1 / 1',
     borderRadius: '10px',
     fontSize: '0.875rem',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
     cursor: 'default',
     position: 'relative',
     boxSizing: 'border-box',
   };
 
   if (!isCurrentMonth) {
-    cellStyles.color = '#9ca3af';
-    cellStyles.opacity = '0.4';
+    cellStyles.color = '#C5CEB8';
+    cellStyles.opacity = '0.35';
     cellStyles.background = 'transparent';
   } else if (isPast) {
-    cellStyles.color = '#9ca3af';
-    cellStyles.opacity = '0.5';
+    cellStyles.color = '#A5AFA4';
+    cellStyles.opacity = '0.45';
     cellStyles.background = 'transparent';
-  } else if (status === 'booked' || status === 'full') {
-    // Pastel yellow for booked days
-    cellStyles.background = '#fff4c2';
-    cellStyles.color = '#8b6914';
-    cellStyles.border = '2px solid #f5d96c';
+  } else if (status === 'booked') {
+    // Soft sand/gold for fully booked
+    cellStyles.background = '#FAF4EB';
+    cellStyles.color = '#A67B43';
+    cellStyles.border = '1px solid #DFCAAB';
     cellStyles.fontWeight = '600';
-  } else if (status === 'available') {
-    // Pastel green for available days
-    cellStyles.background = '#ccf4ce';
-    cellStyles.color = '#2d5016';
-    cellStyles.border = '2px solid #87e18a';
+  } else if (status === 'partial') {
+    // Partial slots available
+    cellStyles.background = '#F6F8ED';
+    cellStyles.color = '#537517';
+    cellStyles.border = '1px dashed #537517';
     cellStyles.fontWeight = '600';
     cellStyles.cursor = 'pointer';
-  } else if (status === 'partial') {
-    // Pastel yellow for partial days
-    cellStyles.background = '#fff4c2';
-    cellStyles.color = '#8b6914';
-    cellStyles.border = '2px solid #f5d96c';
+  } else if (status === 'available') {
+    // Full day available - Warm Olive Tint
+    cellStyles.background = '#EDF6DE';
+    cellStyles.color = '#3E5811';
+    cellStyles.border = '1px solid #C6DDA4';
     cellStyles.fontWeight = '600';
+    cellStyles.cursor = 'pointer';
   } else {
-    cellStyles.color = '#374151';
+    cellStyles.color = '#1B221B';
     cellStyles.background = 'transparent';
   }
 
-  // Today styling with lime accent
+  // Today indicator ring
   if (isToday) {
-    cellStyles.border = '3px solid #C8D46B';
+    cellStyles.boxShadow = '0 0 0 2px #537517';
     cellStyles.fontWeight = '700';
-    cellStyles.boxShadow = '0 0 0 3px rgba(200, 212, 107, 0.2)';
   }
 
+  const isClickable = !isPast && isCurrentMonth && (status === 'available' || status === 'partial');
+
   return (
-    <motion.div
-      style={cellStyles}
-      whileHover={
-        status === 'available' && !isPast
-          ? { scale: 1.05, boxShadow: '0 2px 8px rgba(135, 225, 138, 0.4)' }
-          : {}
-      }
-      whileTap={
-        status === 'available' && !isPast
-          ? { scale: 0.98 }
-          : {}
-      }
+    <motion.button
+      type="button"
+      onClick={() => isClickable && onSelectDate(dateStr)}
+      disabled={!isClickable}
+      style={{
+        ...cellStyles,
+        border: cellStyles.border || 'none',
+        outline: 'none',
+        fontFamily: 'inherit',
+      }}
+      whileHover={isClickable ? { scale: 1.08, boxShadow: '0 4px 12px rgba(83, 117, 23, 0.25)' } : {}}
+      whileTap={isClickable ? { scale: 0.95 } : {}}
     >
       {day}
-    </motion.div>
+    </motion.button>
   );
 }
 
 function CalendarGrid({ 
   currentDate, 
-  availabilityData 
+  availabilityData,
+  onSelectDate,
 }: { 
   currentDate: Date;
   availabilityData: Record<string, CalendarDaySlots>;
+  onSelectDate: (dateStr: string) => void;
 }) {
   const today = useMemo(() => new Date(), []);
   
-  // Get calendar days
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     
-    // First day of the month
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    
-    // Start from Sunday (Indian calendar format)
+    const dayOfWeek = firstDay.getDay(); // 0 = Sunday
     const startDate = new Date(firstDay);
-    const dayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    startDate.setDate(firstDay.getDate() - dayOfWeek); // Go back to Sunday
+    startDate.setDate(firstDay.getDate() - dayOfWeek);
     
-    // Generate 6 weeks of dates (42 days)
     const days: Date[] = [];
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       days.push(date);
     }
-    
     return days;
   }, [currentDate]);
 
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: '100%',
-        overflow: 'hidden',
-        boxSizing: 'border-box',
-      }}
-    >
+    <div style={{ width: '100%' }}>
       {/* Day headers */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '6px',
+          gap: '8px',
           marginBottom: '12px',
-          width: '100%',
+          textAlign: 'center',
         }}
       >
         {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
           <div
             key={day}
             style={{
-              textAlign: 'center',
-              fontSize: '0.7rem',
-              color: '#9ca3af',
-              fontWeight: '600',
-              letterSpacing: '0.5px',
+              fontSize: '0.75rem',
+              color: '#737E72',
+              fontWeight: 600,
+              letterSpacing: '1px',
             }}
           >
             {day}
@@ -162,8 +154,7 @@ function CalendarGrid({
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '6px',
-          width: '100%',
+          gap: '8px',
         }}
       >
         {calendarDays.map((date, idx) => {
@@ -175,25 +166,17 @@ function CalendarGrid({
             date.getFullYear() === today.getFullYear();
           const isPast = date < today && !isToday;
           
-          // Get status from availability data using get_calendar_month logic
           let status: 'available' | 'booked' | 'partial' | null = null;
           if (availabilityData && availabilityData[dateStr]) {
             const dayData: CalendarDaySlots = availabilityData[dateStr];
-            
-            // full_day = true → fully booked (red/booked)
             if (dayData.full_day) {
               status = 'booked';
-            } 
-            // any of morning/evening/night/short_duration = true → partially booked (yellow)
-            else if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
+            } else if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
               status = 'partial';
-            } 
-            // all false → available (green)
-            else {
+            } else {
               status = 'available';
             }
           } else if (isCurrentMonth && !isPast) {
-            // Default to available if no booking data
             status = 'available';
           }
 
@@ -201,10 +184,12 @@ function CalendarGrid({
             <DateCell
               key={idx}
               date={date}
+              dateStr={dateStr}
               isCurrentMonth={isCurrentMonth}
               isToday={isToday}
               isPast={isPast}
               status={status}
+              onSelectDate={onSelectDate}
             />
           );
         })}
@@ -239,234 +224,136 @@ function CalendarHeader({
         width: '100%',
       }}
     >
-      <motion.button
+      <button
         onClick={onPrevMonth}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '42px',
-          height: '42px',
-          background: '#f0f4c3',
-          border: '1px solid #C8D46B',
+          width: '40px',
+          height: '40px',
+          background: '#FFFFFF',
+          border: '1px solid #E8E3DA',
           borderRadius: '50%',
           cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          flexShrink: 0,
+          color: '#1B221B',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
         }}
-        whileHover={{
-          background: '#C8D46B',
-          scale: 1.05,
-        }}
-        whileTap={{ scale: 0.95 }}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#537517')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E8E3DA')}
       >
-        <ChevronLeft size={20} color="#5a6c0f" />
-      </motion.button>
+        <ChevronLeft size={20} />
+      </button>
 
-      <motion.h3
-        key={monthYear}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+      <h3
         style={{
-          fontFamily: "'Playfair Display', serif",
-          fontSize: 'clamp(1.125rem, 4vw, 1.5rem)',
-          color: '#2a2a2a',
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: '1.35rem',
+          fontWeight: 700,
+          color: '#1B221B',
           margin: 0,
-          textAlign: 'center',
         }}
       >
         {monthYear}
-      </motion.h3>
+      </h3>
 
-      <motion.button
+      <button
         onClick={onNextMonth}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '42px',
-          height: '42px',
-          background: '#f0f4c3',
-          border: '1px solid #C8D46B',
+          width: '40px',
+          height: '40px',
+          background: '#FFFFFF',
+          border: '1px solid #E8E3DA',
           borderRadius: '50%',
           cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          flexShrink: 0,
+          color: '#1B221B',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
         }}
-        whileHover={{
-          background: '#C8D46B',
-          scale: 1.05,
-        }}
-        whileTap={{ scale: 0.95 }}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#537517')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E8E3DA')}
       >
-        <ChevronRight size={20} color="#5a6c0f" />
-      </motion.button>
-    </div>
-  );
-}
-
-function Legend() {
-  const items = [
-    { label: 'Available', color: '#ccf4ce', borderColor: '#87e18a', textColor: '#2d5016' },
-    { label: 'Limited', color: '#fff4c2', borderColor: '#f5d96c', textColor: '#8b6914' },
-    { label: 'Fully Booked', color: '#fff4c2', borderColor: '#f5d96c', textColor: '#8b6914' },
-    { label: 'Today', color: 'transparent', borderColor: '#C8D46B', textColor: '#2a2a2a' },
-  ];
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '12px',
-        justifyContent: 'center',
-        marginTop: '24px',
-      }}
-    >
-      {items.map((item) => (
-        <div
-          key={item.label}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <div
-            style={{
-              width: '20px',
-              height: '20px',
-              background: item.color,
-              border: `2px solid ${item.borderColor}`,
-              borderRadius: '6px',
-              flexShrink: 0,
-            }}
-          />
-          <span
-            style={{
-              fontSize: '0.85rem',
-              color: '#666',
-            }}
-          >
-            {item.label}
-          </span>
-        </div>
-      ))}
+        <ChevronRight size={20} />
+      </button>
     </div>
   );
 }
 
 export function AvailabilityCalendar() {
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
-  const { data, isLoading, error } = useCalendarMonth(year, month);
+  const { data: availabilityData = {} } = useCalendarMonth(year, month);
 
-  const handlePrevMonth = () => {
-    setSlideDirection('right');
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  const prevMonth = () => {
+    setCurrentDate(new Date(year, month - 2, 1));
   };
 
-  const handleNextMonth = () => {
-    setSlideDirection('left');
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  const nextMonth = () => {
+    setCurrentDate(new Date(year, month, 1));
   };
 
-  if (error) {
-    return (
-      <div className="text-center" style={{ padding: '48px 16px' }}>
-        <CalendarIcon size={48} style={{ color: '#9ca3af', margin: '0 auto 16px' }} />
-        <p style={{ color: '#ef4444', marginBottom: '16px' }}>
-          Error loading calendar: {error instanceof Error ? error.message : 'Unknown error'}
-        </p>
-      </div>
-    );
-  }
+  const handleSelectDate = (dateStr: string) => {
+    navigate(`/booking?date=${dateStr}`);
+  };
 
   return (
     <div
-      className="calendar-wrapper"
       style={{
-        width: '100%',
-        maxWidth: '100%',
-        overflowX: 'hidden',
-        overflowY: 'visible',
-        boxSizing: 'border-box',
-        padding: '0',
+        background: '#FFFFFF',
+        borderRadius: '24px',
+        padding: '32px 28px',
+        border: '1px solid #E8E3DA',
+        boxShadow: '0 12px 36px rgba(27, 34, 27, 0.06)',
+        maxWidth: '720px',
+        margin: '0 auto',
       }}
     >
+      <CalendarHeader
+        currentDate={currentDate}
+        onPrevMonth={prevMonth}
+        onNextMonth={nextMonth}
+      />
+
+      <CalendarGrid
+        currentDate={currentDate}
+        availabilityData={availabilityData}
+        onSelectDate={handleSelectDate}
+      />
+
+      {/* Legend & Help */}
       <div
         style={{
-          background: '#ffffff',
-          borderRadius: '20px',
-          padding: 'clamp(16px, 4vw, 32px)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-          border: '1px solid rgba(200, 212, 107, 0.15)',
-          maxWidth: '500px',
-          margin: '0 auto',
-          width: '100%',
-          boxSizing: 'border-box',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '20px',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: '28px',
+          paddingTop: '20px',
+          borderTop: '1px solid #F0EBE2',
+          fontSize: '0.8125rem',
+          color: '#485247',
         }}
       >
-        <CalendarHeader
-          currentDate={currentDate}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
-        />
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${year}-${month}`}
-            initial={{ opacity: 0, x: slideDirection === 'left' ? 20 : -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: slideDirection === 'left' ? -20 : 20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {isLoading ? (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '300px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    border: '4px solid rgba(200, 212, 107, 0.2)',
-                    borderTop: '4px solid #C8D46B',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                  }}
-                />
-              </div>
-            ) : (
-              <CalendarGrid
-                currentDate={currentDate}
-                availabilityData={data || {}}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        <Legend />
-
-        <div style={{
-          marginTop: '1.5rem',
-          padding: '1rem',
-          background: 'rgba(200, 212, 107, 0.1)',
-          borderRadius: 'var(--radius-lg)',
-          textAlign: 'center',
-          fontSize: '0.875rem',
-          color: 'var(--text-muted)'
-        }}>
-          <p style={{ margin: 0 }}>Calendar shows live availability. Contact us to confirm dates and details.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '14px', height: '14px', borderRadius: '4px', background: '#EDF6DE', border: '1px solid #C6DDA4' }} />
+          <span>Available (Click to Book)</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '14px', height: '14px', borderRadius: '4px', background: '#F6F8ED', border: '1px dashed #537517' }} />
+          <span>Partial Slots Available</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '14px', height: '14px', borderRadius: '4px', background: '#FAF4EB', border: '1px solid #DFCAAB' }} />
+          <span>Reserved</span>
         </div>
       </div>
     </div>

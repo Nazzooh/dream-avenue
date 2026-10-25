@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, ChevronDown, ArrowRight, Award, Phone } from 'lucide-react';
+import { Calendar, ChevronDown, ArrowRight, Sparkles, Phone, CheckCircle2 } from 'lucide-react';
 
 // @ts-ignore
 import heroPoster from '../assets/hero-poster.png';
@@ -10,6 +10,7 @@ export function Hero() {
   const navigate = useNavigate();
   const [showFloatingCTA, setShowFloatingCTA] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [peekDate, setPeekDate] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollY, scrollYProgress } = useScroll();
 
@@ -27,20 +28,30 @@ export function Hero() {
     }
   };
 
+  const handleDatePeekSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (peekDate) {
+      navigate(`/booking?date=${peekDate}`);
+    } else {
+      navigate('/booking');
+    }
+  };
+
   // Scroll Animations
-  const contentScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const videoScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.2]);
-  const videoOpacity = useTransform(scrollYProgress, [0, 0.5], [0.7, 0.3]);
-  const badgeY = useTransform(scrollYProgress, [0, 0.3], [0, -100]);
-  const headlineY = useTransform(scrollYProgress, [0, 0.3], [0, -50]);
+  const contentScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.92]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
+  const videoScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.15]);
+  const videoOpacity = useTransform(scrollYProgress, [0, 0.5], [0.65, 0.25]);
 
   // Floating CTA visibility
   useEffect(() => {
     return scrollY.on('change', (latest) => {
-      setShowFloatingCTA(latest > 800);
+      setShowFloatingCTA(latest > 700);
     });
   }, [scrollY]);
+
+  // Minimum selectable date is today in YYYY-MM-DD format
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <section
@@ -48,17 +59,18 @@ export function Hero() {
       ref={containerRef}
       style={{
         position: 'relative',
-        height: '100vh',
-        width: '100vw',
+        minHeight: '100vh',
+        width: '100%',
         overflow: 'hidden',
-        background: '#050505',
+        background: '#111812',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: '80px', // Offset for Navbar height
+        paddingTop: '100px',
+        paddingBottom: '80px',
       }}
     >
-      {/* Dynamic Video Background Layer */}
+      {/* Dynamic Video / Poster Background Layer */}
       <motion.div
         style={{
           position: 'absolute',
@@ -70,31 +82,35 @@ export function Hero() {
           zIndex: 0,
         }}
       >
-        <div style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.3))',
-          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.3)), url(${heroPoster})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          zIndex: 1,
-          pointerEvents: 'auto', // Capture all clicks/interactions
-        }} />
+        <div 
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(to bottom, rgba(17, 24, 18, 0.8) 0%, rgba(17, 24, 18, 0.45) 50%, rgba(17, 24, 18, 0.9) 100%)',
+            backgroundImage: `linear-gradient(to bottom, rgba(17, 24, 18, 0.8) 0%, rgba(17, 24, 18, 0.45) 50%, rgba(17, 24, 18, 0.9) 100%), url(${heroPoster})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }} 
+        />
 
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '177.77777778vh',
-          height: '100vh',
-          minWidth: '100vw',
-          minHeight: '56.25vw',
-        }}>
+        <div 
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '177.77777778vh',
+            height: '100vh',
+            minWidth: '100vw',
+            minHeight: '56.25vw',
+          }}
+        >
           <iframe
             src="https://www.youtube-nocookie.com/embed/qXgr8igDL84?si=qLxbZzpO5cGkX9fY&autoplay=1&mute=1&controls=0&loop=1&playlist=qXgr8igDL84&playsinline=1&modestbranding=1&rel=0&showinfo=0&disablekb=1&enablejsapi=1"
-            title="Dream Avenue Background"
+            title="Dream Avenue Event Hall Showcase"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             onLoad={() => setVideoLoaded(true)}
             style={{
@@ -104,7 +120,7 @@ export function Hero() {
               opacity: videoLoaded ? (videoOpacity as any) : 0,
               transition: 'opacity 1s ease-in-out',
               position: 'relative',
-              zIndex: 2,
+              zIndex: 0,
             }}
           />
         </div>
@@ -118,216 +134,271 @@ export function Hero() {
           textAlign: 'center',
           scale: contentScale,
           opacity: contentOpacity,
-          padding: '20px 24px 0 24px', // Extra top padding inside content
-          maxWidth: '1200px',
+          padding: '0 24px',
+          maxWidth: '1080px',
+          margin: '0 auto',
         }}
       >
-        {/* Floating Badge */}
+        {/* Editorial Subtitle Badge */}
         <motion.div
-          style={{ y: badgeY }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          style={{ marginBottom: '24px' }}
         >
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '10px 24px',
-            background: 'rgba(200, 212, 107, 0.1)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(200, 212, 107, 0.3)',
-            borderRadius: '100px',
-            color: '#C8D46B',
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
-            marginBottom: '32px',
-          }}>
-            <Award size={18} />
-            Calicut's Premier Luxury Venue
-            <Sparkles size={18} />
+          <div 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '8px 20px',
+              background: 'rgba(237, 246, 222, 0.12)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(184, 139, 82, 0.35)',
+              borderRadius: '999px',
+              color: '#DFCAAB',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+            }}
+          >
+            <Sparkles size={15} style={{ color: '#DFCAAB' }} />
+            Bespoke Event Destination &bull; Calicut
           </div>
         </motion.div>
 
-        {/* Dynamic Headline */}
+        {/* Dynamic Editorial Headline */}
         <motion.h1
-          style={{
-            y: headlineY,
-            fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-            fontFamily: 'var(--font-heading)',
-            lineHeight: 1.1,
-            fontWeight: 800,
-            color: '#FAF9F6',
-            letterSpacing: '-0.03em',
-            margin: '0 0 24px 0',
-          }}
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          style={{
+            fontSize: 'clamp(2.4rem, 6vw, 4.75rem)',
+            fontFamily: "'Playfair Display', Georgia, serif",
+            lineHeight: 1.12,
+            fontWeight: 700,
+            color: '#FAF8F5',
+            letterSpacing: '-0.025em',
+            margin: '0 0 20px 0',
+          }}
         >
-          Elevating Your <br />
-          <span style={{
-            background: 'linear-gradient(135deg, #C8D46B 0%, #E0C097 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>Grandest Moments</span>
+          Elevating Life's <br />
+          <span 
+            style={{
+              background: 'linear-gradient(135deg, #FAF8F5 30%, #DFCAAB 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontStyle: 'italic',
+              fontWeight: 400,
+            }}
+          >
+            Cherished Celebrations
+          </span>
         </motion.h1>
 
-        {/* Description Pill */}
+        {/* Editorial Description */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
           style={{
-            fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-            color: 'rgba(250, 249, 246, 0.8)',
-            maxWidth: '700px',
-            margin: '0 auto 48px auto',
-            lineHeight: 1.6,
+            fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+            color: 'rgba(250, 248, 245, 0.82)',
+            maxWidth: '680px',
+            margin: '0 auto 36px auto',
+            lineHeight: 1.65,
+            fontWeight: 400,
           }}
         >
-          A masterpiece of architecture and luxury, meticulously designed for
-          unforgettable weddings, corporate galas, and global conventions.
+          Dream Avenue Event Hall provides refined contemporary spaces, tranquil garden surroundings, and attentive hospitality designed for memorable weddings, gatherings, and conclaves.
         </motion.p>
 
-        {/* Dynamic Actions */}
-        <motion.div
-          className="hero-buttons"
+        {/* Embedded Instant Date Availability Peek */}
+        <motion.form
+          onSubmit={handleDatePeekSubmit}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '16px',
+            padding: '12px 16px',
+            maxWidth: '560px',
+            margin: '0 auto 36px auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: '0 20px 48px rgba(0, 0, 0, 0.25)',
+            border: '1px solid #DFCAAB',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 200px' }}>
+            <Calendar size={20} style={{ color: '#537517' }} />
+            <div style={{ textAlign: 'left', width: '100%' }}>
+              <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: '#737E72', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Event Date
+              </div>
+              <input
+                type="date"
+                min={todayStr}
+                value={peekDate}
+                onChange={(e) => setPeekDate(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  color: '#1B221B',
+                  fontWeight: 600,
+                  fontSize: '0.9375rem',
+                  width: '100%',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px 24px',
+              background: '#537517',
+              color: '#FFFFFF',
+              borderRadius: '10px',
+              fontWeight: 600,
+              fontSize: '0.9375rem',
+              border: 'none',
+              cursor: 'pointer',
+              flex: '1 1 auto',
+              transition: 'background 0.2s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#3E5811')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#537517')}
+          >
+            <span>Check Availability</span>
+            <ArrowRight size={16} />
+          </button>
+        </motion.form>
+
+        {/* Secondary Links & Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
           style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: '20px',
+            gap: '16px',
             justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
-          <motion.button
+          <button
             onClick={() => navigate('/booking')}
-            whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(200, 212, 107, 0.3)' }}
-            whileTap={{ scale: 0.95 }}
             style={{
-              padding: '20px 48px',
-              background: '#C8D46B',
-              color: '#050505',
+              padding: '14px 32px',
+              background: '#B88B52',
+              color: '#FFFFFF',
               borderRadius: '12px',
-              fontSize: '1.125rem',
-              fontWeight: '700',
+              fontSize: '1rem',
+              fontWeight: 600,
               border: 'none',
               cursor: 'pointer',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '12px',
+              gap: '10px',
+              boxShadow: '0 6px 20px rgba(184, 139, 82, 0.3)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#9E743F';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#B88B52';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            <Calendar size={20} />
-            Book Now
-            <ArrowRight size={20} />
-          </motion.button>
+            <Calendar size={18} />
+            <span>Reserve Hall</span>
+          </button>
 
-          <motion.a
+          <a
             href="#facilities"
-            onClick={(e: any) => handleNavClick(e, '#facilities')}
-            whileHover={{ scale: 1.05, background: 'rgba(250, 249, 246, 0.1)' }}
-            whileTap={{ scale: 0.95 }}
+            onClick={(e) => handleNavClick(e, '#facilities')}
             style={{
-              padding: '20px 48px',
-              background: 'transparent',
-              color: '#FAF9F6',
+              padding: '14px 28px',
+              background: 'rgba(250, 248, 245, 0.1)',
+              color: '#FAF8F5',
               borderRadius: '12px',
-              fontSize: '1.125rem',
-              fontWeight: '600',
-              border: '2px solid rgba(250, 249, 246, 0.2)',
+              fontSize: '1rem',
+              fontWeight: 500,
+              border: '1px solid rgba(250, 248, 245, 0.3)',
               cursor: 'pointer',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '12px',
+              gap: '10px',
               textDecoration: 'none',
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(250, 248, 245, 0.2)';
+              e.currentTarget.style.borderColor = 'rgba(250, 248, 245, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(250, 248, 245, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(250, 248, 245, 0.3)';
             }}
           >
-            View Space
-          </motion.a>
+            <span>Explore Spaces</span>
+            <ChevronDown size={18} />
+          </a>
         </motion.div>
       </motion.div>
 
-      {/* Floating CTA */}
+      {/* Floating Concierge Action */}
       <motion.button
         onClick={() => navigate('/booking')}
-        initial={{ opacity: 0, y: 100 }}
+        initial={{ opacity: 0, y: 50 }}
         animate={{
           opacity: showFloatingCTA ? 1 : 0,
-          y: showFloatingCTA ? 0 : 100,
+          y: showFloatingCTA ? 0 : 50,
+          pointerEvents: showFloatingCTA ? 'auto' : 'none',
         }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        transition={{ duration: 0.3 }}
         style={{
           position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          zIndex: 1000,
-          background: '#C8D46B',
-          color: '#050505',
-          padding: '16px 32px',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 90,
+          background: '#537517',
+          color: '#FFFFFF',
+          padding: '14px 24px',
           borderRadius: '50px',
           border: 'none',
-          boxShadow: '0 10px 30px rgba(200, 212, 107, 0.4)',
-          fontWeight: 700,
+          boxShadow: '0 8px 24px rgba(83, 117, 23, 0.4)',
+          fontWeight: 600,
+          fontSize: '0.9375rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          gap: '10px',
           cursor: 'pointer',
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#3E5811')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = '#537517')}
       >
-        <Phone size={18} />
-        Reserve Venue
+        <Calendar size={18} />
+        <span>Book Event Hall</span>
       </motion.button>
-
-      {/* Elegant Scroll Indicator */}
-      <motion.div
-        className="hero-explore-indicator"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        style={{
-          position: 'absolute',
-          bottom: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: 'rgba(250, 249, 246, 0.5)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        <span style={{ fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Explore</span>
-        <ChevronDown size={20} />
-      </motion.div>
-
-      <style>{`
-        h1 {
-          font-size: clamp(2rem, 10vw, 5.5rem) !important;
-        }
-        @media (max-width: 768px) {
-          .hero-buttons {
-            flex-direction: column;
-            width: 100%;
-            padding: 0 1rem;
-          }
-          .hero-buttons button, .hero-buttons a {
-            width: 100%;
-            justify-content: center;
-          }
-          .hero-explore-indicator {
-            bottom: 20px !important;
-            display: none !important; /* Hide on mobile to prevent overlap */
-          }
-        }
-      `}</style>
     </section>
   );
 }

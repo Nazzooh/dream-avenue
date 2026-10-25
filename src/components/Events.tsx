@@ -1,196 +1,164 @@
-import { useMemo } from 'react';
-import { motion } from 'motion/react';
-import { Calendar, MapPin, Users } from 'lucide-react';
-import { useEvents } from '../src/hooks/useEvents';
-import { EventSkeleton } from './SkeletonLoader';
+﻿import { motion } from 'motion/react';
+import { Sparkles, Calendar, Heart, Award, Building, Cake } from 'lucide-react';
 import { AvailabilityCalendar } from './AvailabilityCalendar';
 
-export function Events() {
-  const { data: allEvents = [], isLoading, error, refetch } = useEvents();
-  
-  // Filter to only show upcoming events
-  const events = useMemo(() => {
-    return allEvents.filter((event: any) => new Date(event.event_date) >= new Date());
-  }, [allEvents]);
+const OCCASIONS = [
+  {
+    icon: Heart,
+    title: 'Weddings & Holy Unions',
+    description: 'Transform your special day into a timeless memory with grand stage setups, bridal suites, and banquet dining.',
+    color: '#B88B52',
+  },
+  {
+    icon: Sparkles,
+    title: 'Receptions & Sangeet Nights',
+    description: 'Vibrant acoustic soundscapes, ambient chandelier lighting, and generous dance floor spaces for celebratory evenings.',
+    color: '#537517',
+  },
+  {
+    icon: Building,
+    title: 'Corporate Conclaves & Summits',
+    description: 'Executive stage presence, uninterrupted generator backup, and high-speed amenities for seamless business conferences.',
+    color: '#3E5811',
+  },
+  {
+    icon: Cake,
+    title: 'Milestones & Get-Togethers',
+    description: 'Warm, hospitable atmosphere for birthdays, anniversaries, and community assemblies with flexible duration pricing.',
+    color: '#B88B52',
+  },
+];
 
-  if (isLoading) {
-    return (
-      <section id="availability-calendar" className="section" style={{ background: 'var(--white)' }}>
-        <div className="container">
-          <motion.div
-            className="section-header"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="section-badge">Availability</div>
-            <h2 className="section-title">Availability Calendar</h2>
-            <p className="section-description">
-              Check when Dream Avenue is available for your next event
-            </p>
-          </motion.div>
-          
-          {/* Calendar Loading Skeleton */}
-          <div
+export function Events() {
+  return (
+    <section id="events" style={{ background: '#FAF8F5', padding: '100px 24px', borderBottom: '1px solid #E8E3DA' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div 
             style={{
-              background: 'var(--white)',
-              borderRadius: 'var(--radius-2xl)',
-              padding: 'var(--space-8)',
-              boxShadow: 'var(--shadow-xl)',
-              border: '1px solid rgba(182, 245, 0, 0.15)',
-              maxWidth: '900px',
-              margin: '0 auto',
+              display: 'inline-block',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              color: '#537517',
+              marginBottom: '10px',
             }}
           >
-            {/* Header Skeleton */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 'var(--space-8)',
-              }}
-            >
-              <div
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  background: 'var(--gray-200)',
-                  borderRadius: 'var(--radius-full)',
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
-              <div
-                style={{
-                  width: '200px',
-                  height: '32px',
-                  background: 'var(--gray-200)',
-                  borderRadius: 'var(--radius-md)',
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
-              <div
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  background: 'var(--gray-200)',
-                  borderRadius: 'var(--radius-full)',
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
-            </div>
-
-            {/* Calendar Grid Skeleton */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
-                gap: 'var(--space-2)',
-                marginBottom: 'var(--space-6)',
-              }}
-            >
-              {/* Day headers skeleton */}
-              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <div
-                  key={`header-${i}`}
-                  style={{
-                    height: '28px',
-                    background: 'var(--gray-200)',
-                    borderRadius: 'var(--radius-sm)',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                    animationDelay: `${i * 0.05}s`,
-                  }}
-                />
-              ))}
-
-              {/* Date cells skeleton (42 cells for 6 weeks) */}
-              {Array.from({ length: 42 }).map((_, i) => (
-                <div
-                  key={`cell-${i}`}
-                  style={{
-                    aspectRatio: '1',
-                    background: 'var(--gray-200)',
-                    borderRadius: 'var(--radius-md)',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                    animationDelay: `${(i % 7) * 0.05}s`,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Legend Skeleton */}
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 'var(--space-4)',
-                justifyContent: 'center',
-              }}
-            >
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={`legend-${i}`}
-                  style={{
-                    width: '140px',
-                    height: '24px',
-                    background: 'var(--gray-200)',
-                    borderRadius: 'var(--radius-full)',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                    animationDelay: `${i * 0.1}s`,
-                  }}
-                />
-              ))}
-            </div>
+            Celebrated Occasions
           </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section id="events" className="section" style={{ background: 'var(--white)' }}>
-        <div className="container">
-          <div className="text-center">
-            <p style={{ color: '#ef4444', marginBottom: 'var(--space-4)' }}>
-              Error: {error instanceof Error ? error.message : 'Failed to load events'}
-            </p>
-            <button onClick={() => refetch()} className="btn btn-primary">
-              Retry
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="availability-calendar" className="section" style={{ background: 'var(--white)', width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
-      <div className="container" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
-        {/* Section Header */}
-        <motion.div
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="section-badge">Availability</div>
-          <h2 className="section-title">Availability Calendar</h2>
-          <p className="section-description">
-            Check when Dream Avenue is available for your next event
+          <h2 
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              color: '#1B221B',
+              margin: '0 0 16px 0',
+              fontWeight: 700,
+            }}
+          >
+            Curated Experiences for Every Gathering
+          </h2>
+          <p style={{ color: '#737E72', fontSize: '1.0625rem', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6 }}>
+            Whether an intimate family milestone or a grand gathering of a thousand guests, Dream Avenue provides the perfect backdrop.
           </p>
-        </motion.div>
+        </div>
 
-        {/* Availability Calendar */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          style={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}
+        {/* Occasions 4-card Grid */}
+        <div 
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '24px',
+            marginBottom: '72px',
+          }}
         >
-          <AvailabilityCalendar />
-        </motion.div>
+          {OCCASIONS.map((occ, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '28px 24px',
+                border: '1px solid #E8E3DA',
+                boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
+                transition: 'all 0.25s ease',
+              }}
+              whileHover={{ y: -4, borderColor: '#DFCAAB', boxShadow: '0 12px 28px rgba(27, 34, 27, 0.08)' }}
+            >
+              <div 
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: '#FAF4EB',
+                  color: occ.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '18px',
+                }}
+              >
+                <occ.icon size={24} />
+              </div>
+              <h3 
+                style={{
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  color: '#1B221B',
+                  marginBottom: '8px',
+                }}
+              >
+                {occ.title}
+              </h3>
+              <p style={{ color: '#737E72', fontSize: '0.9375rem', lineHeight: 1.55, margin: 0 }}>
+                {occ.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Real-time Availability Section */}
+        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+          <div 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              color: '#537517',
+              marginBottom: '10px',
+            }}
+          >
+            <Calendar size={14} />
+            Real-Time Venue Availability
+          </div>
+          <h3 
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(1.75rem, 3vw, 2.25rem)',
+              color: '#1B221B',
+              margin: '0 0 10px 0',
+              fontWeight: 700,
+            }}
+          >
+            Check Your Prospective Date
+          </h3>
+          <p style={{ color: '#737E72', fontSize: '1rem', maxWidth: '580px', margin: '0 auto' }}>
+            Click on any available green date to proceed directly into the booking concierge.
+          </p>
+        </div>
+
+        {/* Embedded Availability Calendar */}
+        <AvailabilityCalendar />
       </div>
     </section>
   );

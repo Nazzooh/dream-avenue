@@ -1,32 +1,37 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, UtensilsCrossed, Palette, FileText, HelpCircle } from 'lucide-react';
+import { ChevronDown, UtensilsCrossed, Palette, FileText, Sparkles, ShieldCheck, Leaf, Zap } from 'lucide-react';
 
 const faqs = [
   {
+    icon: Sparkles,
+    question: 'What is the mandatory floor cleaning fee?',
+    answer: 'A mandatory floor cleaning service fee of ₹3,000 is included with every booking. This ensures our dedicated housekeeping staff performs industrial-grade sanitation, deep cleaning, and trash clearance before and immediately after your event so the hall is pristine.',
+  },
+  {
+    icon: Leaf,
+    question: 'What is your eco-friendly zero-plastic policy?',
+    answer: 'Dream Avenue Event Hall strictly prohibits single-use plastic bottles, disposables, and non-biodegradable decorations. We provide water dispensers and encourage sustainable celebration practices to protect our local environment.',
+  },
+  {
     icon: UtensilsCrossed,
-    question: 'Do you provide catering services?',
-    answer: 'We do not provide catering services directly. However, you are welcome to hire external catering parties of your choice. Our venue includes a fully equipped pantry area to support your catering team.',
+    question: 'Do you offer sustainable plate rentals?',
+    answer: 'Yes! To support zero-plastic dining, we offer high-grade reusable ceramic/melamine plates for rent directly at the venue: Large dining plates at ₹3.50 each and Small dessert/snack plates at ₹2.50 each.',
   },
   {
     icon: Palette,
-    question: 'Can I customize the decor?',
-    answer: "We don't offer decor customization services in-house, but external decorators are more than welcome to transform our space according to your vision. Our team will coordinate with your decorator to ensure smooth setup.",
+    question: 'Can we bring external caterers and decorators?',
+    answer: 'Absolutely. You are welcome to hire external catering teams and decorators of your choice. Our venue includes a dedicated food preparation area with running water and service counters to assist your culinary team.',
   },
   {
-    icon: FileText,
-    question: 'What are your booking policies?',
-    answer: 'Please note: No drinks (including water) or alcohol are allowed inside the hall. Smoking is permitted only in designated outdoor areas. Complete payment is required one day before the event, unless alternative settlement arrangements have been discussed and agreed upon with our team.',
+    icon: Zap,
+    question: 'Is continuous power backup provided?',
+    answer: 'Yes. We operate a heavy-duty industrial generator backup system ensuring zero disruption to lighting, audio staging, and air-conditioning systems throughout your entire event.',
   },
   {
-    icon: HelpCircle,
-    question: 'What is included in each package?',
-    answer: 'Each package includes different amenities ranging from air-conditioning, seating arrangements, sound systems, stage setup, and parking. Our team will provide detailed information about what\'s included in your selected package when you inquire.',
-  },
-  {
-    icon: HelpCircle,
-    question: 'How do I confirm my booking?',
-    answer: 'After submitting your booking request via WhatsApp, our team will contact you to confirm availability, discuss final details, and arrange payment. We recommend booking at least 2-4 weeks in advance for popular dates.',
+    icon: ShieldCheck,
+    question: 'How do I confirm my reservation after booking online?',
+    answer: 'Once you submit your booking request online, an instant Digital Booking Pass is generated. You can tap the direct WhatsApp Concierge link to finalize timings, package specifics, and security deposit with our venue manager.',
   },
 ];
 
@@ -38,143 +43,135 @@ export function FAQ() {
   };
 
   return (
-    <section id="faq" className="section" style={{ background: 'var(--bg-cream)' }}>
-      <div className="container">
-        {/* Section Header */}
-        <motion.div
-          className="section-header"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="section-badge">FAQ</div>
-          <h2 className="section-title">Frequently Asked Questions</h2>
-          <p className="section-description">
-            Everything you need to know about our venue and services
+    <section id="faq" style={{ background: '#F8F5EF', padding: '100px 24px', borderBottom: '1px solid #E8E3DA' }}>
+      <div style={{ maxWidth: '880px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div 
+            style={{
+              display: 'inline-block',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              color: '#537517',
+              marginBottom: '10px',
+            }}
+          >
+            Clear & Transparent
+          </div>
+          <h2 
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              color: '#1B221B',
+              margin: '0 0 16px 0',
+              fontWeight: 700,
+            }}
+          >
+            Frequently Asked Questions
+          </h2>
+          <p style={{ color: '#737E72', fontSize: '1.0625rem', lineHeight: 1.6 }}>
+            Everything you need to know about booking, venue guidelines, and transparent inclusions.
           </p>
-        </motion.div>
+        </div>
 
-        {/* FAQ List */}
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* Accordion */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {faqs.map((faq, index) => {
-            const IconComponent = faq.icon;
             const isOpen = openIndex === index;
+            const Icon = faq.icon;
 
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
                 style={{
-                  marginBottom: 'var(--space-4)',
+                  background: '#FFFFFF',
+                  borderRadius: '16px',
+                  border: isOpen ? '1px solid #537517' : '1px solid #E8E3DA',
+                  overflow: 'hidden',
+                  transition: 'all 0.25s ease',
+                  boxShadow: isOpen ? '0 8px 24px rgba(83, 117, 23, 0.08)' : '0 2px 8px rgba(0,0,0,0.02)',
                 }}
               >
-                <div
+                <button
+                  type="button"
+                  onClick={() => toggleFAQ(index)}
                   style={{
-                    background: 'var(--white)',
-                    borderRadius: 'var(--radius-xl)',
-                    boxShadow: isOpen ? 'var(--shadow-lg)' : 'var(--shadow-md)',
-                    border: `2px solid ${isOpen ? 'var(--lime-primary)' : 'transparent'}`,
-                    transition: 'all 0.3s ease',
+                    width: '100%',
+                    padding: '22px 24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
                   }}
                 >
-                  {/* Question */}
-                  <button
-                    onClick={() => toggleFAQ(index)}
-                    style={{
-                      width: '100%',
-                      padding: 'var(--space-6)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--space-4)',
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                  >
-                    {/* Icon */}
-                    <div
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div 
                       style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        background: isOpen 
-                          ? 'linear-gradient(135deg, var(--lime-primary), var(--lime-secondary))' 
-                          : 'rgba(182, 245, 0, 0.15)',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
+                        background: isOpen ? '#EDF6DE' : '#FAF4EB',
+                        color: isOpen ? '#537517' : '#B88B52',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        transition: 'all 0.3s ease',
                       }}
                     >
-                      <IconComponent 
-                        size={20} 
-                        style={{ 
-                          color: isOpen ? 'var(--dark-text)' : 'var(--lime-primary)',
-                        }} 
-                      />
+                      <Icon size={18} />
                     </div>
-
-                    {/* Question Text */}
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ 
-                        margin: 0, 
-                        color: 'var(--dark-text)',
-                        fontSize: '1.125rem',
-                      }}>
-                        {faq.question}
-                      </h4>
-                    </div>
-
-                    {/* Chevron */}
-                    <motion.div
-                      animate={{ rotate: isOpen ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
+                    <span 
                       style={{
-                        flexShrink: 0,
-                        color: isOpen ? 'var(--lime-primary)' : 'var(--gray-400)',
+                        fontFamily: "'Playfair Display', Georgia, serif",
+                        fontSize: '1.125rem',
+                        fontWeight: 600,
+                        color: '#1B221B',
                       }}
                     >
-                      <ChevronDown size={24} />
-                    </motion.div>
-                  </button>
+                      {faq.question}
+                    </span>
+                  </div>
 
-                  {/* Answer */}
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.25 }}
+                    style={{ color: isOpen ? '#537517' : '#737E72', flexShrink: 0 }}
+                  >
+                    <ChevronDown size={20} />
+                  </motion.div>
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div 
                         style={{
-                          overflow: 'hidden',
+                          padding: '0 24px 22px 74px',
+                          color: '#485247',
+                          fontSize: '0.9375rem',
+                          lineHeight: 1.65,
                         }}
                       >
-                        <div
-                          style={{
-                            padding: '0 var(--space-6) var(--space-6) var(--space-6)',
-                            paddingLeft: 'calc(var(--space-6) + 40px + var(--space-4))',
-                          }}
-                        >
-                          <p style={{ 
-                            margin: 0, 
-                            color: 'var(--gray-700)',
-                            lineHeight: 1.7,
-                            fontSize: '0.9375rem',
-                          }}>
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                        {faq.answer}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             );
           })}

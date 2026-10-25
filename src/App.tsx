@@ -21,6 +21,7 @@ import './styles/admin-workspace.css';
 import './styles/admin-redesign.css';
 import './styles/admin-completion.css';
 import './styles/admin-responsive.css';
+import './styles/editorial-theme.css';
 
 const SmartSlotBookingPage = lazy(() => import('./pages/SmartSlotBookingPage'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));

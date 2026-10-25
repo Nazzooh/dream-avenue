@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+﻿import { motion } from 'motion/react';
 import { Heart } from 'lucide-react';
 
 interface SatisfactionRateCardProps {
@@ -15,81 +15,66 @@ export function SatisfactionRateCard({ value, delay = 0 }: SatisfactionRateCardP
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6, delay }}
+      transition={{ duration: 0.5, delay }}
       style={{
-        background: '#FAF9F6',
-        padding: 'var(--space-8)',
-        borderRadius: '20px',
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        padding: '32px 24px',
+        border: '1px solid #E8E3DA',
+        boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
         textAlign: 'center',
-        boxShadow: '0 2px 12px rgba(200, 212, 107, 0.25)',
-        border: '2px solid transparent',
-        transition: 'all 0.3s ease',
         position: 'relative',
         overflow: 'hidden',
+        transition: 'all 0.25s ease',
       }}
       whileHover={{
-        borderColor: 'rgba(200, 212, 107, 0.4)',
-        boxShadow: '0 4px 20px rgba(200, 212, 107, 0.35)',
+        borderColor: '#DFCAAB',
+        boxShadow: '0 12px 28px rgba(27, 34, 27, 0.08)',
         y: -4,
       }}
     >
-      {/* Subtle gradient glow background */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(135deg, rgba(200, 212, 107, 0.08) 0%, rgba(224, 192, 151, 0.08) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
-
       {/* Content container */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Heart Icon with glow */}
+        {/* Heart Icon */}
         <motion.div
-          className="satisfaction-icon"
           style={{
             width: '48px',
             height: '48px',
-            margin: '0 auto var(--space-6)',
+            margin: '0 auto 16px auto',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#C8D46B',
-            filter: 'drop-shadow(0 0 12px rgba(182, 245, 0, 0.25))',
+            color: '#B88B52',
+            background: '#FAF4EB',
+            borderRadius: '50%',
           }}
           initial={{ scale: 0.8, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: delay + 0.2 }}
-          whileHover={{
-            scale: 1.1,
-            filter: 'drop-shadow(0 0 16px rgba(182, 245, 0, 0.4))',
-          }}
+          transition={{ duration: 0.5, delay: delay + 0.1 }}
         >
-          <Heart size={48} strokeWidth={1.5} />
+          <Heart size={24} fill="#B88B52" strokeWidth={1} />
         </motion.div>
 
         {/* Circular Progress Ring with centered percentage */}
         <motion.div
-          className="satisfaction-ring"
           style={{
             position: 'relative',
-            width: '140px',
-            height: '140px',
-            margin: '0 auto var(--space-6)',
+            width: '120px',
+            height: '120px',
+            margin: '0 auto 16px auto',
           }}
           initial={{ opacity: 0, scale: 0.8 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: delay + 0.3 }}
+          transition={{ duration: 0.5, delay: delay + 0.2 }}
         >
           <svg
-            width="140"
-            height="140"
+            width="120"
+            height="120"
             viewBox="0 0 120 120"
             style={{
               transform: 'rotate(-90deg)',
@@ -101,97 +86,64 @@ export function SatisfactionRateCard({ value, delay = 0 }: SatisfactionRateCardP
               cy="60"
               r={radius}
               fill="none"
-              stroke="rgba(200, 212, 107, 0.15)"
-              strokeWidth="8"
+              stroke="#F0EBE2"
+              strokeWidth="6"
             />
-            {/* Progress circle with animation */}
+            {/* Progress circle */}
             <motion.circle
               cx="60"
               cy="60"
               r={radius}
               fill="none"
-              stroke="url(#satisfactionGradientUnique)"
-              strokeWidth="8"
+              stroke="url(#satisfactionEditorialGradient)"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={circumference}
               initial={{ strokeDashoffset: circumference }}
               whileInView={{ strokeDashoffset }}
               viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: 'easeOut', delay: delay + 0.5 }}
-              style={{
-                filter: 'drop-shadow(0 0 8px rgba(200, 212, 107, 0.5))',
-              }}
+              transition={{ duration: 1.2, ease: 'easeOut', delay: delay + 0.3 }}
             />
-            {/* Gradient definition */}
             <defs>
-              <linearGradient id="satisfactionGradientUnique" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#C8D46B" />
-                <stop offset="50%" stopColor="#B6F500" />
-                <stop offset="100%" stopColor="#E0C097" />
+              <linearGradient id="satisfactionEditorialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#537517" />
+                <stop offset="100%" stopColor="#B88B52" />
               </linearGradient>
             </defs>
           </svg>
           
-          {/* Centered percentage text with counter animation */}
-          <motion.div
-            className="satisfaction-percentage"
+          {/* Centered percentage text */}
+          <div
             style={{
               position: 'absolute',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              fontSize: '2.5rem',
-              fontWeight: '700',
-              color: '#1A1A1A',
-              letterSpacing: '-0.02em',
-              textShadow: '0 2px 8px rgba(200, 212, 107, 0.2)',
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '2rem',
+              fontWeight: 700,
+              color: '#1B221B',
             }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: delay + 0.8 }}
           >
             {value}%
-          </motion.div>
+          </div>
         </motion.div>
 
         {/* Label */}
-        <motion.div
+        <div
           style={{
-            fontSize: '1rem',
-            color: '#333A40',
-            fontWeight: '500',
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
+            fontWeight: 600,
+            fontSize: '1.0625rem',
+            color: '#1B221B',
+            marginBottom: '4px',
           }}
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: delay + 0.4 }}
         >
-          Satisfaction Rate
-        </motion.div>
+          Client Satisfaction
+        </div>
+        <div style={{ fontSize: '0.875rem', color: '#737E72' }}>
+          Positive host feedback
+        </div>
       </div>
-
-      {/* Hover pulse effect on the ring */}
-      <motion.div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '140px',
-          height: '140px',
-          borderRadius: '50%',
-          border: '2px solid rgba(200, 212, 107, 0)',
-          pointerEvents: 'none',
-        }}
-        whileHover={{
-          border: '2px solid rgba(200, 212, 107, 0.3)',
-          scale: 1.05,
-        }}
-        transition={{ duration: 0.3 }}
-      />
     </motion.div>
   );
 }

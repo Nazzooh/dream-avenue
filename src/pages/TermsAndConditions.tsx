@@ -12,8 +12,8 @@ export default function TermsAndConditions() {
   return (
     <div style={{ minHeight: '100vh', background: '#FAF9F6' }}>
       <SEOHead 
-        title="Terms and Conditions | Dream Avenue Convention Center"
-        description="Read the Hall Rules and Guidelines for Dream Avenue Convention Center. Important information for planning your luxury event."
+        title="Terms and Conditions | Dream Avenue Event Hall"
+        description="Read the Hall Rules and Guidelines for Dream Avenue Event Hall. Important information for planning your cherished celebration."
         url="https://dreamavenue.in/terms-and-conditions"
       />
       {/* Header */}
@@ -21,7 +21,7 @@ export default function TermsAndConditions() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         style={{
-          background: 'linear-gradient(135deg, #B6F500 0%, #E0C097 100%)',
+          background: 'linear-gradient(135deg, #FAF4EB 0%, #EDF6DE 100%)',
           padding: '1.5rem 2rem',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           position: 'sticky',
@@ -54,7 +54,7 @@ export default function TermsAndConditions() {
               Hall Rules and Guidelines
             </h1>
             <p style={{ margin: '0.25rem 0 0', color: '#4A4A4A', fontSize: '0.9375rem' }}>
-              Dream Avenue Convention Center
+              Dream Avenue Event Hall
             </p>
           </div>
           <motion.button

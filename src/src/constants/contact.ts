@@ -1,4 +1,4 @@
-// Dream Avenue Convention Center - Contact Information
+// Dream Avenue Event Hall - Contact Information
 export const CONTACT_INFO = {
   address: {
     street: "Feroke Road",

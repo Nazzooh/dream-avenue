@@ -12,7 +12,7 @@ export interface TimeSlotDefinition {
 }
 
 /**
- * Centralized time slot definitions for Dream Avenue Convention Center
+ * Centralized time slot definitions for Dream Avenue Event Hall
  * 
  * Time slots:
  * - Morning: 9:00 AM - 1:00 PM (4 hours)

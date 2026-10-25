@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'motion/react';
 import React, { Suspense, lazy } from 'react';
 import { SEOHead } from '../components/SEOHead';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { Stats } from '../components/Stats';
 
-// Lazy load below-the-fold sections for faster initial load
+// Lazy load below-the-fold sections for optimized performance
 const Packages = lazy(() => import('../components/Packages').then(m => ({ default: m.Packages })));
 const Facilities = lazy(() => import('../components/Facilities').then(m => ({ default: m.Facilities })));
 const Gallery = lazy(() => import('../components/Gallery').then(m => ({ default: m.Gallery })));
@@ -14,43 +14,43 @@ const FAQ = lazy(() => import('../components/FAQ').then(m => ({ default: m.FAQ }
 const Location = lazy(() => import('../components/Location').then(m => ({ default: m.Location })));
 const Footer = lazy(() => import('../components/Footer').then(m => ({ default: m.Footer })));
 
-// Lightweight loading placeholder for sections
 const SectionLoader = () => (
-  <div className="w-full py-20 flex justify-center">
+  <div className="w-full py-20 flex justify-center items-center" style={{ minHeight: '300px' }}>
     <motion.div
       animate={{ rotate: [0, 360] }}
       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-      className="w-8 h-8 border-3 border-[#C8D46B] border-t-transparent rounded-full"
+      className="w-8 h-8 rounded-full"
+      style={{ border: '3px solid #537517', borderTopColor: 'transparent' }}
     />
   </div>
 );
 
 export function MainWebsite() {
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-cream)' }}>
+    <div className="editorial-page min-h-screen" style={{ background: '#FAF8F5', color: '#1B221B' }}>
       {/* SEO Meta Tags */}
       <SEOHead />
 
-      {/* Critical above-the-fold content - load immediately */}
+      {/* Critical above-the-fold content */}
       <Navbar />
       <Hero />
       <Stats />
 
-      {/* Below-the-fold content - lazy load as user scrolls */}
-      <Suspense fallback={<SectionLoader />}>
-        <Packages />
-      </Suspense>
-
+      {/* Below-the-fold sections */}
       <Suspense fallback={<SectionLoader />}>
         <Facilities />
       </Suspense>
 
       <Suspense fallback={<SectionLoader />}>
-        <Gallery />
+        <Packages />
       </Suspense>
 
       <Suspense fallback={<SectionLoader />}>
         <Events />
+      </Suspense>
+
+      <Suspense fallback={<SectionLoader />}>
+        <Gallery />
       </Suspense>
 
       <Suspense fallback={<SectionLoader />}>

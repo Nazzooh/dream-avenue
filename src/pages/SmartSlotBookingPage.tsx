@@ -1,1126 +1,1269 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Sparkles, ArrowLeft, Check, FileText } from 'lucide-react';
+import { 
+  Calendar as CalendarIcon, 
+  Clock, 
+  Sparkles, 
+  ArrowLeft, 
+  ArrowRight, 
+  Check, 
+  ShieldCheck, 
+  User, 
+  Phone, 
+  Mail, 
+  MessageSquare, 
+  Printer, 
+  MessageCircle, 
+  Building, 
+  Leaf, 
+  Utensils, 
+  Users,
+  AlertCircle
+} from 'lucide-react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { SEOHead } from '../components/SEOHead';
 import { PublicBookingCalendar } from '../components/PublicBookingCalendar';
-import { SlotSelectorGrid, SLOT_OPTIONS } from '../components/slot-booking/SlotSelectorGrid';
-import { EnhancedBookingForm, BookingFormData } from '../components/EnhancedBookingForm';
+import { SlotSelectorGrid, SLOT_OPTIONS, SHORT_DURATION_SLOT } from '../components/slot-booking/SlotSelectorGrid';
 import { usePackages } from '../src/hooks/usePackages';
-import { useAvailabilityForDate } from '../src/hooks/useCalendar';
 import { toast } from 'sonner';
 import { createBooking, normalizeTimes } from '../src/api/createBooking';
+import { CONTACT_INFO } from '../src/constants/contact';
 
-// Add responsive styles
-const responsiveStyles = `
-  @media (min-width: 1024px) {
-    .booking-split-container {
-      grid-template-columns: 1fr 1fr !important;
-    }
-  }
-  
-  @media (max-width: 1023px) {
-    .booking-split-container {
-      grid-template-columns: 1fr !important;
-    }
-    
-    .packages-panel {
-      border-right: none !important;
-      border-bottom: 2px solid rgba(224, 192, 151, 0.2) !important;
-      padding: 2rem 1.5rem !important;
-      min-height: auto !important;
-    }
-    
-    .form-panel {
-      padding: 2rem 1.5rem !important;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .nav-buttons {
-      position: absolute !important;
-      top: 80px !important;
-      left: 10px !important;
-      gap: 0.5rem !important;
-      flex-direction: row !important;
-      align-items: center !important;
-      z-index: 10 !important;
-      width: calc(100% - 20px) !important;
-      justify-content: flex-start !important;
-    }
-    
-    .nav-buttons button {
-      padding: 0.6rem 1.25rem !important;
-      font-size: 0.875rem !important;
-    }
-    
-    .packages-panel {
-      padding: 3rem 1rem !important;
-    }
-    
-    .form-panel {
-      padding: 1.5rem 1rem !important;
-    }
-    
-    .package-carousel {
-      gap: 1rem !important;
-    }
-    
-    .calendar-section {
-      padding: 2rem 1rem !important;
-    }
-    
-    .package-card {
-      min-height: auto !important;
-    }
-
-    /* Hide any floating scroll indicators that might appear from other components */
-    [class*="scroll-indicator"], [class*="mouse-indicator"], .mouse-scroll {
-      display: none !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .nav-buttons {
-      position: relative !important;
-      margin: 1rem !important;
-      top: 0 !important;
-      left: 0 !important;
-    }
-    
-    .booking-page-container {
-      padding-top: 60px !important;
-    }
-
-    .section-title {
-      font-size: 1.75rem !important;
-    }
-    
-    .package-card-image {
-      height: 160px !important;
-    }
-    
-    .package-price-row {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 0.5rem !important;
-    }
-  }
-
-  @media (max-width: 375px) {
-    .section-title {
-      font-size: 1.5rem !important;
-    }
-    
-    .nav-buttons button {
-      padding: 0.5rem 1rem !important;
-      font-size: 0.8rem !important;
-    }
-    
-    .package-card-title {
-      font-size: 1.25rem !important;
-    }
-  }
-
-  @media (max-width: 320px) {
-    .nav-buttons {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-    }
-    
-    .section-title {
-      font-size: 1.35rem !important;
-    }
-  }
-    
-    .price-summary {
-      padding: 1rem !important;
-    }
-    
-    .form-wrapper {
-      padding: 1rem !important;
-    }
-  }
-
-  @media (max-width: 375px) {
-    .packages-panel {
-      padding: 0.75rem 0.5rem !important;
-    }
-    
-    .form-panel {
-      padding: 0.75rem 0.5rem !important;
-    }
-    
-    .package-card-content {
-      padding: 0.875rem !important;
-    }
-    
-    .package-card-title {
-      font-size: 1rem !important;
-    }
-    
-    .section-title {
-      font-size: 1.5rem !important;
-    }
-    
-    .package-price-row {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 0.5rem !important;
-    }
-    
-    .package-card-price {
-      margin-top: 0.5rem !important;
-      width: 100% !important;
-      display: flex !important;
-      justify-content: space-between !important;
-    }
-
-    .price-value {
-      font-size: 1.5rem !important;
-    }
-
-    .price-summary {
-      padding: 1.25rem !important;
-    }
-
-    /* Aggressive hiding of any animated scroll indicators */
-    [class*="indicator"], [class*="scroll"], .mouse-scroll, .scroll-down {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
-  }
-
-  @media (max-width: 350px) {
-    .packages-panel {
-      padding: 0.5rem 0.25rem !important;
-    }
-    
-    .package-card-content {
-      padding: 0.75rem 0.5rem !important;
-    }
-    
-    .package-card-title {
-      font-size: 0.95rem !important;
-    }
-    
-    .package-card-price {
-      font-size: 1.25rem !important;
-    }
-
-    .section-title {
-      font-size: 1.35rem !important;
-    }
-  }
-
-  @media (max-width: 320px) {
-    .nav-buttons {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-    }
-    
-    .section-title {
-      font-size: 1.35rem !important; /* Adjusted font size */
-    }
-    
-    .packages-panel {
-      padding: 0.5rem 0.25rem !important; /* Further reduced horizontal padding */
-    }
-    
-    .form-panel {
-      padding: 0.5rem 0.25rem !important;
-    }
-    
-    .package-card-content {
-      padding: 0.75rem 0.5rem !important; /* Further reduced horizontal padding */
-    }
-    
-    .package-card-title {
-      font-size: 0.9rem !important; /* Further adjusted font size */
-    }
-    
-    .price-value {
-      font-size: 1.3rem !important; /* Further adjusted font size */
-    }
-    
-    .package-card {
-      width: 100% !important; /* Ensure card takes full width */
-      margin: 0 !important; /* Remove any external margins */
-      box-sizing: border-box !important; /* Include padding and border in the element's total width and height */
-    }
-    
-    .package-carousel {
-      padding: 0 !important; /* Remove padding from carousel itself */
-    }
-    
-    .price-summary {
-      padding: 0.75rem !important; /* Reduced padding */
-    }
-    
-    .form-wrapper {
-      padding: 0.75rem !important; /* Reduced padding */
-    }
-  }
-`;
+const MANDATORY_CLEANING_FEE = 3000;
+const SHORT_DURATION_PRICE = 26000;
+const STANDARD_HALL_PRICE = 30000;
 
 export default function SmartSlotBookingPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const packageId = searchParams.get('package');
-  const calendarSectionRef = useRef<HTMLDivElement>(null);
+  const initialDate = searchParams.get('date') || '';
+  const initialPackage = searchParams.get('package') || null;
 
-  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(packageId);
-  const [showCalendarSection, setShowCalendarSection] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  // 1-based Stage Navigation: 1: Date/Slot, 2: Package, 3: Event Details, 4: Contact, 5: Booking Pass
+  const [currentStep, setCurrentStep] = useState<number>(1);
+
+  // Form selections state
+  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
   const [selectedSlot, setSelectedSlot] = useState<string>('full_day');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [formData, setFormData] = useState<BookingFormData | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(initialPackage);
+  const [eventType, setEventType] = useState<string>('normal');
+  const [guestCount, setGuestCount] = useState<string>('300');
+  const [specialRequests, setSpecialRequests] = useState<string>('');
+  const [fullName, setFullName] = useState<string>('');
+  const [mobile, setMobile] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // Completed booking pass state
+  const [bookingConfirmation, setBookingConfirmation] = useState<{
+    id: string;
+    reference: string;
+    date: string;
+    slotLabel: string;
+    slotTime: string;
+    packageName: string;
+    basePrice: number;
+    cleaningFee: number;
+    totalPrice: number;
+    guestCount: number;
+    fullName: string;
+    mobile: string;
+  } | null>(null);
+
+  // Packages list
   const { data: packages = [] } = usePackages();
-  const selectedPackage = packages.find((p) => p.id === selectedPackageId);
 
-  // Fetch availability for the selected date
-  useAvailabilityForDate(selectedDate, !!selectedDate);
+  const selectedPackage = useMemo(() => {
+    if (!selectedPackageId) return null;
+    return packages.find((p) => p.id === selectedPackageId) || null;
+  }, [packages, selectedPackageId]);
 
-  const handleFormContinue = (data: BookingFormData) => {
-    setFormData(data);
-    setShowCalendarSection(true);
-    setTimeout(() => {
-      calendarSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+  // Deep-link initial stage jump if date or package already specified
+  useEffect(() => {
+    if (initialDate && initialPackage) {
+      setCurrentStep(3);
+    } else if (initialDate) {
+      setCurrentStep(1);
+    } else if (initialPackage) {
+      setCurrentStep(1);
+    }
+  }, [initialDate, initialPackage]);
+
+  // Price Calculation Logic
+  const priceLedger = useMemo(() => {
+    let base = 0;
+    let label = 'Standard Hall Reservation';
+
+    if (selectedSlot === 'short_duration') {
+      base = SHORT_DURATION_PRICE;
+      label = 'Short Duration Slot (4–5 Hours)';
+    } else if (selectedPackage) {
+      base = selectedPackage.price > 0 ? selectedPackage.price : STANDARD_HALL_PRICE;
+      label = selectedPackage.name;
+    } else {
+      base = STANDARD_HALL_PRICE;
+      label = 'Standard Hall Reservation';
+    }
+
+    const cleaning = MANDATORY_CLEANING_FEE;
+    const total = base + cleaning;
+
+    return {
+      base,
+      label,
+      cleaning,
+      total,
+    };
+  }, [selectedSlot, selectedPackage]);
+
+  // Active Slot Label
+  const activeSlotMeta = useMemo(() => {
+    if (selectedSlot === 'short_duration') {
+      return SHORT_DURATION_SLOT;
+    }
+    return SLOT_OPTIONS.find((s) => s.key === selectedSlot) || SLOT_OPTIONS[0];
+  }, [selectedSlot]);
+
+  // Handle Mobile Input Sanitization
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    let clean = raw.startsWith('91') && raw.length > 10 ? raw.slice(2) : raw;
+    clean = clean.slice(0, 10);
+    setMobile(clean);
   };
 
-  const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
-    // Reset slot selection when date changes
-    setSelectedSlot('full_day');
-  };
+﻿  // Submit Booking
+  const handleConfirmReservation = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleConfirmBooking = async () => {
     if (!selectedDate) {
-      toast.error('Please select a date');
+      toast.error('Please select an event date');
+      setCurrentStep(1);
       return;
     }
-
-    if (!formData) {
-      toast.error('Form data missing. Please go back and fill the form.');
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      toast.error('Please enter your full name');
       return;
     }
-
+    if (!mobile || mobile.length !== 10) {
+      toast.error('Please enter a valid 10-digit mobile number');
+      return;
+    }
     if (!termsAccepted) {
-      toast.error('Please accept the Terms and Conditions to continue');
+      toast.error('Please accept the venue policies & terms');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Map event type to special_requests field as required
-      const eventTypeText = formData.eventType ? `Event Type: ${formData.eventType}` : '';
-
-      // Combine event type with user's message
-      let combinedSpecialRequests = eventTypeText;
-      if (formData.message) {
-        combinedSpecialRequests = eventTypeText ? `${eventTypeText}\n${formData.message}` : formData.message;
-      }
-
-      // Normalize slot to start/end times
       const { start, end } = normalizeTimes(selectedSlot);
+      const combinedNotes = `Event: ${eventType} | Slot: ${activeSlotMeta.label} (${activeSlotMeta.time}) | Package: ${priceLedger.label}`;
 
-      // Create booking using centralized function
-      await createBooking({
-        full_name: formData.fullName.trim(),
-        mobile: formData.mobile,
+      const newBooking = await createBooking({
+        full_name: fullName.trim(),
+        mobile: mobile.trim(),
         booking_date: selectedDate,
         start_time: start,
         end_time: end,
-        guest_count: parseInt(formData.guestCount),
-        package_id: formData.packageId,
-        special_requests: combinedSpecialRequests || null,
-        email: null,
-        additional_notes: `Smart Slot Booking - ${SLOT_OPTIONS.find(s => s.key === selectedSlot)?.label || selectedSlot}`,
+        guest_count: parseInt(guestCount) || 300,
+        package_id: selectedPackageId,
+        special_requests: specialRequests ? `${combinedNotes}\nRequests: ${specialRequests}` : combinedNotes,
+        email: email.trim() || null,
+        additional_notes: `Floor Cleaning Included (₹3,000) | Est Total: ₹${priceLedger.total.toLocaleString('en-IN')}`,
         user_id: null,
       });
 
-      toast.success('Booking created successfully');
-      setShowSuccessModal(true);
-    } catch (error: any) {
-      // Display raw backend error message
-      toast.error('Booking Failed', {
-        description: error.message || 'Failed to create booking',
-        duration: 5000,
+      const refId = `DA-${new Date().getFullYear()}-${String(newBooking?.id || Math.floor(1000 + Math.random() * 9000)).slice(-4).toUpperCase()}`;
+
+      setBookingConfirmation({
+        id: String(newBooking?.id || refId),
+        reference: refId,
+        date: selectedDate,
+        slotLabel: activeSlotMeta.label,
+        slotTime: activeSlotMeta.time,
+        packageName: priceLedger.label,
+        basePrice: priceLedger.base,
+        cleaningFee: priceLedger.cleaning,
+        totalPrice: priceLedger.total,
+        guestCount: parseInt(guestCount) || 300,
+        fullName: fullName.trim(),
+        mobile: mobile.trim(),
+      });
+
+      setCurrentStep(5);
+      toast.success('Reservation request submitted successfully!');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      console.error('Booking failed:', err);
+      toast.error('Failed to submit booking', {
+        description: err.message || 'Please check your connection and try again.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Calculate final price for display
-  let baseDisplayPrice: number;
-  if (selectedSlot === 'short_duration') {
-    baseDisplayPrice = 26000;
-  } else {
-    baseDisplayPrice = selectedPackage?.price ?? 0;
-  }
-
-  // Calculate services for display (floor cleaning is always included)
-  const floorCleaningForDisplay = 3000;
-
-  const displayPrice = baseDisplayPrice + floorCleaningForDisplay;
+  // WhatsApp Pre-filled link
+  const whatsappUrl = useMemo(() => {
+    if (!bookingConfirmation) return '#';
+    const text = encodeURIComponent(
+      `Hello Dream Avenue Concierge! 🌟\n\nI have submitted a venue booking request:\n• Ref: ${bookingConfirmation.reference}\n• Name: ${bookingConfirmation.fullName}\n• Mobile: +91 ${bookingConfirmation.mobile}\n• Date: ${bookingConfirmation.date}\n• Time Slot: ${bookingConfirmation.slotLabel} (${bookingConfirmation.slotTime})\n• Plan: ${bookingConfirmation.packageName}\n• Guests: ${bookingConfirmation.guestCount}\n• Estimated Total: ₹${bookingConfirmation.totalPrice.toLocaleString('en-IN')} (incl. ₹3,000 floor cleaning)\n\nPlease confirm availability and next steps for my reservation.`
+    );
+    return `https://wa.me/${CONTACT_INFO.phones.whatsapp.replace(/\D/g, '')}?text=${text}`;
+  }, [bookingConfirmation]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF9F6', paddingTop: '80px', overflowX: 'hidden', maxWidth: '100vw' }} className="booking-page-container">
-      <SEOHead 
-        title="Book Convention Center Online | Dream Avenue"
-        description="Book Dream Avenue Convention Center online for your next event in Calicut. Verify availability, select dates, and secure your luxury venue instantly."
+    <div className="editorial-page" style={{ minHeight: '100vh', background: '#FAF8F5', paddingTop: '90px', paddingBottom: '80px' }}>
+      <SEOHead
+        title="Reserve Dream Avenue Event Hall | Online Booking Concierge"
+        description="Check real-time date availability, select time slots, explore curated packages, and reserve Dream Avenue Event Hall in Calicut with complete transparent pricing."
         url="https://dreamavenue.in/booking"
       />
       <Navbar />
 
-      {/* Navigation Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{
-          position: 'fixed',
-          top: '100px',
-          left: '20px',
-          zIndex: 50,
-          display: 'flex',
-          gap: '1rem',
-        }}
-        className="nav-buttons"
-      >
-        <motion.button
-          onClick={() => navigate(-1)}
-          whileHover={{ scale: 1.05, x: -5 }}
-          whileTap={{ scale: 0.95 }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.25rem',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: '#343A40',
-            border: '2px solid rgba(224, 192, 151, 0.5)',
-            borderRadius: '50px',
-            fontWeight: 600,
-            fontSize: '0.9375rem',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <ArrowLeft size={18} />
-          <span>Back</span>
-        </motion.button>
-
-        <motion.button
-          onClick={() => navigate('/')}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.25rem',
-            background: 'linear-gradient(135deg, #B6F500, #E0C097)',
-            color: '#343A40',
-            border: 'none',
-            borderRadius: '50px',
-            fontWeight: 600,
-            fontSize: '0.9375rem',
-            cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(182, 245, 0, 0.3)',
-          }}
-        >
-          <Home size={18} />
-          <span>Home</span>
-        </motion.button>
-      </motion.div>
-
-      {/* ========== TOP SECTION: 50/50 SPLIT (90-100vh) ========== */}
-      <div
-        style={{
-          minHeight: '90vh',
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gap: 0,
-          maxWidth: '100%',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
-        className="booking-split-container"
-      >
-        {/* LEFT PANEL - Packages Carousel */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            position: 'relative',
-            padding: '4rem 2.5rem',
-            background: 'linear-gradient(135deg, #FAF9F6 0%, #FFFFFF 100%)',
-            borderRight: '1px solid rgba(224, 192, 151, 0.2)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-          className="packages-panel"
-        >
-          <div style={{ maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              style={{ textAlign: 'center', marginBottom: '3rem' }}
-            >
-              <Sparkles size={40} style={{ color: '#B6F500', display: 'inline-block', marginBottom: '1rem' }} />
-              <h2
-                className="section-title"
+      <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '0 20px' }}>
+        {/* Step Indicator Header (Steps 1-4) */}
+        {currentStep < 5 && (
+          <div style={{ marginBottom: '40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentStep > 1) setCurrentStep((prev) => prev - 1);
+                  else navigate('/');
+                }}
                 style={{
-                  fontSize: '2.25rem',
-                  marginBottom: '0.75rem',
-                  background: 'linear-gradient(135deg, #B6F500, #E0C097)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  letterSpacing: '-0.02em',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#537517',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: '6px 0',
                 }}
               >
-                Select Your Package
-              </h2>
-              <div
-                style={{
-                  width: '80px',
-                  height: '4px',
-                  background: 'linear-gradient(90deg, #B6F500, #E0C097)',
-                  margin: '0 auto',
-                  borderRadius: '2px',
-                }}
-              />
-            </motion.div>
+                <ArrowLeft size={16} />
+                <span>{currentStep === 1 ? 'Return to Home' : 'Previous Step'}</span>
+              </button>
 
-            {/* Horizontal Scrollable Package Cards */}
-            <div
-              style={{
-                position: 'relative',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem',
-                  maxWidth: '800px',
-                  margin: '0 auto',
-                }}
-                className="package-carousel"
-              >
-                {packages.map((pkg, index) => (
-                  <motion.div
-                    key={pkg.id}
-                    className="package-card"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    onClick={() => setSelectedPackageId(pkg.id || null)}
-                    whileHover={{ scale: 1.02, y: -4 }}
-                    whileTap={{ scale: 0.98 }}
+              <div style={{ fontSize: '0.8125rem', color: '#737E72', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                Stage {currentStep} of 4
+              </div>
+            </div>
+
+            {/* Visual Stepper */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+              {[
+                { step: 1, title: 'Date & Slot' },
+                { step: 2, title: 'Package' },
+                { step: 3, title: 'Event Details' },
+                { step: 4, title: 'Contact & Confirm' },
+              ].map((s) => {
+                const isActive = currentStep === s.step;
+                const isDone = currentStep > s.step;
+                return (
+                  <div
+                    key={s.step}
+                    onClick={() => {
+                      if (s.step < currentStep) setCurrentStep(s.step);
+                    }}
                     style={{
-                      width: '100%',
-                      cursor: 'pointer',
-                      border: selectedPackageId === pkg.id
-                        ? '3px solid #B6F500'
-                        : '2px solid rgba(224, 192, 151, 0.3)',
-                      borderRadius: '24px',
-                      background: selectedPackageId === pkg.id
-                        ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.08), rgba(224, 192, 151, 0.08))'
-                        : 'white',
-                      overflow: 'hidden',
-                      transition: 'all 0.3s ease',
-                      boxShadow: selectedPackageId === pkg.id
-                        ? '0 16px 40px rgba(182, 245, 0, 0.25), 0 0 0 4px rgba(182, 245, 0, 0.1)'
-                        : '0 4px 16px rgba(0, 0, 0, 0.08)',
+                      cursor: s.step < currentStep ? 'pointer' : 'default',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
                     }}
                   >
-                    {/* Package Image */}
                     <div
-                      className="package-card-image"
                       style={{
-                        height: '180px',
-                        backgroundImage: `url(${pkg.image_url})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        position: 'relative',
+                        height: '4px',
+                        borderRadius: '2px',
+                        background: isActive ? '#537517' : isDone ? '#3E5811' : '#E8E3DA',
+                        transition: 'background 0.3s ease',
                       }}
-                    >
-                      {selectedPackageId === pkg.id && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          style={{
-                            position: 'absolute',
-                            top: '16px',
-                            right: '16px',
-                            background: '#B6F500',
-                            color: '#343A40',
-                            padding: '0.625rem 1.25rem',
-                            borderRadius: '50px',
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.375rem',
-                            boxShadow: '0 4px 16px rgba(182, 245, 0, 0.4)',
-                          }}
-                        >
-                          <Check size={16} />
-                          Selected
-                        </motion.div>
-                      )}
+                    />
+                    <div style={{ fontSize: '0.75rem', fontWeight: isActive ? 700 : 500, color: isActive ? '#1B221B' : '#737E72' }}>
+                      {s.title}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Layout */}
+        {currentStep < 5 ? (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 360px)',
+              gap: '36px',
+              alignItems: 'start',
+            }}
+            className="booking-split-container"
+          >
+            {/* Left Column: Stage Specific Content */}
+            <div style={{ minWidth: 0 }}>
+              <AnimatePresence mode="wait">
+                {/* STAGE 1: Date & Time Slot */}
+                {currentStep === 1 && (
+                  <motion.div
+                    key="step-1"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.75rem', fontWeight: 700, color: '#1B221B', margin: '0 0 8px 0' }}>
+                        Select Date & Schedule
+                      </h2>
+                      <p style={{ color: '#737E72', fontSize: '0.9375rem', margin: 0 }}>
+                        Choose your celebration date from the live availability calendar below, then pick your desired time slot.
+                      </p>
                     </div>
 
-                    {/* Package Details */}
-                    <div className="package-card-content" style={{ padding: '1.75rem', boxSizing: 'border-box' }}>
-                      <h3
-                        className="package-card-title"
-                        style={{
-                          fontSize: '1.375rem',
-                          marginBottom: '0.75rem',
-                          color: '#343A40',
-                          letterSpacing: '-0.01em',
+                    {/* Calendar */}
+                    <div style={{ marginBottom: '32px' }}>
+                      <PublicBookingCalendar
+                        selectedDate={selectedDate}
+                        onDateSelect={(d) => {
+                          setSelectedDate(d);
+                          toast.success(`Selected date: ${d}`);
                         }}
-                      >
-                        {pkg.name}
-                      </h3>
+                      />
+                    </div>
 
-                      <p
-                        className="package-card-description"
+                    {/* Time Slot Selector */}
+                    <div
+                      style={{
+                        background: '#FFFFFF',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        border: '1px solid #E8E3DA',
+                        boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
+                        marginBottom: '32px',
+                      }}
+                    >
+                      <SlotSelectorGrid
+                        selectedSlot={selectedSlot}
+                        onSlotChange={(s) => setSelectedSlot(s)}
+                        eventType={eventType}
+                      />
+                    </div>
+
+                    {/* Navigation CTA */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!selectedDate) {
+                            toast.error('Please pick an available date first');
+                            return;
+                          }
+                          setCurrentStep(2);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '14px 28px',
+                          background: selectedDate ? '#537517' : '#C5CEB8',
+                          color: '#FFFFFF',
+                          borderRadius: '12px',
+                          fontWeight: 600,
                           fontSize: '0.9375rem',
-                          color: '#666',
-                          marginBottom: '1.25rem',
-                          lineHeight: '1.6',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
+                          border: 'none',
+                          cursor: selectedDate ? 'pointer' : 'not-allowed',
+                          boxShadow: selectedDate ? '0 4px 14px rgba(83, 117, 23, 0.25)' : 'none',
+                          transition: 'all 0.2s ease',
                         }}
                       >
-                        {pkg.description}
-                      </p>
+                        <span>Continue to Package Selection</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
 
+﻿                {/* STAGE 2: Package Selection */}
+                {currentStep === 2 && (
+                  <motion.div
+                    key="step-2"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.75rem', fontWeight: 700, color: '#1B221B', margin: '0 0 8px 0' }}>
+                        Choose Your Venue Plan
+                      </h2>
+                      <p style={{ color: '#737E72', fontSize: '0.9375rem', margin: 0 }}>
+                        Select one of our curated plans or choose the Standard Hall option.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '32px' }}>
+                      {/* Standard Hall Option */}
                       <div
-                        className="package-price-row"
+                        onClick={() => setSelectedPackageId(null)}
                         style={{
+                          background: selectedPackageId === null ? '#EDF6DE' : '#FFFFFF',
+                          border: selectedPackageId === null ? '2px solid #537517' : '1px solid #E8E3DA',
+                          borderRadius: '16px',
+                          padding: '24px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          paddingTop: '1rem',
-                          borderTop: '1px solid rgba(224, 192, 151, 0.2)',
-                          flexWrap: 'wrap',
-                          gap: '0.25rem',
+                          gap: '16px',
                         }}
                       >
-                        <span
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '10px',
+                              background: '#FFFFFF',
+                              color: '#537517',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid #DFCAAB',
+                            }}
+                          >
+                            <Building size={20} />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '1.125rem', color: '#1B221B', marginBottom: '2px' }}>
+                              Standard Hall Reservation (Hall Only)
+                            </div>
+                            <div style={{ fontSize: '0.875rem', color: '#737E72' }}>
+                              Full auditorium, dining banquet access, stage, and primary utilities.
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: '1.25rem', color: '#1B221B' }}>
+                            ₹30,000
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: '#537517', fontWeight: 600 }}>
+                            Base Hall Rate
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dynamic Packages */}
+                      {packages.map((pkg) => {
+                        const isSelected = selectedPackageId === pkg.id;
+                        return (
+                          <div
+                            key={pkg.id}
+                            onClick={() => setSelectedPackageId(pkg.id)}
+                            style={{
+                              background: isSelected ? '#EDF6DE' : '#FFFFFF',
+                              border: isSelected ? '2px solid #537517' : '1px solid #E8E3DA',
+                              borderRadius: '16px',
+                              padding: '24px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700, fontSize: '1.25rem', color: '#1B221B' }}>
+                                    {pkg.name}
+                                  </span>
+                                  {isSelected && (
+                                    <span style={{ background: '#537517', color: '#FFFFFF', padding: '2px 8px', borderRadius: '999px', fontSize: '0.6875rem', fontWeight: 600 }}>
+                                      Selected
+                                    </span>
+                                  )}
+                                </div>
+                                <p style={{ color: '#737E72', fontSize: '0.875rem', margin: 0 }}>
+                                  {pkg.description}
+                                </p>
+                              </div>
+
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontWeight: 700, fontSize: '1.35rem', color: '#1B221B' }}>
+                                  ₹{pkg.price && pkg.price > 0 ? Number(pkg.price).toLocaleString('en-IN') : 'Custom'}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Features Preview */}
+                            {pkg.features && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
+                                {pkg.features.slice(0, 4).map((f: string, fIdx: number) => (
+                                  <div
+                                    key={fIdx}
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      fontSize: '0.75rem',
+                                      background: '#FFFFFF',
+                                      padding: '4px 10px',
+                                      borderRadius: '6px',
+                                      color: '#485247',
+                                      border: '1px solid #E8E3DA',
+                                    }}
+                                  >
+                                    <Check size={12} style={{ color: '#537517' }} />
+                                    <span>{f}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        style={{
+                          padding: '14px 24px',
+                          background: 'transparent',
+                          border: '1px solid #DFCAAB',
+                          borderRadius: '12px',
+                          fontWeight: 600,
+                          fontSize: '0.9375rem',
+                          color: '#485247',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentStep(3);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '14px 28px',
+                          background: '#537517',
+                          color: '#FFFFFF',
+                          borderRadius: '12px',
+                          fontWeight: 600,
+                          fontSize: '0.9375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span>Continue to Event Details</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* STAGE 3: Event Details & Inclusions */}
+                {currentStep === 3 && (
+                  <motion.div
+                    key="step-3"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.75rem', fontWeight: 700, color: '#1B221B', margin: '0 0 8px 0' }}>
+                        Event Scope & Transparent Ledger
+                      </h2>
+                      <p style={{ color: '#737E72', fontSize: '0.9375rem', margin: 0 }}>
+                        Tell us about your occasion. All mandatory services are transparently detailed below.
+                      </p>
+                    </div>
+
+                    <div
+                      style={{
+                        background: '#FFFFFF',
+                        borderRadius: '20px',
+                        padding: '28px',
+                        border: '1px solid #E8E3DA',
+                        boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
+                        marginBottom: '32px',
+                      }}
+                    >
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                        {/* Event Type */}
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1B221B', marginBottom: '8px' }}>
+                            Event Type
+                          </label>
+                          <select
+                            value={eventType}
+                            onChange={(e) => setEventType(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '12px 14px',
+                              borderRadius: '10px',
+                              border: '1px solid #DFCAAB',
+                              background: '#FFFFFF',
+                              color: '#1B221B',
+                              fontSize: '0.9375rem',
+                              fontFamily: 'inherit',
+                            }}
+                          >
+                            <option value="normal">Wedding / Reception</option>
+                            <option value="birthday">Birthday Party (Qualifies for Short Duration)</option>
+                            <option value="get_together">Get-Together (Qualifies for Short Duration)</option>
+                            <option value="meeting">Business Meeting / Conference</option>
+                            <option value="awareness_class">Seminar / Awareness Class</option>
+                            <option value="other">Other Gathering</option>
+                          </select>
+                        </div>
+
+                        {/* Guest Count */}
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1B221B', marginBottom: '8px' }}>
+                            Estimated Guest Count
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="1500"
+                            value={guestCount}
+                            onChange={(e) => setGuestCount(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '12px 14px',
+                              borderRadius: '10px',
+                              border: '1px solid #DFCAAB',
+                              background: '#FFFFFF',
+                              color: '#1B221B',
+                              fontSize: '0.9375rem',
+                              fontFamily: 'inherit',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Special Requests */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1B221B', marginBottom: '8px' }}>
+                          Special Notes or Requests <span style={{ color: '#737E72', fontWeight: 400 }}>(Optional)</span>
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={specialRequests}
+                          onChange={(e) => setSpecialRequests(e.target.value)}
+                          placeholder="e.g. Preferred caterer, stage setup timings, or valet requirements..."
                           style={{
-                            fontSize: '0.875rem',
-                            color: '#999',
+                            width: '100%',
+                            padding: '12px 14px',
+                            borderRadius: '10px',
+                            border: '1px solid #E8E3DA',
+                            background: '#FFFFFF',
+                            color: '#1B221B',
+                            fontSize: '0.9375rem',
+                            fontFamily: 'inherit',
+                            resize: 'vertical',
+                          }}
+                        />
+                      </div>
+
+                      {/* Inclusions & Policies Box */}
+                      <div
+                        style={{
+                          background: '#FAF8F5',
+                          borderRadius: '16px',
+                          padding: '20px',
+                          border: '1px solid #DFCAAB',
+                        }}
+                      >
+                        <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1B221B', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ShieldCheck size={18} style={{ color: '#537517' }} />
+                          <span>Venue Policies & Included Services</span>
+                        </div>
+
+                        {/* Mandatory Floor Cleaning */}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#EDF6DE', color: '#537517', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                            <Check size={14} strokeWidth={3} />
+                          </div>
+                          <div>
+                            <span style={{ fontWeight: 600, color: '#1B221B', fontSize: '0.875rem' }}>
+                              Mandatory Floor Cleaning Service (₹3,000)
+                            </span>
+                            <p style={{ margin: '2px 0 0 0', fontSize: '0.8125rem', color: '#737E72' }}>
+                              Ensures thorough sanitation, industrial floor buffing, and complete trash disposal before and after your event. Itemized in all reservations.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Zero-Plastic Policy */}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#EDF6DE', color: '#537517', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                            <Leaf size={14} />
+                          </div>
+                          <div>
+                            <span style={{ fontWeight: 600, color: '#1B221B', fontSize: '0.875rem' }}>
+                              Zero-Plastic Eco Policy
+                            </span>
+                            <p style={{ margin: '2px 0 0 0', fontSize: '0.8125rem', color: '#737E72' }}>
+                              Single-use plastics are prohibited. Purified water points are accessible throughout the venue.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Sustainable Plate Rentals */}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#FAF4EB', color: '#B88B52', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                            <Utensils size={14} />
+                          </div>
+                          <div>
+                            <span style={{ fontWeight: 600, color: '#1B221B', fontSize: '0.875rem' }}>
+                              Optional Sustainable Plate Rentals
+                            </span>
+                            <p style={{ margin: '2px 0 0 0', fontSize: '0.8125rem', color: '#737E72' }}>
+                              Large Dining Plates (₹3.50/plate) and Small Dessert Plates (₹2.50/plate) can be settled directly on event day if needed.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(2)}
+                        style={{
+                          padding: '14px 24px',
+                          background: 'transparent',
+                          border: '1px solid #DFCAAB',
+                          borderRadius: '12px',
+                          fontWeight: 600,
+                          fontSize: '0.9375rem',
+                          color: '#485247',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentStep(4);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '14px 28px',
+                          background: '#537517',
+                          color: '#FFFFFF',
+                          borderRadius: '12px',
+                          fontWeight: 600,
+                          fontSize: '0.9375rem',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span>Continue to Contact & Confirm</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+﻿                {/* STAGE 4: Client Contact & Agreement */}
+                {currentStep === 4 && (
+                  <motion.div
+                    key="step-4"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.75rem', fontWeight: 700, color: '#1B221B', margin: '0 0 8px 0' }}>
+                        Client Information & Agreement
+                      </h2>
+                      <p style={{ color: '#737E72', fontSize: '0.9375rem', margin: 0 }}>
+                        Provide your primary contact number. We will prepare your Digital Booking Pass instantly.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleConfirmReservation}>
+                      <div
+                        style={{
+                          background: '#FFFFFF',
+                          borderRadius: '20px',
+                          padding: '28px',
+                          border: '1px solid #E8E3DA',
+                          boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
+                          marginBottom: '32px',
+                        }}
+                      >
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+                          {/* Full Name */}
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1B221B', marginBottom: '8px' }}>
+                              Full Name *
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Your full name"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 14px 12px 40px',
+                                  borderRadius: '10px',
+                                  border: '1px solid #DFCAAB',
+                                  background: '#FFFFFF',
+                                  color: '#1B221B',
+                                  fontSize: '0.9375rem',
+                                  fontFamily: 'inherit',
+                                }}
+                              />
+                              <User size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#737E72' }} />
+                            </div>
+                          </div>
+
+                          {/* Mobile */}
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1B221B', marginBottom: '8px' }}>
+                              Mobile Number (10 digits) *
+                            </label>
+                            <div style={{ position: 'relative' }}>
+                              <input
+                                type="tel"
+                                required
+                                placeholder="9876543210"
+                                value={mobile}
+                                onChange={handleMobileChange}
+                                maxLength={10}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 14px 12px 40px',
+                                  borderRadius: '10px',
+                                  border: '1px solid #DFCAAB',
+                                  background: '#FFFFFF',
+                                  color: '#1B221B',
+                                  fontSize: '0.9375rem',
+                                  fontFamily: 'inherit',
+                                }}
+                              />
+                              <Phone size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#737E72' }} />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Email */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#1B221B', marginBottom: '8px' }}>
+                            Email Address <span style={{ color: '#737E72', fontWeight: 400 }}>(Optional for receipt)</span>
+                          </label>
+                          <div style={{ position: 'relative' }}>
+                            <input
+                              type="email"
+                              placeholder="you@domain.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 14px 12px 40px',
+                                borderRadius: '10px',
+                                border: '1px solid #DFCAAB',
+                                background: '#FFFFFF',
+                                color: '#1B221B',
+                                fontSize: '0.9375rem',
+                                fontFamily: 'inherit',
+                              }}
+                            />
+                            <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#737E72' }} />
+                          </div>
+                        </div>
+
+                        {/* Terms & Conditions Acceptance */}
+                        <div
+                          style={{
+                            padding: '16px',
+                            background: '#FAF8F5',
+                            borderRadius: '12px',
+                            border: '1px solid #E8E3DA',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px',
                           }}
                         >
-                          Base Price
-                        </span>
-                        <span
-                          className="package-card-price"
+                          <input
+                            type="checkbox"
+                            id="termsCheck"
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                            style={{ width: '18px', height: '18px', accentColor: '#537517', marginTop: '2px', cursor: 'pointer' }}
+                          />
+                          <label htmlFor="termsCheck" style={{ fontSize: '0.8125rem', color: '#485247', lineHeight: 1.5, cursor: 'pointer' }}>
+                            I agree to Dream Avenue Event Hall policies: zero single-use plastic policy, no drinks inside the main auditorium, and complete payment settlement prior to the event date.
+                          </label>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentStep(3)}
                           style={{
-                            fontSize: '1.5rem',
+                            padding: '14px 24px',
+                            background: 'transparent',
+                            border: '1px solid #DFCAAB',
+                            borderRadius: '12px',
+                            fontWeight: 600,
+                            fontSize: '0.9375rem',
+                            color: '#485247',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Back
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmitting || !termsAccepted || mobile.length !== 10}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '14px 32px',
+                            background: (termsAccepted && mobile.length === 10 && !isSubmitting) ? '#537517' : '#C5CEB8',
+                            color: '#FFFFFF',
+                            borderRadius: '12px',
                             fontWeight: 700,
-                            background: 'linear-gradient(135deg, #B6F500, #E0C097)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
+                            fontSize: '1rem',
+                            border: 'none',
+                            cursor: (termsAccepted && mobile.length === 10 && !isSubmitting) ? 'pointer' : 'not-allowed',
+                            boxShadow: (termsAccepted && mobile.length === 10) ? '0 6px 20px rgba(83, 117, 23, 0.3)' : 'none',
                           }}
                         >
-                          ₹{(pkg.price ?? 0).toLocaleString('en-IN')}
+                          {isSubmitting ? (
+                            <span>Securing Request...</span>
+                          ) : (
+                            <>
+                              <span>Confirm Reservation Request</span>
+                              <Check size={18} strokeWidth={2.5} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Right Column: Sticky Live Folio Breakdown */}
+            <div style={{ position: 'sticky', top: '100px' }}>
+              <div
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '20px',
+                  border: '1px solid #DFCAAB',
+                  boxShadow: '0 8px 24px rgba(27, 34, 27, 0.06)',
+                  padding: '24px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid #F0EBE2', paddingBottom: '12px' }}>
+                  <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700, fontSize: '1.2rem', color: '#1B221B' }}>
+                    Reservation Folio
+                  </div>
+                  <div style={{ background: '#EDF6DE', color: '#537517', padding: '3px 8px', borderRadius: '6px', fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Live Ledger
+                  </div>
+                </div>
+
+                {/* Selected Date & Slot */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.875rem' }}>
+                    <CalendarIcon size={16} style={{ color: '#537517', flexShrink: 0 }} />
+                    <span style={{ color: '#1B221B', fontWeight: 600 }}>
+                      {selectedDate || 'Select a date in Step 1'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.875rem' }}>
+                    <Clock size={16} style={{ color: '#B88B52', flexShrink: 0 }} />
+                    <span style={{ color: '#485247' }}>
+                      {activeSlotMeta.label} ({activeSlotMeta.time})
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.875rem' }}>
+                    <Building size={16} style={{ color: '#737E72', flexShrink: 0 }} />
+                    <span style={{ color: '#485247' }}>
+                      {priceLedger.label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                <div style={{ borderTop: '1px solid #F0EBE2', paddingTop: '16px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#485247', marginBottom: '8px' }}>
+                    <span>Base Venue Rental</span>
+                    <span>₹{priceLedger.base.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#537517', fontWeight: 600, marginBottom: '8px' }}>
+                    <span>Mandatory Floor Cleaning</span>
+                    <span>₹{priceLedger.cleaning.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div style={{ borderTop: '1px dashed #E8E3DA', paddingTop: '12px', marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontWeight: 700, color: '#1B221B', fontSize: '1rem' }}>
+                      Estimated Total
+                    </span>
+                    <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700, color: '#1B221B', fontSize: '1.5rem' }}>
+                      ₹{priceLedger.total.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '0.75rem', color: '#737E72', lineHeight: 1.5 }}>
+                  * Final dates and timing are subject to deposit confirmation. No hidden charges.
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* STAGE 5: Digital Booking Pass */
+          <motion.div
+            key="step-5"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            style={{ maxWidth: '680px', margin: '0 auto' }}
+          >
+            {bookingConfirmation && (
+              <div>
+                {/* Perforated Ticket Card */}
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: '24px',
+                    border: '1px solid #DFCAAB',
+                    boxShadow: '0 24px 64px -12px rgba(27, 34, 27, 0.12)',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    marginBottom: '24px',
+                  }}
+                >
+                  {/* Ticket Top Banner */}
+                  <div
+                    style={{
+                      background: 'linear-gradient(135deg, #1B221B 0%, #2A382A 100%)',
+                      color: '#FAF8F5',
+                      padding: '28px 32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '16px',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '0.6875rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#DFCAAB', fontWeight: 600, marginBottom: '4px' }}>
+                        Digital Booking Pass
+                      </div>
+                      <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.5rem', fontWeight: 700 }}>
+                        Dream Avenue Event Hall
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.6875rem', color: '#DFCAAB', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Booking Reference
+                      </div>
+                      <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#FAF8F5', letterSpacing: '1px' }}>
+                        {bookingConfirmation.reference}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ticket Body */}
+                  <div style={{ padding: '32px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: '#737E72', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                          Primary Host
+                        </div>
+                        <div style={{ fontWeight: 600, fontSize: '1.0625rem', color: '#1B221B' }}>
+                          {bookingConfirmation.fullName}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#737E72' }}>
+                          +91 {bookingConfirmation.mobile}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: '#737E72', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                          Event Date & Schedule
+                        </div>
+                        <div style={{ fontWeight: 600, fontSize: '1.0625rem', color: '#1B221B' }}>
+                          {bookingConfirmation.date}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#537517', fontWeight: 600 }}>
+                          {bookingConfirmation.slotLabel} ({bookingConfirmation.slotTime})
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: '#737E72', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                          Reserved Plan
+                        </div>
+                        <div style={{ fontWeight: 600, fontSize: '1rem', color: '#1B221B' }}>
+                          {bookingConfirmation.packageName}
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: '#737E72' }}>
+                          Est. Guests: {bookingConfirmation.guestCount}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: '#737E72', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                          Status
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#EDF6DE', color: '#3E5811', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8125rem', fontWeight: 700 }}>
+                          <Check size={14} />
+                          <span>Request Received</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Perforated Separator */}
+                    <div style={{ position: 'relative', borderBottom: '2px dashed #E8E3DA', margin: '24px -32px', paddingBottom: '0' }} />
+
+                    {/* Financial Summary */}
+                    <div style={{ paddingTop: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#485247', marginBottom: '8px' }}>
+                        <span>Base Rental Amount</span>
+                        <span>₹{bookingConfirmation.basePrice.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#537517', fontWeight: 600, marginBottom: '12px' }}>
+                        <span>Mandatory Floor Cleaning (Included)</span>
+                        <span>₹{bookingConfirmation.cleaningFee.toLocaleString('en-IN')}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid #F0EBE2', paddingTop: '12px' }}>
+                        <span style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#1B221B' }}>
+                          Total Estimated Amount
+                        </span>
+                        <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700, fontSize: '1.75rem', color: '#1B221B' }}>
+                          ₹{bookingConfirmation.totalPrice.toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {packages.length === 0 && (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '3rem 1rem',
-                  color: '#999',
-                }}
-              >
-                <Sparkles size={48} style={{ color: '#E0C097', marginBottom: '1rem' }} />
-                <p>No packages available at the moment.</p>
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* RIGHT PANEL - Enhanced Booking Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          style={{
-            position: 'relative',
-            padding: '3rem 2rem',
-            background: 'linear-gradient(135deg, rgba(250, 249, 246, 0.8), rgba(255, 255, 255, 0.9))',
-            backdropFilter: 'blur(20px)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-          className="form-panel"
-        >
-          <div style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}>
-            <EnhancedBookingForm
-              selectedPackageId={selectedPackageId}
-              selectedPackageName={selectedPackage?.name}
-              onContinue={handleFormContinue}
-              isLoading={isSubmitting}
-            />
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ========== BOTTOM SECTION: Calendar + Slots + Message ========== */}
-      <AnimatePresence>
-        {showCalendarSection && (
-          <motion.div
-            ref={calendarSectionRef}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            transition={{ duration: 0.6 }}
-            style={{
-              padding: '4rem 2rem',
-              background: 'linear-gradient(180deg, #FFFFFF, #FAF9F6)',
-              borderTop: '2px solid rgba(224, 192, 151, 0.2)',
-            }}
-            className="calendar-section"
-          >
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              {/* Calendar */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                style={{
-                  marginBottom: '3rem',
-                  textAlign: 'center',
-                }}
-              >
-                <h2
-                  className="section-title"
-                  style={{
-                    fontSize: '2rem',
-                    marginBottom: '1rem',
-                    background: 'linear-gradient(135deg, #B6F500, #E0C097)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  Select Your Date
-                </h2>
-                <div
-                  style={{
-                    width: '60px',
-                    height: '3px',
-                    background: 'linear-gradient(90deg, #B6F500, #E0C097)',
-                    margin: '0 auto 2rem',
-                    borderRadius: '2px',
-                  }}
-                />
-
-                <div
-                  style={{
-                    maxWidth: '600px',
-                    margin: '0 auto',
-                    background: 'white',
-                    borderRadius: '20px',
-                    padding: '2rem',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-                    border: '2px solid rgba(224, 192, 151, 0.2)',
-                  }}
-                >
-                  <PublicBookingCalendar
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                  />
-                </div>
-              </motion.div>
-
-              {/* Slot Selection */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                style={{ marginBottom: '3rem' }}
-              >
-                <h2
-                  className="section-title"
-                  style={{
-                    fontSize: '2rem',
-                    marginBottom: '1rem',
-                    textAlign: 'center',
-                    background: 'linear-gradient(135deg, #E0C097, #B6F500)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  Choose Time Slot
-                </h2>
-                <div
-                  style={{
-                    width: '60px',
-                    height: '3px',
-                    background: 'linear-gradient(90deg, #E0C097, #B6F500)',
-                    margin: '0 auto 2rem',
-                    borderRadius: '2px',
-                  }}
-                />
-
-                <SlotSelectorGrid
-                  selectedSlot={selectedSlot}
-                  onSlotChange={setSelectedSlot}
-                  basePrice={selectedPackage?.price || 0}
-                />
-              </motion.div>
-
-
-
-              {/* Price Summary & Confirm Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                style={{
-                  maxWidth: '500px',
-                  margin: '0 auto',
-                  textAlign: 'center',
-                }}
-              >
-                {/* Price Display */}
-                <div
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(182, 245, 0, 0.1), rgba(224, 192, 151, 0.1))',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    marginBottom: '2rem',
-                    border: '2px solid rgba(182, 245, 0, 0.3)',
-                  }}
-                >
-                  {/* Price Breakdown - Always show since floor cleaning is mandatory */}
-                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(200, 212, 107, 0.3)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
-                      <span>Base Price:</span>
-                      <span>₹{baseDisplayPrice.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
-                      <span>Floor Cleaning (Included):</span>
-                      <span>₹3,000</span>
-                    </div>
                   </div>
-
-                  {/* Total Amount */}
-                  <div style={{ marginBottom: '0.5rem', color: '#666', fontSize: '0.9375rem' }}>
-                    Total Amount
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '2.5rem',
-                      fontWeight: 700,
-                      background: 'linear-gradient(135deg, #B6F500, #E0C097)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    ₹{displayPrice.toLocaleString('en-IN')}
-                  </div>
-                  {selectedSlot === 'short_duration' && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      style={{
-                        marginTop: '0.75rem',
-                        padding: '0.5rem 1rem',
-                        background: 'rgba(255, 107, 157, 0.1)',
-                        borderRadius: '8px',
-                        fontSize: '0.8125rem',
-                        color: '#343A40',
-                      }}
-                    >
-                      🎉 Special rate for 4-5 hour event
-                    </motion.div>
-                  )}
                 </div>
 
-                {/* Terms and Conditions Checkbox */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                  style={{
-                    marginBottom: '1.5rem',
-                    padding: '1rem',
-                    background: termsAccepted
-                      ? 'linear-gradient(135deg, rgba(182, 245, 0, 0.05), rgba(224, 192, 151, 0.05))'
-                      : 'rgba(255, 107, 157, 0.05)',
-                    borderRadius: '12px',
-                    border: termsAccepted
-                      ? '2px solid rgba(182, 245, 0, 0.3)'
-                      : '2px solid rgba(255, 107, 157, 0.3)',
-                  }}
-                >
-                  <label
+                {/* Instant Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {/* WhatsApp Connect */}
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '0.75rem',
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        marginTop: '2px',
-                        cursor: 'pointer',
-                        accentColor: '#B6F500',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span style={{ fontSize: '0.9375rem', lineHeight: '1.5', color: '#343A40', textAlign: 'left' }}>
-                      I have read and agree to the{' '}
-                      <Link
-                        to="/terms-and-conditions"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: '#B6F500',
-                          textDecoration: 'underline',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Hall Rules and Guidelines
-                      </Link>
-                      {' '}of Dream Avenue Convention Center
-                    </span>
-                  </label>
-                </motion.div>
-
-                {/* Confirm Button */}
-                <motion.button
-                  onClick={handleConfirmBooking}
-                  whileHover={termsAccepted && !isSubmitting ? { scale: 1.03, boxShadow: '0 16px 40px rgba(182, 245, 0, 0.4)' } : {}}
-                  whileTap={termsAccepted && !isSubmitting ? { scale: 0.98 } : {}}
-                  disabled={isSubmitting || !termsAccepted}
-                  style={{
-                    width: '100%',
-                    padding: '1.5rem 3rem',
-                    background: termsAccepted && !isSubmitting
-                      ? 'linear-gradient(135deg, #B6F500, #E0C097)'
-                      : '#E0E0E0',
-                    color: termsAccepted && !isSubmitting ? '#343A40' : '#999',
-                    border: 'none',
-                    borderRadius: '50px',
-                    fontSize: '1.25rem',
-                    fontWeight: 700,
-                    cursor: (isSubmitting || !termsAccepted) ? 'not-allowed' : 'pointer',
-                    boxShadow: termsAccepted && !isSubmitting
-                      ? '0 12px 32px rgba(182, 245, 0, 0.35)'
-                      : 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.75rem',
-                    transition: 'all 0.3s ease',
-                    opacity: (isSubmitting || !termsAccepted) ? 0.6 : 1,
-                  }}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          border: '3px solid #343A40',
-                          borderTopColor: 'transparent',
-                          borderRadius: '50%',
-                          animation: 'spin 0.8s linear infinite',
-                        }}
-                      />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={24} />
-                      Confirm Booking
-                    </>
-                  )}
-                </motion.button>
-
-                {!termsAccepted && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    style={{
-                      marginTop: '0.75rem',
-                      fontSize: '0.8125rem',
-                      color: '#FF6B9D',
-                      textAlign: 'center',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '0.5rem',
+                      gap: '10px',
+                      padding: '16px',
+                      background: '#25D366',
+                      color: '#FFFFFF',
+                      borderRadius: '14px',
+                      fontWeight: 700,
+                      fontSize: '1.0625rem',
+                      textDecoration: 'none',
+                      boxShadow: '0 8px 24px rgba(37, 211, 102, 0.35)',
+                      transition: 'transform 0.2s ease',
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
                   >
-                    <FileText size={14} />
-                    Please accept the terms and conditions to proceed
-                  </motion.p>
-                )}
-              </motion.div>
-            </div>
+                    <MessageCircle size={22} />
+                    <span>Chat with Venue Concierge on WhatsApp</span>
+                  </a>
+
+                  {/* Print & Return Buttons */}
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      style={{
+                        flex: '1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        padding: '14px',
+                        background: '#FFFFFF',
+                        border: '1px solid #DFCAAB',
+                        borderRadius: '12px',
+                        color: '#1B221B',
+                        fontWeight: 600,
+                        fontSize: '0.9375rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Printer size={18} />
+                      <span>Print Pass</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate('/')}
+                      style={{
+                        flex: '1',
+                        padding: '14px',
+                        background: '#FAF4EB',
+                        border: '1px solid #DFCAAB',
+                        borderRadius: '12px',
+                        color: '#B88B52',
+                        fontWeight: 600,
+                        fontSize: '0.9375rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Return to Website
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
-      </AnimatePresence>
-
-      {/* Success Modal */}
-      <AnimatePresence>
-        {showSuccessModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: 'blur(8px)',
-              zIndex: 100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '2rem',
-            }}
-            onClick={() => setShowSuccessModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 50 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: 'linear-gradient(135deg, rgba(182, 245, 0, 0.95), rgba(224, 192, 151, 0.95))',
-                borderRadius: '24px',
-                padding: '3rem',
-                maxWidth: '500px',
-                textAlign: 'center',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-              }}
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  background: '#343A40',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 2rem',
-                }}
-              >
-                <Check size={48} style={{ color: '#B6F500' }} />
-              </motion.div>
-
-              <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#343A40' }}>
-                Booking Confirmed! 🎉
-              </h2>
-              <p style={{ fontSize: '1.125rem', marginBottom: '2rem', color: '#343A40', opacity: 0.9 }}>
-                Your booking has been successfully submitted. We'll contact you shortly via WhatsApp!
-              </p>
-
-              <motion.button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  navigate('/');
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                style={{
-                  padding: '1rem 2.5rem',
-                  background: '#343A40',
-                  color: '#B6F500',
-                  border: 'none',
-                  borderRadius: '50px',
-                  fontSize: '1.125rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Back to Home
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
 
       <Footer />
-
-      {/* Responsive Styles + Animations */}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        .package-carousel::-webkit-scrollbar {
-          height: 8px;
-        }
-
-        .package-carousel::-webkit-scrollbar-track {
-          background: rgba(224, 192, 151, 0.1);
-          border-radius: 10px;
-        }
-
-        .package-carousel::-webkit-scrollbar-thumb {
-          background: linear-gradient(90deg, #B6F500, #E0C097);
-          border-radius: 10px;
-        }
-
-        .package-carousel::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(90deg, #E0C097, #B6F500);
-        }
-
-        ${responsiveStyles}
-      `}</style>
     </div>
   );
 }
