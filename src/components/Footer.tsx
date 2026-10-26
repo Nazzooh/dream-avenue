@@ -32,10 +32,10 @@ export function Footer() {
   return (
     <footer 
       style={{
-        background: '#151D15',
+        background: '#121813',
         color: '#FAF8F5',
-        padding: '80px 24px 36px 24px',
-        borderTop: '1px solid rgba(223, 202, 171, 0.2)',
+        padding: '70px 24px 28px 24px',
+        borderTop: '1px solid rgba(184, 139, 82, 0.25)',
       }}
     >
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -167,26 +167,26 @@ export function Footer() {
             >
               Direct Concierge
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'rgba(250, 248, 245, 0.75)', fontSize: '0.9375rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', color: 'rgba(250, 248, 245, 0.75)', fontSize: '0.9375rem' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <MapPin size={18} style={{ color: '#DFCAAB', flexShrink: 0, marginTop: '3px' }} />
-                <span>{CONTACT_INFO.address.street}, {CONTACT_INFO.address.area}, {CONTACT_INFO.address.city}, {CONTACT_INFO.address.state}</span>
+                <span>{CONTACT_INFO.address.street}, {CONTACT_INFO.address.area}, {CONTACT_INFO.address.city} &ndash; {CONTACT_INFO.address.pincode}</span>
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <Phone size={18} style={{ color: '#DFCAAB', flexShrink: 0 }} />
                 <a href={`tel:${CONTACT_INFO.phones.main}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  {CONTACT_INFO.phones.main}
+                  {CONTACT_INFO.phones.main} &bull; {CONTACT_INFO.phones.booking}
                 </a>
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <MessageCircle size={18} style={{ color: '#537517', flexShrink: 0 }} />
+                <MessageCircle size={18} style={{ color: '#DFCAAB', flexShrink: 0 }} />
                 <a 
                   href={CONTACT_INFO.links.whatsapp} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   style={{ color: '#EDF6DE', textDecoration: 'none', fontWeight: 600 }}
                 >
-                  WhatsApp: {CONTACT_INFO.phones.whatsapp}
+                  WhatsApp Concierge ({CONTACT_INFO.phones.whatsapp})
                 </a>
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -240,7 +240,7 @@ export function Footer() {
             </button>
 
             <a 
-              href="/terms" 
+              href="/terms-and-conditions" 
               style={{ color: 'rgba(250, 248, 245, 0.6)', textDecoration: 'none' }}
             >
               Terms & Policies

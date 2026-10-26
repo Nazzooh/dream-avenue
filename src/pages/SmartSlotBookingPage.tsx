@@ -1263,6 +1263,93 @@ export default function SmartSlotBookingPage() {
             )}
           </motion.div>
         )}
+
+        {/* Booking Concierge Support Strip */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            borderRadius: '20px',
+            border: '1px solid #E8E3DA',
+            padding: '28px 32px',
+            boxShadow: '0 8px 24px rgba(27, 34, 27, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '20px',
+            marginTop: '48px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div
+              style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
+                background: '#EDF6DE',
+                color: '#537517',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Phone size={22} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: '#1B221B', fontSize: '1.05rem', fontFamily: "'Playfair Display', Georgia, serif" }}>
+                Need Immediate Assistance With Your Reservation?
+              </div>
+              <div style={{ color: '#737E72', fontSize: '0.875rem', marginTop: '3px' }}>
+                Our venue concierge desk is available 7 days a week for dates, slot advice, or food arrangements.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <a
+              href={`tel:${CONTACT_INFO.phones.main}`}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '10px',
+                background: '#FAF8F5',
+                border: '1px solid #DFCAAB',
+                color: '#1B221B',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Phone size={15} style={{ color: '#537517' }} />
+              <span>Call {CONTACT_INFO.phones.main}</span>
+            </a>
+
+            <a
+              href={CONTACT_INFO.links.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: '10px 18px',
+                borderRadius: '10px',
+                background: '#537517',
+                color: '#FFFFFF',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(83, 117, 23, 0.25)',
+              }}
+            >
+              <MessageCircle size={15} />
+              <span>WhatsApp Concierge</span>
+            </a>
+          </div>
+        </div>
       </div>
 
       <Footer />

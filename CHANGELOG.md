@@ -1,5 +1,13 @@
 ﻿# Changelog
 
+## [v1.5.1] - 2026-10-26
+### Fixed
+- Harmonized contact card spacing and footer transitions across all website pages.
+- Added Booking Concierge Support Strip above footer on SmartSlotBookingPage.
+- Redesigned TermsAndConditions page with Warm Editorial theme, clean contact information, and integrated Footer.
+- Fixed /terms link in footer and added route alias in App.tsx.
+- Redesigned 404 page with Warm Editorial palette, contact concierge strip, and balanced footer spacing.
+
 ## [v1.5.0] - 2026-10-26
 ### Added
 - Horizontal scrolling package carousel with smooth scroll snap, mouse drag, and touch gestures.

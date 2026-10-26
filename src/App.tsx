@@ -63,6 +63,7 @@ export default function App() {
               <Route path="/booking" element={<SmartSlotBookingPage />} />
               <Route path="/slot-booking" element={<SmartSlotBookingPage />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/admin/login" element={<AdminLogin />} />
 
               <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>
