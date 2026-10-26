@@ -131,13 +131,13 @@ export function Hero() {
         position: 'relative',
         minHeight: '100vh',
         width: '100%',
-        overflow: 'hidden',
         background: '#0D130E',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
-        paddingTop: '120px',
-        paddingBottom: '40px',
+        alignItems: 'center',
+        paddingTop: '116px',
+        paddingBottom: '48px',
+        gap: 'clamp(20px, 3vh, 32px)',
       }}
     >
       {/* FULL-BLEED SLIDESHOW WITH SMOOTH CROSSFADE & KEN BURNS ZOOM */}
@@ -214,10 +214,8 @@ export function Hero() {
           maxWidth: '1120px',
           margin: '0 auto',
           width: '100%',
-          flex: '1 0 auto',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
           alignItems: 'center',
         }}
       >
@@ -316,13 +314,13 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.2 }}
           style={{
-            fontSize: 'clamp(2.6rem, 6.2vw, 5.1rem)',
+            fontSize: 'clamp(2.1rem, 4.8vw, 4.1rem)',
             fontFamily: "'Playfair Display', Georgia, serif",
             lineHeight: 1.1,
             fontWeight: 700,
             color: '#FAF8F5',
             letterSpacing: '-0.025em',
-            margin: '0 0 18px 0',
+            margin: '0 0 14px 0',
             textShadow: '0 4px 20px rgba(0, 0, 0, 0.6)',
           }}
         >
@@ -350,7 +348,7 @@ export function Hero() {
             fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
             color: 'rgba(250, 248, 245, 0.88)',
             maxWidth: '720px',
-            margin: '0 auto 24px auto',
+            margin: '0 auto 18px auto',
             lineHeight: 1.6,
             fontWeight: 400,
             textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
@@ -369,7 +367,7 @@ export function Hero() {
             flexWrap: 'wrap',
             justifyContent: 'center',
             gap: '10px',
-            marginBottom: '32px',
+            marginBottom: '6px',
           }}
         >
           {[

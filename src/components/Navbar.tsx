@@ -19,7 +19,6 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: '#home', label: 'The Hall' },
     { href: '#facilities', label: 'Spaces' },
     { href: '#packages', label: 'Packages' },
     { href: '#events', label: 'Occasions' },
@@ -64,7 +63,7 @@ export function Navbar() {
             <a 
               href="#home" 
               className="navbar-logo" 
-              style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none', flexShrink: 0 }}
               onClick={(e) => handleNavClick(e, '#home')}
             >
               <img 
@@ -103,7 +102,7 @@ export function Navbar() {
             </a>
 
             {/* Desktop Navigation Links */}
-            <div className="navbar-menu" style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+            <div className="navbar-menu" style={{ display: 'flex', alignItems: 'center', gap: 'clamp(14px, 2vw, 24px)', flexShrink: 0 }}>
               {navLinks.map((link) => (
                 <a
                   key={link.href}

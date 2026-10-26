@@ -1,5 +1,16 @@
 ﻿# Changelog
 
+## [v1.5.0] - 2026-10-26
+### Added
+- Horizontal scrolling package carousel with smooth scroll snap, mouse drag, and touch gestures.
+- Interactive slider navigation controls with circular Chevrons, live card index (01/03), and clickable pagination pills.
+- All-Inclusive Amenities guarantee banner under packages (Central AC, Power Backup, Dedicated Security, Eco Zero-Plastic).
+
+### Fixed
+- Resolved navbar logo text collision by removing redundant "The Hall" link and enforcing flex-shrink rules.
+- Fixed Hero section top margin and removed rigid height constraints, ensuring full headline visibility under the fixed navbar on all laptop viewports.
+- Restored proper Indian Rupee symbol (₹) across package pricing and mandatory floor cleaning service disclosures.
+
 ## [v1.4.1] - 2026-10-26
 ### Fixed
 - Auto-heal stale or expired Supabase refresh tokens in browser localStorage, preventing 400 Bad Request auth errors on startup.
