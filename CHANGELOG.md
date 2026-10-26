@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## [v1.4.1] - 2026-10-26
+### Fixed
+- Auto-heal stale or expired Supabase refresh tokens in browser localStorage, preventing 400 Bad Request auth errors on startup.
+- Handled TOKEN_REFRESH_FAILED event gracefully in useAdminGuard to clear invalidated sessions.
+- Aligned PWA manifest branding in vite.config.ts with Warm Editorial Event Hall theme (#537517).
+
 ## [v1.4.0] - 2026-10-26
 ### Added
 - Cinematic Magazine Cover Hero section with full-bleed architectural slideshow (Grand Hall, Garden Lawn, Dining Plaza, Stage Arena).

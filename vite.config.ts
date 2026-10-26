@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
@@ -14,10 +13,10 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Dream Avenue Convention Center',
+        name: 'Dream Avenue Event Hall',
         short_name: 'Dream Avenue',
-        description: 'Calicut\'s premier luxury convention center.',
-        theme_color: '#B6F500',
+        description: "Calicut's premier contemporary event hall.",
+        theme_color: '#537517',
         icons: [
           {
             src: 'android-chrome-192x192.png',

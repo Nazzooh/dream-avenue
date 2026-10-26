@@ -181,7 +181,7 @@ function ensureAuthListener() {
     console.log('AdminGuard Auth Event:', event);
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
       refreshAdminSession();
-    } else if (event === 'SIGNED_OUT') {
+    } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
       clearGlobalState();
     }
   });
