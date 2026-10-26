@@ -1,5 +1,12 @@
 ﻿# Changelog
 
+## [v1.4.0] - 2026-10-26
+### Added
+- Cinematic Magazine Cover Hero section with full-bleed architectural slideshow (Grand Hall, Garden Lawn, Dining Plaza, Stage Arena).
+- Floating Glassmorphic Concierge Bar with Date, Occasion, and Guest count selectors deep-linking into booking flow.
+- 4K Venue Tour Video Pop-up Modal with zero initial page load overhead.
+- URL query parameter pre-population for occasion and guest count in SmartSlotBookingPage.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

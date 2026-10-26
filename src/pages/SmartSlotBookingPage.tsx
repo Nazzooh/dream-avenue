@@ -40,6 +40,8 @@ export default function SmartSlotBookingPage() {
   const [searchParams] = useSearchParams();
   const initialDate = searchParams.get('date') || '';
   const initialPackage = searchParams.get('package') || null;
+  const initialOccasion = searchParams.get('occasion') || searchParams.get('eventType') || 'normal';
+  const initialGuests = searchParams.get('guests') || '300';
 
   // 1-based Stage Navigation: 1: Date/Slot, 2: Package, 3: Event Details, 4: Contact, 5: Booking Pass
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -48,8 +50,8 @@ export default function SmartSlotBookingPage() {
   const [selectedDate, setSelectedDate] = useState<string>(initialDate);
   const [selectedSlot, setSelectedSlot] = useState<string>('full_day');
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(initialPackage);
-  const [eventType, setEventType] = useState<string>('normal');
-  const [guestCount, setGuestCount] = useState<string>('300');
+  const [eventType, setEventType] = useState<string>(initialOccasion);
+  const [guestCount, setGuestCount] = useState<string>(initialGuests);
   const [specialRequests, setSpecialRequests] = useState<string>('');
   const [fullName, setFullName] = useState<string>('');
   const [mobile, setMobile] = useState<string>('');
