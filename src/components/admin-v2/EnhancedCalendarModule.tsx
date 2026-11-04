@@ -1,12 +1,12 @@
 // Enhanced Admin Calendar Module - with manual date blocking and real-time sync
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Calendar, Clock, Users, ChevronLeft, ChevronRight, X, CheckCircle,
-  Lock, Unlock, Sparkles, AlertCircle
+  Calendar, Users, ChevronLeft, ChevronRight, X,
+  Lock, Unlock
 } from 'lucide-react';
-import { useBookings } from '@/hooks/useBookings';
-import { useEvents, useCreateEvent, useDeleteEvent } from '@/hooks/useEvents';
+import { useBookings } from '../../hooks/useBookings';
+import { useEvents, useCreateEvent, useDeleteEvent } from '../../hooks/useEvents';
 import { 
   format, startOfMonth, endOfMonth, eachDayOfInterval, 
   isSameMonth, isSameDay, addMonths, subMonths, 
@@ -23,6 +23,7 @@ interface BookingDetail {
   status: string;
   guest_count: number;
   phone: string;
+  mobile?: string;
 }
 
 interface CalendarModuleProps {
@@ -54,19 +55,19 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getBookingsForDate = (date: Date) => {
-    return bookings.filter(booking => 
+    return bookings.filter((booking: any) => 
       isSameDay(new Date(booking.booking_date), date)
     );
   };
 
-  const getEventsForDate = (date: Date) => {
+  export const getEventsForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return events.filter(event => event.event_date === dateStr);
+    return events.filter((event: any) => event.event_date === dateStr);
   };
 
   const isDateManuallyBlocked = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return events.some(event => 
+    return events.some((event: any) => 
       event.event_date === dateStr && 
       event.event_type === 'blocked' && 
       event.status === 'blocked'
@@ -80,9 +81,9 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
     if (isBlocked) return 'blocked';
     if (dayBookings.length === 0) return 'available';
     
-    const hasConfirmed = dayBookings.some(b => b.status === 'confirmed');
-    const hasPending = dayBookings.some(b => b.status === 'pending');
-    const hasCancelled = dayBookings.every(b => b.status === 'cancelled');
+    const hasConfirmed = dayBookings.some((b: any) => b.status === 'confirmed');
+    const hasPending = dayBookings.some((b: any) => b.status === 'pending');
+    const hasCancelled = dayBookings.every((b: any) => b.status === 'cancelled');
     
     if (hasConfirmed) return 'booked';
     if (hasPending) return 'partial';
@@ -142,7 +143,7 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
 
   const handleUnblockDate = async (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    const blockedEvent = events.find(e => 
+    const blockedEvent = events.find((e: any) => 
       e.event_date === dateStr && 
       e.event_type === 'blocked' &&
       e.status === 'blocked'
@@ -453,9 +454,9 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {bookings
-              .filter(b => new Date(b.booking_date) >= new Date() && b.status !== 'cancelled')
+              .filter((b: any) => new Date(b.booking_date) >= new Date() && b.status !== 'cancelled')
               .slice(0, 5)
-              .map((booking, index) => (
+              .map((booking: any, index: number) => (
                 <motion.div
                   key={booking.id}
                   initial={{ opacity: 0, x: -10 }}
@@ -509,7 +510,7 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
                 </motion.div>
               ))}
 
-            {bookings.filter(b => new Date(b.booking_date) >= new Date()).length === 0 && (
+            {bookings.filter((b: any) => new Date(b.booking_date) >= new Date()).length === 0 && (
               <div style={{
                 padding: '32px',
                 textAlign: 'center',
@@ -603,7 +604,7 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
                         {selectedBooking.full_name}
                       </div>
                       <div style={{ fontSize: '0.875rem', color: '#666666', fontFamily: 'Poppins, sans-serif' }}>
-                        {selectedBooking.mobile}
+                        {selectedBooking.phone || selectedBooking.mobile}
                       </div>
                     </div>
                   </div>
