@@ -10,18 +10,25 @@ export interface CalendarDaySlots {
 }
 
 export interface CalendarEvent {
-  id: string;
-  title: string;
-  start_date: string;
-  end_date: string;
-  type: string;
+  id?: string;
+  day?: string;
+  weekday?: number;
+  bookings_count?: number;
+  guests_count?: number;
+  booking_ids?: string[];
+  has_active?: boolean;
+  event_date?: string;
+  title?: string;
+  start_date?: string;
+  end_date?: string;
+  type?: string;
 }
+
 export async function fetchCalendarMonth(year: number, month: number) {
   console.log(`[Calendar API] Fetching calendar for ${year}-${month}`);
   log.info("[Calendar API] Fetching month:", year, month);
   try {
-    // Backend function should be: get_calendar_month(p_year integer, p_month integer) -> jsonb
-    const payload = { p_month: month, p_year: year }; // NOTE: backend expects p_month, p_year
+    const payload = { p_month: month, p_year: year };
     const { data, error } = await supabase.rpc("get_calendar_month", payload);
 
     if (error) {
@@ -41,7 +48,7 @@ export async function fetchCalendarMonth(year: number, month: number) {
 
 export async function fetchCalendarEvents(startDate: string, endDate: string) {
   log.info("[Calendar API] fetchCalendarEvents", { startDate, endDate });
-  const payload = { p_start: startDate, p_end: endDate }; // match backend signature
+  const payload = { p_start: startDate, p_end: endDate };
   const { data, error } = await supabase.rpc("get_calendar_events", payload);
 
   if (error) {

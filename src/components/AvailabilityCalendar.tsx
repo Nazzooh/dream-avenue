@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -158,7 +158,12 @@ function CalendarGrid({
         }}
       >
         {calendarDays.map((date, idx) => {
-          const dateStr = date.toISOString().split('T')[0];
+          // Construct local YYYY-MM-DD date string without UTC timezone shift
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+
           const isCurrentMonth = date.getMonth() === currentDate.getMonth();
           const isToday = 
             date.getDate() === today.getDate() &&
@@ -169,11 +174,14 @@ function CalendarGrid({
           let status: 'available' | 'booked' | 'partial' | null = null;
           if (availabilityData && availabilityData[dateStr]) {
             const dayData: CalendarDaySlots = availabilityData[dateStr];
-            if (dayData.full_day) {
+            // full_day = true OR all 3 core slots booked (false)
+            if (dayData.full_day || (!dayData.morning && !dayData.evening && !dayData.night)) {
               status = 'booked';
-            } else if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
+            } else if (!dayData.morning || !dayData.evening || !dayData.night) {
+              // At least one slot booked/blocked, but some slots remain available
               status = 'partial';
             } else {
+              // All slots available
               status = 'available';
             }
           } else if (isCurrentMonth && !isPast) {
@@ -198,21 +206,19 @@ function CalendarGrid({
   );
 }
 
-function CalendarHeader({ 
-  currentDate, 
-  onPrevMonth, 
-  onNextMonth 
+function CalendarHeader({
+  currentDate,
+  onPrevMonth,
+  onNextMonth,
 }: {
   currentDate: Date;
   onPrevMonth: () => void;
   onNextMonth: () => void;
 }) {
-  const monthYear = useMemo(() => {
-    return currentDate.toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric',
-    });
-  }, [currentDate]);
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
 
   return (
     <div
@@ -221,64 +227,87 @@ function CalendarHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: '28px',
-        width: '100%',
       }}
     >
-      <button
-        onClick={onPrevMonth}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '40px',
-          height: '40px',
-          background: '#FFFFFF',
-          border: '1px solid #E8E3DA',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          color: '#1B221B',
-          transition: 'all 0.2s ease',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#537517')}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E8E3DA')}
-      >
-        <ChevronLeft size={20} />
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'rgba(83, 117, 23, 0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#537517',
+          }}
+        >
+          <CalendarIcon size={20} />
+        </div>
+        <div>
+          <h3
+            style={{
+              fontFamily: '"Playfair Display", Georgia, serif',
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              color: '#1B221B',
+              margin: 0,
+            }}
+          >
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </h3>
+          <p style={{ margin: '2px 0 0 0', fontSize: '0.8125rem', color: '#737E72' }}>
+            Check dates & reserve venue
+          </p>
+        </div>
+      </div>
 
-      <h3
-        style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: '1.35rem',
-          fontWeight: 700,
-          color: '#1B221B',
-          margin: 0,
-        }}
-      >
-        {monthYear}
-      </h3>
-
-      <button
-        onClick={onNextMonth}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '40px',
-          height: '40px',
-          background: '#FFFFFF',
-          border: '1px solid #E8E3DA',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          color: '#1B221B',
-          transition: 'all 0.2s ease',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#537517')}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E8E3DA')}
-      >
-        <ChevronRight size={20} />
-      </button>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          type="button"
+          onClick={onPrevMonth}
+          style={{
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#FFFFFF',
+            border: '1px solid #E8E3DA',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            color: '#1B221B',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#537517')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E8E3DA')}
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          type="button"
+          onClick={onNextMonth}
+          style={{
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#FFFFFF',
+            border: '1px solid #E8E3DA',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            color: '#1B221B',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#537517')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#E8E3DA')}
+        >
+          <ChevronRight size={20} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -353,7 +382,7 @@ export function AvailabilityCalendar() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '14px', height: '14px', borderRadius: '4px', background: '#FAF4EB', border: '1px solid #DFCAAB' }} />
-          <span>Reserved</span>
+          <span>Reserved / Booked</span>
         </div>
       </div>
     </div>

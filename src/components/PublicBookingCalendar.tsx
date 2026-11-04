@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { useCalendarMonth } from '@/hooks/useCalendar';
@@ -59,11 +59,11 @@ export function PublicBookingCalendar({
       return 'available';
     }
 
-    if (dayData.full_day) {
+    if (dayData.full_day || (!dayData.morning && !dayData.evening && !dayData.night)) {
       return 'full';
     }
 
-    if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
+    if (!dayData.morning || !dayData.evening || !dayData.night) {
       return 'partial';
     }
 

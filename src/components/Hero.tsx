@@ -251,7 +251,7 @@ export function Hero() {
               className="venue-hero__proof"
               aria-label="Venue highlights"
             >
-              <span><Users size={15} /> Up to 1,200 guests</span>
+              <span><Users size={15} /> 800 – 1,000+ guests</span>
               <span><Leaf size={15} /> Central AC & parking</span>
             </motion.div>
           </div>

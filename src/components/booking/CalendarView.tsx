@@ -85,12 +85,12 @@ export function CalendarView({
     }
 
     // full_day = true → fully booked
-    if (dayData.full_day) {
+    if (dayData.full_day || (!dayData.morning && !dayData.evening && !dayData.night)) {
       return 'full';
     }
 
     // any of morning/evening/night/short_duration = true → partially booked
-    if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
+    if (!dayData.morning || !dayData.evening || !dayData.night) {
       return 'partial';
     }
 

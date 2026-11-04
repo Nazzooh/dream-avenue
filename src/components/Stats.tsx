@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Users, Award, Star } from 'lucide-react';
 import { useLatestAnalytics } from '@/hooks/useAnalyticsAppendOnly';
@@ -60,9 +60,9 @@ export function Stats() {
     },
     {
       icon: Award,
-      value: '1,000+',
-      label: 'Grand Hall Capacity',
-      subtext: 'Spacious & comfortable',
+      value: '800 – 1,000+',
+      label: 'Avenue Capacity',
+      subtext: 'Main hall 150+ seated',
       color: '#537517',
     },
   ];

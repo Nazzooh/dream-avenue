@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.6.1] - 2026-11-04
+### Added
+- Standardized Warm Editorial Form Controls (`.admin-form-group`, `.admin-label`, `.admin-input`, `.admin-textarea`, `.admin-select`, `.admin-modal-*`) in `admin-workspace.css`, ensuring full-width stacked inputs and uppercase tracking across `PackagesModule`, `GalleryModule`, and `FacilitiesModule`.
+- Modular admin date action components (`AdminCalendarDayCell`, `AdminBlockDateDialog`, `AdminDayEventsDialog`, `AdminDateActionButtons`) strictly complying with <300-line modular design rules.
+
+### Changed
+- Updated venue specifications across frontend and Supabase DB:
+  - Avenue capacity: `800 – 1,000+` guests (main hall `150+ seated`).
+  - Dining capacity: `200+ (Inside & Outer Dining)`.
+  - Sound system: `In-house sound system` across all package inclusions and facility highlights.
+- Redesigned `AdminAvailabilityCalendar` and `AdminDateActionModal` from neon green/red buttons to luxury Warm Editorial cards (`#FAF8F5`, `#537517`, `#B88B52`, `#1B221B`).
+
+### Fixed
+- Fixed critical 1-day calendar date shift in UTC+ timezones by replacing UTC `toISOString()` with local date formatting across `AvailabilityCalendar.tsx` and `AdminAvailabilityCalendar.tsx`.
+- Resolved inverted slot availability boolean semantics across `AvailabilityCalendar`, `PublicBookingCalendar`, and `CalendarView`.
+- Fixed `recompute_availability_for_date` PostgreSQL function to properly handle multi-slot time overlaps and confirmed bookings with `time_slot IS NULL`.
+- Fixed sticky `AdminTopbar` collision with `Calendar & Availability` workspace title by restoring top padding.
+
 ## [v1.6.0] - 2026-11-04
 ### Added
 - Facilities space badges, capacity limits, and feature highlights (`category`, `capacity`, `subtitles`) in facilities management and landing display.
