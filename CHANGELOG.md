@@ -1,0 +1,181 @@
+# Changelog
+
+## [v1.6.3] - 2026-11-04
+### Fixed
+- Resolved Hero animation empty space & black screen: removed `frameExitOpacity` extinction so architectural arches and warm lanterns stay grounded throughout, kept headline as a graceful watermark to balance the left viewport, and tightened scroll runway from `260vh` down to `180vh`.
+- Corrected raw unicode `\u20B93,000` literal in `Packages.tsx` to properly formatted `+ ₹3,000 Mandatory Floor Cleaning Service`.
+- Fixed dark mode color collisions: added `.package-card`, `.faq-item`, and `.satisfaction-card` class mappings to `--hall-card` (`#1b2920`), styled price boxes (`--hall-card-alt`) and checkmark badges (`--hall-olive-light`), and lifted dark ink (`#1B221B`, `#172315`, `#485247`, `#737E72`) to readable Warm Ivory (`#f4eddd`) and Sage (`#d2d8c8`).
+- Cleaned TypeScript errors and missing type declarations in `EnhancedCalendarModule.tsx`.
+
+## [v1.6.2] - 2026-11-04
+### Changed
+- Increased auth session and profile fetch timeouts from 2500ms → 5000ms for better cold-connection reliability (`useAdminGuard.ts`).
+- Added 30-second stale-check guard to `refreshAdminSession()` to skip redundant fetches during rapid auth events.
+
+### Fixed
+- Reduced excessive `ProtectedRoute` re-render logging — all `console.log` calls now gated behind `import.meta.env.DEV`.
+- Changed profile timeout fallback log from `console.warn` to `console.debug` to reduce production console noise.
+
+## [v1.6.1] - 2026-11-04
+### Added
+- Standardized Warm Editorial Form Controls (`.admin-form-group`, `.admin-label`, `.admin-input`, `.admin-textarea`, `.admin-select`, `.admin-modal-*`) in `admin-workspace.css`, ensuring full-width stacked inputs and uppercase tracking across `PackagesModule`, `GalleryModule`, and `FacilitiesModule`.
+- Modular admin date action components (`AdminCalendarDayCell`, `AdminBlockDateDialog`, `AdminDayEventsDialog`, `AdminDateActionButtons`) strictly complying with <300-line modular design rules.
+
+### Changed
+- Updated venue specifications across frontend and Supabase DB:
+  - Avenue capacity: `800 – 1,000+` guests (main hall `150+ seated`).
+  - Dining capacity: `200+ (Inside & Outer Dining)`.
+  - Sound system: `In-house sound system` across all package inclusions and facility highlights.
+- Redesigned `AdminAvailabilityCalendar` and `AdminDateActionModal` from neon green/red buttons to luxury Warm Editorial cards (`#FAF8F5`, `#537517`, `#B88B52`, `#1B221B`).
+
+### Fixed
+- Fixed critical 1-day calendar date shift in UTC+ timezones by replacing UTC `toISOString()` with local date formatting across `AvailabilityCalendar.tsx` and `AdminAvailabilityCalendar.tsx`.
+- Resolved inverted slot availability boolean semantics across `AvailabilityCalendar`, `PublicBookingCalendar`, and `CalendarView`.
+- Fixed `recompute_availability_for_date` PostgreSQL function to properly handle multi-slot time overlaps and confirmed bookings with `time_slot IS NULL`.
+- Fixed sticky `AdminTopbar` collision with `Calendar & Availability` workspace title by restoring top padding.
+
+## [v1.6.0] - 2026-11-04
+### Added
+- Facilities space badges, capacity limits, and feature highlights (`category`, `capacity`, `subtitles`) in facilities management and landing display.
+- Fail-safe Netlify SPA routing rules in `public/_redirects` to accompany `netlify.toml` security headers.
+- Consolidated top-level path aliasing (`@/*`) across all application modules, hooks, and schemas.
+
+### Changed
+- Migrated Vite React build plugin to `@vitejs/plugin-react` for robust production bundling and zero native memory overhead.
+- Consolidated nested `src/src` tree into standard modular root directory structure.
+
+### Fixed
+- Fixed module resolution anomalies in admin access, bookings, and public preference providers.
+- Cleaned up obsolete local build and deployment logs.
+
+## [v1.5.1] - 2026-10-26
+### Fixed
+- Harmonized contact card spacing and footer transitions across all website pages.
+- Added Booking Concierge Support Strip above footer on SmartSlotBookingPage.
+- Redesigned TermsAndConditions page with Warm Editorial theme, clean contact information, and integrated Footer.
+- Fixed /terms link in footer and added route alias in App.tsx.
+- Redesigned 404 page with Warm Editorial palette, contact concierge strip, and balanced footer spacing.
+
+## [v1.5.0] - 2026-10-26
+### Added
+- Horizontal scrolling package carousel with smooth scroll snap, mouse drag, and touch gestures.
+- Interactive slider navigation controls with circular Chevrons, live card index (01/03), and clickable pagination pills.
+- All-Inclusive Amenities guarantee banner under packages (Central AC, Power Backup, Dedicated Security, Eco Zero-Plastic).
+
+### Fixed
+- Resolved navbar logo text collision by removing redundant "The Hall" link and enforcing flex-shrink rules.
+- Fixed Hero section top margin and removed rigid height constraints, ensuring full headline visibility under the fixed navbar on all laptop viewports.
+- Restored proper Indian Rupee symbol (₹) across package pricing and mandatory floor cleaning service disclosures.
+
+## [v1.4.1] - 2026-10-26
+### Fixed
+- Auto-heal stale or expired Supabase refresh tokens in browser localStorage, preventing 400 Bad Request auth errors on startup.
+- Handled TOKEN_REFRESH_FAILED event gracefully in useAdminGuard to clear invalidated sessions.
+- Aligned PWA manifest branding in vite.config.ts with Warm Editorial Event Hall theme (#537517).
+
+## [v1.4.0] - 2026-10-26
+### Added
+- Cinematic Magazine Cover Hero section with full-bleed architectural slideshow (Grand Hall, Garden Lawn, Dining Plaza, Stage Arena).
+- Floating Glassmorphic Concierge Bar with Date, Occasion, and Guest count selectors deep-linking into booking flow.
+- 4K Venue Tour Video Pop-up Modal with zero initial page load overhead.
+- URL query parameter pre-population for occasion and guest count in SmartSlotBookingPage.
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to Semantic Versioning.
+
+## [v1.3.0] - 2026-10-25
+
+### Added
+- **Warm Editorial Minimal Design System**:
+  - Implemented `src/styles/editorial-theme.css` introducing warm cream background (`#FAF8F5`), forest olive accents (`#537517`), champagne gold touches (`#B88B52`), rich ink typography (`#1B221B`), and bespoke serif typography (`Playfair Display`, `Georgia`).
+- **Client-Centric 4-Stage Concierge Booking Flow**:
+  - Replaced disjointed form with an intuitive 4-stage guided flow on `/booking`:
+    - Stage 1: Interactive availability calendar with real-time Supabase RPC slot data and time slot cards.
+    - Stage 2: Curated package dossiers with live database pricing and standard hall options.
+    - Stage 3: Event scope with transparent pricing ledger, mandatory ₹3,000 floor cleaning service, and sustainable plate rental options.
+    - Stage 4: Client contact form with 10-digit mobile verification and terms agreement.
+  - Added sticky Live Folio breakdown that dynamically calculates totals in real-time.
+- **Stage 5 Digital Booking Pass**:
+  - Perforated ticket design with authentic seal, booking reference ID (`DA-2026-XXXX`), reservation details, and 1-tap WhatsApp Concierge connect pre-filled with full reservation information.
+- **Hero Instant Date Availability Peek**:
+  - Embedded quick date picker in the hero banner on the main landing page, deep-linking directly into `/booking?date=YYYY-MM-DD`.
+
+### Changed & Refined
+- **Strict Vocabulary & SEO Overhaul**:
+  - Completely eliminated all occurrences of "luxury" in customer-facing and public assets.
+  - Replaced all instances of "convention center" with "Event Hall" / "Hall" / "Function Hall" across `index.html`, `SEOHead.tsx`, `site.webmanifest`, `Navbar.tsx`, `Hero.tsx`, `Packages.tsx`, `Facilities.tsx`, `Events.tsx`, `Location.tsx`, and `Footer.tsx`.
+- **Spaces & Curated Packages Dossier**:
+  - Modernized `Facilities.tsx` into a magazine-style showcase of spaces (The Grand Event Hall, Banquet Dining, Bridal Suites, Open-Air Lawn, Food Prep Area, Parking Plaza).
+  - Redesigned `Packages.tsx` with transparent investment figures, included feature checklists, and direct deep-linking into `/booking?package={id}`.
+- **Visual Photo Gallery**:
+  - Upgraded `Gallery.tsx` with categorized tabs, refined editorial grid, and fullscreen lightbox view with real photography fallbacks.
+
+## [v1.2.3] - 2026-10-15
+
+### Fixed
+- **Topbar Profile Card Geometry & Alignment**:
+  - Fixed awkward dropdown alignment and border clipping by removing relative margin conflicts and assigning explicit `top: calc(100% + 10px)` positioning.
+  - Added full 4-side bordered container with luxury shadow (`0 16px 36px -4px rgba(27, 34, 27, 0.14)`), generous internal header padding, and smooth opening animation.
+  - Added `overflow: visible !important` to the topbar container to prevent boundary clipping.
+- **Navigation Session Retention & Audit Log Access**:
+  - Implemented module-level singleton store and synchronous local storage hydration in `useAdminGuard.ts`.
+  - Prevented session timeouts from wiping admin profile and degrading developer/owner permissions to "Team member" upon navigating to `/admin/activity`.
+  - Deduplicated concurrent in-flight profile checks across multiple workspace components on route change.
+
+## [v1.2.2] - 2026-10-15
+
+### Fixed & Enhanced
+- **Stale-While-Revalidate Auth Guard**:
+  - Eliminated "Verifying access..." lockouts and blank screen hangs caused by window minimization, tab switching, or browser throttle timeouts.
+  - Replaced blocking full-page reload on background token refresh with silent background verification, preserving admin state and avoiding route unmounting.
+- **Admin Workspace Sidebar & Topbar Polish**:
+  - Embedded official company logo (`b9e63ce206aa68d0d57227942230badde2fa6a6b.png`) in the sidebar brand header.
+  - Elevated "Overview" into a prominent, highlighted Hero Command Center card at the top of sidebar navigation.
+  - Replaced generic "Core" category with a dedicated "Performance & Insights" section.
+  - Added a sleek, discreet header chevron toggle for collapsing/expanding the sidebar.
+  - Replaced "DA" square avatar with an elegant stone luxury `User` icon across sidebar and topbar.
+  - Replaced generic fallback emails with the authenticated administrator's verified email.
+  - Removed redundant "Live Website" / "Preview Public Website" navigation links from sidebar footer and topbar profile menu, keeping a single fast "Live Site" button in the topbar.
+  - Removed boring `Developer • Manager Access` pill in Gallery header for verified admins.
+- **Mobile & Tablet Friendly Media Overhaul**:
+  - Upgraded `MediaLibraryModal` to a dynamic 100dvh full-screen sheet on mobile devices (`< 768px`) with safe-area insets and momentum touch scrolling.
+  - Redesigned `MediaModalHeader` with a responsive 2-tier layout: title row and full-width touch tabs (min 38px height).
+  - Optimized `MediaGrid` for mobile viewports with a 2-column layout, enlarged 24px selection check rings, and touch-accessible deletion actions.
+  - Redesigned `MediaModalFooter` with sticky thumb-friendly action buttons (min 40px height).
+  - Enhanced `MediaDropzone` with a dedicated "Choose from Device / Photos" button for mobile/tablet environments where drag-and-drop is unavailable.
+  - Overhauled `ImageUploadField` to provide touch-accessible action pills directly below attached previews without relying on desktop hover states.
+
+## [v1.2.1] - 2026-10-15
+
+### Redesigned & Enhanced
+- **Gallery Section & Image Cards Overhaul**:
+  - Implemented 16:10 structured aspect ratio cards with rounded geometry and elevated multi-layer shadows.
+  - Generous internal padding (18px-20px) eliminating text cutoffs and border-touching issues.
+  - Floating glassmorphic badges for categories and event settings, plus champagne gold ⭐ Featured highlight pills.
+  - Redesigned category filter pill bar with active dark-ink pill states and count badges.
+  - Added real-time search input with clear button and sorting options (Newest, Oldest, Featured First, Title A-Z).
+  - Hover action overlay with high-contrast "Edit Details" and "Delete" quick actions.
+- **Sidebar (Menubar) Redesign**:
+  - Warm Editorial Luxury sidebar with gold-accented Dream Avenue venue emblem.
+  - Grouped navigation sections: Core, Venue & Content, Operations, Administration.
+  - Refined active link indicator, desktop collapse/expand toggle, and user profile footer card with verified role badge.
+- **Navbar (Topbar) Redesign**:
+  - Frosted glassmorphic header with breadcrumb navigation and Georgia serif page title.
+  - Real-time "Venue Active" status badge with pulsing live indicator.
+  - Interactive user account dropdown menu with verified role details and fast logout.
+- **Resolved Code Quality Warnings**:
+  - Cleaned up unused imports across `ImageUploadField.tsx`, `MediaGrid.tsx`, `MediaLibraryModal.tsx`, `MediaModalFooter.tsx`, and `MediaUploadQueue.tsx`.
+  - Fixed progress bar style interpolation in `MediaDropzone.tsx`.
+
+## [v1.2.0] - 2026-10-15
+
+### Added
+- Admin Gallery Edit & Delete feature with role-based authorization for Owner, Developer, and Manager.
+- Custom `DeleteGalleryConfirmModal` and Supabase RLS delete policy migration.
+
+## [v1.1.0] - 2026-10-15
+
+### Added
+- Multiple image upload support with batch queue and media library modal.

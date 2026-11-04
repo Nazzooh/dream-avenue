@@ -1,5 +1,4 @@
 // src/components/admin-v2/MediaModalHeader.tsx
-import React from 'react';
 import { X, Image as ImageIcon, Upload } from 'lucide-react';
 
 interface MediaModalHeaderProps {
@@ -18,100 +17,63 @@ export function MediaModalHeader({
   onClose,
 }: MediaModalHeaderProps) {
   return (
-    <div
-      className="admin-modal-header"
-      style={{
-        padding: '16px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div
-          style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '10px',
-            background: 'rgba(182, 245, 0, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--admin-text-primary, #2A2A2A)',
-          }}
+    <div className="media-header-wrap">
+      {/* Top row: Title info + Close button */}
+      <div className="media-header-title-row">
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background: 'linear-gradient(135deg, #FAF2E3, #EFE3CE)',
+              border: '1.5px solid #DFC9A6',
+              color: '#8C652D',
+            }}
+          >
+            <ImageIcon size={20} />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-bold text-stone-900 truncate leading-snug m-0">
+              {title}
+            </h3>
+            <p className="text-xs text-stone-500 font-medium m-0 flex items-center gap-1.5 mt-0.5">
+              <span>{totalImages} {totalImages === 1 ? 'image' : 'images'} in library</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Mobile & Desktop Touch-Friendly Close Button */}
+        <button
+          onClick={onClose}
+          type="button"
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 active:scale-95 transition-all flex-shrink-0"
+          aria-label="Close modal"
         >
-          <ImageIcon size={20} />
-        </div>
-        <div>
-          <h3 className="admin-modal-title" style={{ fontSize: '1.1rem', margin: 0 }}>
-            {title}
-          </h3>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--admin-text-secondary, #666)' }}>
-            {totalImages} total images
-          </p>
-        </div>
+          <X size={20} />
+        </button>
       </div>
 
-      {/* Tab Switcher */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: 'var(--admin-bg-hover, #F5F5F2)',
-          padding: '3px',
-          borderRadius: '10px',
-          gap: '4px',
-        }}
-      >
+      {/* Segmented Touch Tab Switcher */}
+      <div className="media-header-tabs">
         <button
           type="button"
           onClick={() => onTabChange('library')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 14px',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            background: activeTab === 'library' ? 'var(--admin-bg-card, #FFFFFF)' : 'transparent',
-            color: 'var(--admin-text-primary, #2A2A2A)',
-            boxShadow: activeTab === 'library' ? 'var(--admin-shadow-sm)' : 'none',
-            transition: 'all 0.15s ease',
-          }}
+          className={`media-header-tab-btn ${activeTab === 'library' ? 'active' : ''}`}
         >
-          <ImageIcon size={14} />
-          Browse
+          <ImageIcon size={15} />
+          <span>Browse Library</span>
+          <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-semibold ml-0.5">
+            {totalImages}
+          </span>
         </button>
         <button
           type="button"
           onClick={() => onTabChange('upload')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 14px',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            background: activeTab === 'upload' ? 'var(--admin-bg-card, #FFFFFF)' : 'transparent',
-            color: 'var(--admin-text-primary, #2A2A2A)',
-            boxShadow: activeTab === 'upload' ? 'var(--admin-shadow-sm)' : 'none',
-            transition: 'all 0.15s ease',
-          }}
+          className={`media-header-tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
         >
-          <Upload size={14} />
-          Upload New
+          <Upload size={15} />
+          <span>Upload New</span>
         </button>
       </div>
-
-      <button onClick={onClose} className="admin-modal-close" type="button">
-        <X size={20} />
-      </button>
     </div>
   );
 }

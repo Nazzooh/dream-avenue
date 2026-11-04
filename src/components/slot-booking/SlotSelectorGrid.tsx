@@ -1,5 +1,5 @@
-import { motion } from 'motion/react';
-import { Sun, Sunset, Moon, Clock, Check } from 'lucide-react';
+﻿import { motion } from 'motion/react';
+import { Sun, Sunset, Moon, Clock, Check, Sparkles } from 'lucide-react';
 
 export type TimeSlotOption = {
   key: string;
@@ -18,102 +18,105 @@ export const SLOT_OPTIONS: TimeSlotOption[] = [
     time: '10 AM – 6 PM',
     discount: 0,
     icon: Clock,
-    color: '#B6F500',
-    bgColor: 'rgba(182, 245, 0, 0.1)',
+    color: '#537517',
+    bgColor: '#EDF6DE',
   },
   {
-    key: 'half_day_morning',
+    key: 'morning',
     label: 'Half Day (Morning)',
     time: '10 AM – 2 PM',
     discount: 0,
     icon: Sun,
-    color: '#FFD97D',
-    bgColor: 'rgba(255, 217, 125, 0.1)',
+    color: '#B88B52',
+    bgColor: '#FAF4EB',
   },
   {
-    key: 'half_day_evening',
+    key: 'evening',
     label: 'Half Day (Evening)',
     time: '2 PM – 6 PM',
     discount: 0,
     icon: Sunset,
-    color: '#FFAB73',
-    bgColor: 'rgba(255, 171, 115, 0.1)',
+    color: '#C27D38',
+    bgColor: '#FAF0E6',
   },
   {
     key: 'night',
-    label: 'Night',
+    label: 'Night Gala',
     time: '6 PM – 10 PM',
     discount: 0,
     icon: Moon,
-    color: '#D5C6FF',
-    bgColor: 'rgba(213, 198, 255, 0.1)',
+    color: '#4A5B6E',
+    bgColor: '#EEF2F6',
   },
 ];
 
 export const SHORT_DURATION_SLOT: TimeSlotOption = {
   key: 'short_duration',
   label: 'Short Duration',
-  time: '4-5 Hours (Flexible)',
+  time: '4–5 Hours (Flexible)',
   discount: 0,
-  icon: Clock,
-  color: '#FF6B9D',
-  bgColor: 'rgba(255, 107, 157, 0.1)',
+  icon: Sparkles,
+  color: '#8C6228',
+  bgColor: '#FAF4EB',
 };
 
 // Event types that qualify for short duration booking
-export const SHORT_DURATION_EVENT_TYPES = ['birthday', 'meeting', 'get-together', 'awareness-class'];
+export const SHORT_DURATION_EVENT_TYPES = ['birthday', 'meeting', 'get_together', 'get-together', 'awareness_class', 'awareness-class'];
 
 interface SlotSelectorGridProps {
   selectedSlot: string;
   onSlotChange: (slot: string) => void;
-  basePrice: number;
+  basePrice?: number;
   eventType?: string;
 }
 
-export function SlotSelectorGrid({ selectedSlot, onSlotChange, basePrice, eventType }: SlotSelectorGridProps) {
+export function SlotSelectorGrid({ selectedSlot, onSlotChange, eventType }: SlotSelectorGridProps) {
   // Check if event type qualifies for short duration
   const showShortDuration = eventType && SHORT_DURATION_EVENT_TYPES.includes(eventType);
   
-  // Build the slots array
   const slotsToShow = showShortDuration 
     ? [SHORT_DURATION_SLOT, ...SLOT_OPTIONS]
-    : SLOT_OPTIONS;
+    : [SHORT_DURATION_SLOT, ...SLOT_OPTIONS]; // Show as flexible option for transparency
 
   return (
     <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-          Select Your Time Slot
-        </h3>
-        <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-          Choose the time period that best fits your event schedule
+      <div style={{ marginBottom: '16px' }}>
+        <h4 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.125rem', fontWeight: 700, color: '#1B221B', margin: '0 0 6px 0' }}>
+          Select Event Time Slot
+        </h4>
+        <p style={{ fontSize: '0.875rem', color: '#737E72', margin: 0 }}>
+          Choose the schedule that best accommodates your celebration.
         </p>
+
         {showShortDuration && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div
             style={{
-              marginTop: '0.75rem',
-              padding: '0.75rem 1rem',
-              background: 'linear-gradient(135deg, rgba(255, 107, 157, 0.15), rgba(255, 107, 157, 0.05))',
-              borderRadius: '8px',
-              borderLeft: '3px solid #FF6B9D',
+              marginTop: '12px',
+              padding: '10px 14px',
+              background: '#FAF4EB',
+              borderRadius: '10px',
+              borderLeft: '4px solid #B88B52',
               fontSize: '0.8125rem',
-              color: '#343A40',
+              color: '#8C6228',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
             }}
           >
-            ✨ <strong>Special Offer:</strong> Short Duration slot available at ₹26,000 for your {eventType.replace('-', ' ')} event!
-          </motion.div>
+            <Sparkles size={16} />
+            <span>
+              <strong>Special Plan:</strong> Short Duration 4–5 Hour Slot available at ₹26,000 for qualifying events!
+            </span>
+          </div>
         )}
       </div>
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '12px',
         }}
-        className="slot-grid"
       >
         {slotsToShow.map((slot, index) => {
           const isSelected = selectedSlot === slot.key;
@@ -122,134 +125,75 @@ export function SlotSelectorGrid({ selectedSlot, onSlotChange, basePrice, eventT
           return (
             <motion.button
               key={slot.key}
+              type="button"
               onClick={() => onSlotChange(slot.key)}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
               style={{
                 position: 'relative',
-                padding: '1.25rem',
-                background: isSelected ? slot.bgColor : 'white',
+                padding: '16px 14px',
+                background: isSelected ? slot.bgColor : '#FFFFFF',
                 border: isSelected
-                  ? `3px solid ${slot.color}`
-                  : '2px solid rgba(224, 224, 224, 0.5)',
-                borderRadius: '16px',
+                  ? `2px solid ${slot.color}`
+                  : '1px solid #E8E3DA',
+                borderRadius: '14px',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                textAlign: 'left',
                 boxShadow: isSelected
-                  ? `0 8px 24px ${slot.color}40`
-                  : '0 2px 8px rgba(0, 0, 0, 0.05)',
-                overflow: 'hidden',
+                  ? '0 6px 16px rgba(83, 117, 23, 0.15)'
+                  : '0 2px 6px rgba(0, 0, 0, 0.02)',
+                transition: 'all 0.2s ease',
+                fontFamily: 'inherit',
               }}
             >
-              {/* Glow effect for selected */}
               {isSelected && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                <div
                   style={{
                     position: 'absolute',
-                    inset: 0,
-                    background: `radial-gradient(circle at 50% 0%, ${slot.color}30, transparent 70%)`,
-                    pointerEvents: 'none',
-                  }}
-                />
-              )}
-
-              {/* Checkmark badge */}
-              {isSelected && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', duration: 0.5 }}
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    width: '28px',
-                    height: '28px',
+                    top: '10px',
+                    right: '10px',
+                    width: '20px',
+                    height: '20px',
                     borderRadius: '50%',
                     background: slot.color,
+                    color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: `0 4px 12px ${slot.color}60`,
-                    zIndex: 2,
                   }}
                 >
-                  <Check size={16} color="white" />
-                </motion.div>
+                  <Check size={12} strokeWidth={3} />
+                </div>
               )}
 
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                {/* Icon */}
-                <div
-                  style={{
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '12px',
-                    background: isSelected ? `${slot.color}30` : 'rgba(240, 240, 240, 0.8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '1rem',
-                    border: `2px solid ${isSelected ? slot.color : 'transparent'}`,
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <Icon size={28} style={{ color: isSelected ? slot.color : '#666' }} />
-                </div>
-
-                {/* Label */}
-                <h4
-                  style={{
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    marginBottom: '0.25rem',
-                    color: isSelected ? '#2D2D2D' : '#4A4A4A',
-                    transition: 'color 0.3s ease',
-                  }}
-                >
-                  {slot.label}
-                </h4>
-
-                {/* Time */}
-                <p
-                  style={{
-                    fontSize: '0.8125rem',
-                    color: '#666',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  {slot.time}
-                </p>
-
-                {/* Price */}
-                <div
-                  style={{
-                    padding: '0.5rem',
-                    background: isSelected ? 'rgba(255, 255, 255, 0.8)' : 'rgba(250, 249, 246, 1)',
-                    borderRadius: '8px',
-                    marginTop: '0.75rem',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: '1.125rem',
-                      fontWeight: 600,
-                      color: isSelected ? slot.color : '#2D2D2D',
-                    }}
-                  >
-                    {slot.key === 'short_duration' 
-                      ? '₹26,000' 
-                      : `₹${basePrice.toLocaleString('en-IN')}`
-                    }
-                  </div>
-                </div>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  background: isSelected ? '#FFFFFF' : slot.bgColor,
+                  color: slot.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '10px',
+                }}
+              >
+                <Icon size={16} />
               </div>
+
+              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1B221B', marginBottom: '2px' }}>
+                {slot.label}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#737E72' }}>
+                {slot.time}
+              </div>
+
+              {slot.key === 'short_duration' && (
+                <div style={{ marginTop: '6px', fontSize: '0.6875rem', color: '#537517', fontWeight: 700 }}>
+                  ₹26,000 Special Rate
+                </div>
+              )}
             </motion.button>
           );
         })}

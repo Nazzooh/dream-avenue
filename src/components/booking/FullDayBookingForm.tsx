@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { User, Mail, Phone, Users, MessageSquare, Package, Calendar, CheckCircle } from 'lucide-react';
 import { CalendarView } from './CalendarView';
-import { usePackages } from '../../src/hooks/usePackages';
+import { usePackages } from '@/hooks/usePackages';
 import { toast } from 'sonner';
-import { createBooking } from '../../src/api/createBooking';
+import { createBooking } from '@/api/createBooking';
 
 interface FullDayBookingFormProps {
   onSuccess?: () => void;

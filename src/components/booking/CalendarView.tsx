@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { useCalendarMonth } from '../../src/hooks/useCalendar';
-import type { CalendarDaySlots } from '../../src/api/calendar';
-import { supabase } from '../../utils/supabase/client';
+import { useCalendarMonth } from '@/hooks/useCalendar';
+import type { CalendarDaySlots } from '@/api/calendar';
+import { supabase } from '@/utils/supabase/client';
 
 interface CalendarViewProps {
   selectedDate?: string;
@@ -85,12 +85,12 @@ export function CalendarView({
     }
 
     // full_day = true → fully booked
-    if (dayData.full_day) {
+    if (dayData.full_day || (!dayData.morning && !dayData.evening && !dayData.night)) {
       return 'full';
     }
 
     // any of morning/evening/night/short_duration = true → partially booked
-    if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
+    if (!dayData.morning || !dayData.evening || !dayData.night) {
       return 'partial';
     }
 

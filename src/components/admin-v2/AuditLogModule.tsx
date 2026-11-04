@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Activity, Download, FileClock, Search, ShieldCheck, X } from 'lucide-react';
 import AdminLayout from './AdminLayout';
-import { useAdminActivity } from '../../src/hooks/useAdminWorkspace';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
-import { AdminActivity } from '../../src/api/adminWorkspace';
+import { useAdminActivity } from '@/hooks/useAdminWorkspace';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can } from '@/lib/adminPermissions';
+import { AdminActivity } from '@/api/adminWorkspace';
 
 function exportActivity(rows: AdminActivity[]) {
   const header = ['When', 'Action', 'Resource', 'Summary', 'Actor'];

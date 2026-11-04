@@ -14,7 +14,7 @@ import {
   Users,
   Clock
 } from 'lucide-react';
-import { NotificationItem } from '../../src/hooks/useNotifications';
+import { NotificationItem } from '@/hooks/useNotifications';
 
 interface NotificationDropdownProps {
   isOpen: boolean;

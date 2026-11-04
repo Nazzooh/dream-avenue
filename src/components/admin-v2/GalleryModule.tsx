@@ -1,21 +1,41 @@
-import React, { useState } from 'react';
+// src/components/admin-v2/GalleryModule.tsx — Redesigned Warm Editorial Luxury Gallery
+import React, { useState, useMemo } from 'react';
 import AdminLayout from './AdminLayout';
-import { AdminGrid } from './AdminGrid';
 import { Modal } from './Modal';
 import { FormInput } from './FormInput';
 import { FormSelect } from './FormSelect';
+import { FormTextarea } from './FormTextarea';
 import { Button } from './Button';
 import { ImageUploadField } from './ImageUploadField';
+import { DeleteGalleryConfirmModal } from './DeleteGalleryConfirmModal';
 import { toast } from 'sonner';
 import { 
   useGalleryItems, 
   useCreateGalleryItem, 
   useUpdateGalleryItem, 
   useDeleteGalleryItem 
-} from '../../src/hooks/useGallery';
-import { Image as ImageIcon, Edit2, Trash2, Plus } from 'lucide-react';
-import { motion } from 'motion/react';
+} from '@/hooks/useGallery';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { canManageGallery, roleLabel } from '@/lib/adminPermissions';
+import { 
+  Image as ImageIcon, 
+  Edit2, 
+  Trash2, 
+  Plus, 
+  Star, 
+  Search, 
+  ShieldCheck, 
+  ShieldAlert, 
+  Eye, 
+  Calendar,
+  X,
+  SlidersHorizontal,
+  Sparkles
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AdminLoadingFallback } from '../LoadingFallback';
+import { GalleryItem } from '@/schemas/gallery';
+import { AdminSelect } from './AdminSelect';
 
 const categoryOptions = [
   { value: 'weddings', label: 'Weddings' },
@@ -27,10 +47,29 @@ const categoryOptions = [
 ];
 
 export default function GalleryModule() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingImage, setEditingImage] = useState<any>(null);
+  // Authorization
+  const { profile } = useAdminGuard();
+  const userRole = profile?.role;
+  const canManage = canManageGallery(userRole);
+
+  // Filters & sorting
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'featured'>('newest');
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingImage, setEditingImage] = useState<GalleryItem | null>(null);
+  const [isReadOnlyView, setIsReadOnlyView] = useState(false);
+  const [deleteConfirmImage, setDeleteConfirmImage] = useState<GalleryItem | null>(null);
+
+  // Form states
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('weddings');
+  const [eventType, setEventType] = useState('');
+  const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isFeatured, setIsFeatured] = useState(false);
 
   // React Query hooks
   const { data: galleryImages = [], isLoading } = useGalleryItems();
@@ -38,253 +77,591 @@ export default function GalleryModule() {
   const updateMutation = useUpdateGalleryItem();
   const deleteMutation = useDeleteGalleryItem();
 
-  const handleEdit = (image: any) => {
-    setEditingImage(image);
-    setImageUrl(image.image_url);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (image: any) => {
-    if (confirm(`Are you sure you want to delete "${image.title || 'this image'}"?`)) {
-      try {
-        await deleteMutation.mutateAsync(image.id);
-        toast.success('Image deleted successfully');
-      } catch (error) {
-        console.error('Delete error:', error);
-        toast.error('Failed to delete image');
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    
-    const imageData: any = {
-      title: formData.get('title') as string,
-      category: formData.get('category') as string,
-      image_url: imageUrl,
-    };
-
-    if (!imageUrl) {
-      toast.error('Please upload an image');
-      return;
-    }
-
-    try {
-      if (editingImage) {
-        await updateMutation.mutateAsync({ 
-          id: editingImage.id, 
-          data: imageData 
-        });
-        toast.success('Image updated successfully');
-      } else {
-        await createMutation.mutateAsync(imageData);
-        toast.success('Image added successfully');
-      }
-      setIsModalOpen(false);
-      setEditingImage(null);
-      setImageUrl('');
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error('Operation failed');
-    }
+  // Reset form helper
+  const resetForm = () => {
+    setTitle('');
+    setCategory('weddings');
+    setEventType('');
+    setDescription('');
+    setImageUrl('');
+    setIsFeatured(false);
+    setEditingImage(null);
+    setIsReadOnlyView(false);
   };
 
   const handleAddNew = () => {
-    setEditingImage(null);
-    setImageUrl('');
+    if (!canManage) {
+      toast.error('Only Owner, Developer, or Manager accounts can add gallery items.');
+      return;
+    }
+    resetForm();
     setIsModalOpen(true);
   };
 
-  // Filter images by category
-  const filteredImages = selectedCategory === 'all' 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === selectedCategory);
+  const handleEdit = (image: GalleryItem) => {
+    setEditingImage(image);
+    setTitle(image.title || '');
+    setCategory(image.category || 'weddings');
+    setEventType(image.event_type || '');
+    setDescription(image.description || '');
+    setImageUrl(image.image_url || '');
+    setIsFeatured(Boolean(image.is_featured));
+    setIsReadOnlyView(!canManage);
+    setIsModalOpen(true);
+  };
 
-  if (isLoading) {
-    return (
-      <AdminLayout>
-        <AdminLoadingFallback />
-      </AdminLayout>
-    );
-  }
+  const handleDeleteClick = (image: GalleryItem) => {
+    if (!canManage) {
+      toast.error('Only Owner, Developer, or Manager accounts can delete gallery items.');
+      return;
+    }
+    setDeleteConfirmImage(image);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmImage?.id) return;
+    try {
+      await deleteMutation.mutateAsync(deleteConfirmImage.id);
+      setDeleteConfirmImage(null);
+    } catch (error: any) {
+      console.error('Delete error:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!canManage) {
+      toast.error('Permission denied: Only Owner, Developer, or Manager accounts can save changes.');
+      return;
+    }
+
+    if (!title.trim()) {
+      toast.error('Please provide an image title');
+      return;
+    }
+
+    if (!imageUrl.trim()) {
+      toast.error('Please upload or select an image');
+      return;
+    }
+
+    const payload = {
+      title: title.trim(),
+      category: category || null,
+      event_type: eventType.trim() || null,
+      description: description.trim() || null,
+      image_url: imageUrl.trim(),
+      is_featured: isFeatured,
+    };
+
+    try {
+      if (editingImage?.id) {
+        await updateMutation.mutateAsync({
+          id: editingImage.id,
+          data: payload,
+        });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
+      setIsModalOpen(false);
+      resetForm();
+    } catch (error: any) {
+      console.error('Submit error:', error);
+    }
+  };
+
+  // Filter and sort images
+  const filteredImages = useMemo(() => {
+    let result = galleryImages.filter((img) => {
+      const matchesCategory = selectedCategory === 'all' || img.category === selectedCategory;
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        img.title?.toLowerCase().includes(q) ||
+        img.description?.toLowerCase().includes(q) ||
+        img.event_type?.toLowerCase().includes(q) ||
+        img.category?.toLowerCase().includes(q);
+
+      return matchesCategory && matchesSearch;
+    });
+
+    // Sorting
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'featured') {
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+      }
+      if (sortBy === 'title') {
+        return (a.title || '').localeCompare(b.title || '');
+      }
+      if (sortBy === 'oldest') {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateA - dateB;
+      }
+      // default: newest
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return result;
+  }, [galleryImages, selectedCategory, searchQuery, sortBy]);
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <AdminLayout>
-      {/* Page Header */}
-      <div className="admin-page-header">
+      {/* 1. Page Header */}
+      <div className="gallery-lux-header">
         <div>
-          <h1 className="admin-page-title" style={{ fontFamily: 'var(--admin-font-serif)' }}>Gallery Management</h1>
-          <p className="admin-page-description">
-            Manage your venue's photo gallery across different event categories
+          <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+            <h1 className="gallery-lux-title">Photo Gallery</h1>
+            {!canManage && (
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{
+                  background: "var(--lux-gold-light)",
+                  color: "var(--lux-gold)",
+                  border: "1px solid var(--lux-gold-border)"
+                }}
+              >
+                <ShieldAlert size={13} />
+                <span>{roleLabel(userRole)} · Read-Only</span>
+              </span>
+            )}
+          </div>
+          <p className="gallery-lux-desc">
+            Curate, organize, and showcase venue settings across wedding, reception, and corporate event spaces.
           </p>
         </div>
-        <button onClick={handleAddNew} className="admin-btn admin-btn-primary">
-          <Plus size={20} />
-          Add Image
-        </button>
+
+        {canManage && (
+          <button onClick={handleAddNew} className="workspace-button workspace-button-primary">
+            <Plus size={18} />
+            <span>Add New Photo</span>
+          </button>
+        )}
       </div>
 
-      {/* Category Filter Tabs */}
-      <div className="flex gap-3 flex-wrap mb-8">
+      {/* 2. Permission Banner for Coordinator / Read-Only accounts */}
+      {!canManage && (
+        <div
+          className="mb-6 p-4 rounded-2xl flex items-center gap-3.5"
+          style={{
+            background: 'var(--lux-gold-light)',
+            border: '1px solid var(--lux-gold-border)',
+            color: '#8C652D',
+          }}
+        >
+          <ShieldAlert size={20} className="flex-shrink-0" />
+          <p className="text-sm m-0 leading-relaxed">
+            <strong>Viewing in read-only mode:</strong> You are currently signed in as <strong>{roleLabel(userRole)}</strong>.
+            Editing or deleting photos and details requires <strong>Owner</strong>, <strong>Developer</strong>, or <strong>Manager</strong> permissions.
+          </p>
+        </div>
+      )}
+
+      {/* 3. Category Filter Tabs */}
+      <div className="gallery-lux-tabs-bar">
         <button
           onClick={() => setSelectedCategory('all')}
-          className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 ${
-            selectedCategory === 'all'
-              ? 'bg-gradient-neon text-[var(--dream-dark-bg)] shadow-lg border-glow'
-              : 'bg-[var(--dream-dark-secondary)] text-[var(--dream-text-secondary)] border border-[rgba(0,255,65,0.2)] hover:border-[var(--dream-neon-green)] hover:text-[var(--dream-neon-green)]'
-          }`}
+          className={`gallery-lux-tab-btn ${selectedCategory === 'all' ? 'is-active' : ''}`}
         >
-          All <span className="opacity-75">({galleryImages.length})</span>
+          <span>All Photos</span>
+          <span className="gallery-lux-tab-count">{galleryImages.length}</span>
         </button>
-        {categoryOptions.map(cat => {
-          const count = galleryImages.filter(img => img.category === cat.value).length;
+        {categoryOptions.map((cat) => {
+          const count = galleryImages.filter((img) => img.category === cat.value).length;
+          const isActive = selectedCategory === cat.value;
           return (
             <button
               key={cat.value}
               onClick={() => setSelectedCategory(cat.value)}
-              className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 ${
-                selectedCategory === cat.value
-                  ? 'bg-gradient-neon text-[var(--dream-dark-bg)] shadow-lg border-glow'
-                  : 'bg-[var(--dream-dark-secondary)] text-[var(--dream-text-secondary)] border border-[rgba(0,255,65,0.2)] hover:border-[var(--dream-neon-green)] hover:text-[var(--dream-neon-green)]'
-              }`}
+              className={`gallery-lux-tab-btn ${isActive ? 'is-active' : ''}`}
             >
-              {cat.label} <span className="opacity-75">({count})</span>
+              <span>{cat.label}</span>
+              <span className="gallery-lux-tab-count">{count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Gallery Grid - 3/2/1 Column Layout */}
-      <AdminGrid columns="3">
-        {filteredImages.map((image, index) => (
+      {/* 4. Search and Toolbar Strip */}
+      <div className="gallery-lux-controls">
+        {/* Search Box */}
+        <div className="gallery-lux-search-box">
+          <Search
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"
+          />
+          <input
+            type="text"
+            placeholder="Search photos by title, category, setting..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="gallery-lux-search-input"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
+
+        {/* Sort & Stats Controls */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-stone-500">
+            <SlidersHorizontal size={14} />
+            <span>Sort:</span>
+            <AdminSelect value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)} ariaLabel="Sort gallery photos" options={[{ value: 'newest', label: 'Newest First' }, { value: 'oldest', label: 'Oldest First' }, { value: 'featured', label: 'Featured First' }, { value: 'title', label: 'Title (A-Z)' }]} className="w-[145px]" />
+          </div>
+
+          <span className="text-xs font-semibold text-stone-400">
+            Showing {filteredImages.length} {filteredImages.length === 1 ? 'photo' : 'photos'}
+          </span>
+        </div>
+      </div>
+
+      {/* 5. Redesigned Gallery Grid with Structured Aspect Cards */}
+      <div className="gallery-lux-grid">
+        {isLoading ? (
+          [1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="gallery-lux-card animate-pulse"
+              style={{
+                height: '240px',
+                background: '#F5EFE8',
+                borderRadius: '16px',
+                border: '1px solid #E8E2D8',
+              }}
+            />
+          ))
+        ) : (
+          filteredImages.map((image, index) => (
           <motion.div
-            key={image.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.04, duration: 0.4 }}
-            className="gallery-item"
+            key={image.id || index}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.03, duration: 0.3 }}
+            className="gallery-lux-card"
           >
-            {/* Image */}
-            <div className="relative h-60 overflow-hidden">
+            {/* 16:10 Aspect Media Container */}
+            <div className="gallery-lux-card-media">
               <img
                 src={image.image_url}
-                alt={image.title || 'Gallery image'}
-                className="gallery-item-image"
+                alt={image.title || 'Venue gallery photo'}
+                className="gallery-lux-card-image"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src =
+                    'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&q=80';
+                }}
               />
-              
-              {/* Hover Overlay with Neon Buttons */}
-              <div className="gallery-item-overlay">
-                <button
-                  onClick={() => handleEdit(image)}
-                  className="admin-btn admin-btn-primary admin-btn-sm"
-                >
-                  <Edit2 size={16} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(image)}
-                  className="admin-btn admin-btn-danger admin-btn-sm"
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
+
+              {/* Floating Badges */}
+              <div className="gallery-lux-card-badges">
+                <span className="gallery-badge-category">
+                  {image.category || 'General'}
+                </span>
+                {image.event_type && (
+                  <span className="gallery-badge-event-type">
+                    {image.event_type}
+                  </span>
+                )}
+              </div>
+
+              {/* Featured Gold Badge */}
+              {image.is_featured && (
+                <div className="gallery-badge-featured" title="Featured in venue highlights">
+                  <Star size={12} fill="#8C652D" />
+                  <span>Featured</span>
+                </div>
+              )}
+
+              {/* Hover Actions Overlay */}
+              <div className="gallery-lux-card-overlay">
+                {canManage ? (
+                  <>
+                    <button
+                      onClick={() => handleEdit(image)}
+                      className="gallery-overlay-btn edit"
+                      title="Edit photo details"
+                    >
+                      <Edit2 size={15} />
+                      <span>Edit Details</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(image)}
+                      className="gallery-overlay-btn delete"
+                      title="Delete photo"
+                    >
+                      <Trash2 size={15} />
+                      <span>Delete</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleEdit(image)}
+                    className="gallery-overlay-btn edit"
+                    title="View photo details"
+                  >
+                    <Eye size={15} />
+                    <span>View Details</span>
+                  </button>
+                )}
               </div>
             </div>
-            
-            {/* Card Footer Info */}
-            <div className="gallery-item-info">
-              <h4 className="gallery-item-title">
-                {image.title || 'Untitled'}
-              </h4>
-              <div className="flex items-center justify-between mt-2">
-                <span className="gallery-item-category">
-                  {image.category}
-                </span>
-                {(image as any).display_order && (
-                  <span className="text-xs" style={{ color: 'var(--dream-text-muted)' }}>
-                    Order: {(image as any).display_order}
+
+            {/* Card Body — Proper 18px-20px Padding & Refined Typography */}
+            <div className="gallery-lux-card-body">
+              <div>
+                <h3 className="gallery-lux-card-title" title={image.title}>
+                  {image.title || 'Untitled Photo'}
+                </h3>
+
+                {image.description ? (
+                  <p className="gallery-lux-card-desc">
+                    {image.description}
+                  </p>
+                ) : (
+                  <p className="gallery-lux-card-desc empty">
+                    No event description provided
+                  </p>
+                )}
+              </div>
+
+              {/* Card Footer — Strict Alignment and Spacing */}
+              <div className="gallery-lux-card-footer">
+                {image.created_at && (
+                  <span className="gallery-footer-date">
+                    <Calendar size={13} style={{ opacity: 0.6 }} />
+                    <span>
+                      {new Date(image.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
                   </span>
                 )}
               </div>
             </div>
           </motion.div>
-        ))}
-      </AdminGrid>
+        )))}
+      </div>
 
-      {/* Empty State */}
-      {filteredImages.length === 0 && (
-        <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6" 
-               style={{ background: 'rgba(0, 255, 65, 0.1)', border: '2px solid rgba(0, 255, 65, 0.3)' }}>
-            <ImageIcon size={48} style={{ color: 'var(--dream-neon-green)' }} />
+      {/* 6. Empty State */}
+      {!isLoading && filteredImages.length === 0 && (
+        <div className="workspace-empty mt-8">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-2"
+            style={{ background: 'var(--lux-olive-light)', color: 'var(--lux-olive)' }}
+          >
+            <ImageIcon size={32} />
           </div>
-          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--dream-text-primary)' }}>
-            No images in this category
-          </h3>
-          <p style={{ color: 'var(--dream-text-secondary)' }}>
-            Add images to showcase your venue
+          <h2>{searchQuery ? 'No matching photos found' : 'No photos in this category'}</h2>
+          <p>
+            {searchQuery
+              ? `No images matched "${searchQuery}". Try searching by setting name, event category, or clearing the filter.`
+              : 'Add high-resolution photos showcasing stage decor, seating, and lighting setups.'}
           </p>
-          <button onClick={handleAddNew} className="admin-btn admin-btn-primary mt-6">
-            <Plus size={20} />
-            Add First Image
-          </button>
+          {canManage && !searchQuery && (
+            <button onClick={handleAddNew} className="workspace-button workspace-button-primary mt-4">
+              <Plus size={18} />
+              <span>Add First Photo</span>
+            </button>
+          )}
         </div>
       )}
 
-      {/* Add/Edit Modal */}
+      {/* 7. Add / Edit / View Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setEditingImage(null);
-          setImageUrl('');
+          resetForm();
         }}
-        title={editingImage ? 'Edit Gallery Image' : 'Add New Gallery Image'}
+        size="lg"
+        title={
+          isReadOnlyView
+            ? 'Gallery Photo Details'
+            : editingImage
+            ? 'Edit Photo & Event Details'
+            : 'Add New Photo to Gallery'
+        }
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {isReadOnlyView && (
+            <div
+              className="p-3.5 rounded-xl text-xs font-medium"
+              style={{
+                background: 'var(--lux-gold-light)',
+                color: '#8C652D',
+                border: '1px solid var(--lux-gold-border)',
+              }}
+            >
+              Viewing in read-only mode. You need Owner, Developer, or Manager permissions to make edits.
+            </div>
+          )}
+
+          {/* Title */}
           <FormInput
             name="title"
             label="Image Title"
-            placeholder="e.g., Elegant Wedding Reception Hall"
-            defaultValue={editingImage?.title}
+            placeholder="e.g., Grand Ballroom Reception & Chandeliers"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={isReadOnlyView}
             required
           />
 
-          <FormSelect
-            name="category"
-            label="Event Category"
-            defaultValue={editingImage?.category || 'weddings'}
-            options={categoryOptions}
-            required
+          {/* Category & Event Type Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormSelect
+              name="category"
+              label="Event Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              options={categoryOptions}
+              disabled={isReadOnlyView}
+              required
+            />
+
+            <FormInput
+              name="event_type"
+              label="Event Type / Setting (Optional)"
+              placeholder="e.g., Outer Dining Counter, Stage Setup, Lawn"
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value)}
+              disabled={isReadOnlyView}
+              helpText="Specific setting or celebration area"
+            />
+          </div>
+
+          {/* Description */}
+          <FormTextarea
+            name="description"
+            label="Description & Event Details (Optional)"
+            placeholder="Enter notes about seating layout, capacity, decor, or the celebration shown in the photo..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={isReadOnlyView}
+            rows={3}
+            helpText="Displayed in detailed views and event highlights"
           />
 
-          <ImageUploadField
-            label="Upload Image"
-            value={imageUrl}
-            onChange={(url) => setImageUrl(url || '')}
-          />
+          {/* Image Upload / Media Selector */}
+          <div>
+            <label className="admin-label mb-2 block font-semibold text-stone-800 text-sm">
+              Gallery Photo {isReadOnlyView ? '' : <span style={{ color: 'var(--lux-danger)' }}>*</span>}
+            </label>
+            {isReadOnlyView ? (
+              <div
+                style={{
+                  maxHeight: '260px',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  background: '#000',
+                  border: '1px solid var(--lux-border)',
+                }}
+              >
+                <img
+                  src={imageUrl}
+                  alt={title}
+                  style={{ width: '100%', height: '260px', objectFit: 'contain' }}
+                />
+              </div>
+            ) : (
+              <ImageUploadField
+                label=""
+                value={imageUrl}
+                onChange={(url) => setImageUrl(url || '')}
+                bucket="facilities_images"
+              />
+            )}
+          </div>
 
-          <div className="flex gap-3 justify-end pt-6 border-t" style={{ borderColor: 'rgba(0, 255, 65, 0.2)' }}>
-            <Button 
-              type="button" 
+          {/* Featured Toggle */}
+          {!isReadOnlyView && (
+            <div
+              className="flex items-center gap-3.5 p-3.5 rounded-xl transition-all"
+              style={{
+                background: isFeatured ? 'var(--lux-gold-light)' : '#FAF8F5',
+                border: isFeatured
+                  ? '1px solid var(--lux-gold-border)'
+                  : '1px solid var(--lux-border)',
+              }}
+            >
+              <input
+                type="checkbox"
+                id="is_featured_lux_checkbox"
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: '#537517' }}
+              />
+              <label
+                htmlFor="is_featured_lux_checkbox"
+                className="cursor-pointer select-none text-sm font-medium"
+                style={{ color: isFeatured ? '#8C652D' : 'var(--lux-ink)' }}
+              >
+                <div className="flex items-center gap-1.5 font-bold">
+                  <Star size={14} fill={isFeatured ? '#8C652D' : 'none'} color={isFeatured ? '#8C652D' : 'currentColor'} />
+                  Feature this photo in homepage highlights
+                </div>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--lux-muted)' }}>
+                  Featured photos appear prominently in venue promotional showcases
+                </p>
+              </label>
+            </div>
+          )}
+
+          {/* Modal Actions */}
+          <div
+            className="flex gap-3 justify-end pt-5 border-t"
+            style={{ borderColor: 'var(--lux-border)' }}
+          >
+            <Button
+              type="button"
               variant="outline"
               onClick={() => {
                 setIsModalOpen(false);
-                setEditingImage(null);
-                setImageUrl('');
+                resetForm();
               }}
             >
-              Cancel
+              {isReadOnlyView ? 'Close' : 'Cancel'}
             </Button>
-            <Button type="submit" variant="primary">
-              {editingImage ? 'Update Image' : 'Add Image'}
-            </Button>
+
+            {!isReadOnlyView && (
+              <Button
+                type="submit"
+                variant="primary"
+                loading={isSaving}
+                disabled={isSaving}
+              >
+                {isSaving
+                  ? 'Saving...'
+                  : editingImage
+                  ? 'Update Photo Details'
+                  : 'Add Photo to Gallery'}
+              </Button>
+            )}
           </div>
         </form>
       </Modal>
+
+      {/* 8. Delete Confirmation Modal */}
+      <DeleteGalleryConfirmModal
+        item={deleteConfirmImage}
+        isOpen={Boolean(deleteConfirmImage)}
+        onClose={() => setDeleteConfirmImage(null)}
+        onConfirm={handleConfirmDelete}
+        isDeleting={deleteMutation.isPending}
+      />
     </AdminLayout>
   );
 }

@@ -22,9 +22,9 @@ import {
   Filter,
   Search
 } from 'lucide-react';
-import { supabase } from '../../utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { toast } from 'sonner';
-import { useNotifications } from '../../src/hooks/useNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface NotificationLog {
   id: string;

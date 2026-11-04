@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { CheckCircle2, Clock3, Mail, Phone, ShieldCheck, Trash2, UserRound, X, XCircle } from 'lucide-react';
 import AdminLayout from './AdminLayout';
-import { useAdminRequests, useApproveAdminRequest, useDeleteAdminRequest, useUpdateAdminRequestStatus } from '../../src/hooks/useAdminRequests';
-import { AdminRequest } from '../../src/schemas/adminRequests';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
+import { useAdminRequests, useApproveAdminRequest, useDeleteAdminRequest, useUpdateAdminRequestStatus } from '@/hooks/useAdminRequests';
+import { AdminRequest } from '@/schemas/adminRequests';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can } from '@/lib/adminPermissions';
 
 const statusClass = (status: AdminRequest['status']) => `request-status request-status-${status.toLowerCase()}`;
 

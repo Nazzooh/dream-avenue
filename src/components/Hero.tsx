@@ -1,333 +1,276 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { motion, useScroll, useTransform, useSpring } from 'motion/react';
+import { useRef } from 'react';
+import { ArrowRight, CalendarDays, Leaf, MapPin, Sparkles, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, ChevronDown, ArrowRight, Award, Phone } from 'lucide-react';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
-// @ts-ignore
-import heroPoster from '../assets/hero-poster.png';
-
+/**
+ * Editorial Hero: Courtyard at Dusk architectural illustration.
+ * Enhanced with cohesive focal depth zoom, scroll-reactive lantern brilliance,
+ * and guaranteed navbar clearance across all desktop viewport heights.
+ */
 export function Hero() {
   const navigate = useNavigate();
-  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollY, scrollYProgress } = useScroll();
+  const trackRef = useRef<HTMLElement>(null);
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const useScrollMotion = motionEnabled && desktopMotionAllowed;
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    const element = document.querySelector(href);
-    if (element) {
-      const offset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
+  // Track scroll progress along the pinned runway
+  const { scrollYProgress } = useScroll({
+    target: trackRef,
+    offset: ['start start', 'end end'],
+  });
 
-  // Scroll Animations
-  const contentScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const videoScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.2]);
-  const videoOpacity = useTransform(scrollYProgress, [0, 0.5], [0.7, 0.3]);
-  const badgeY = useTransform(scrollYProgress, [0, 0.3], [0, -100]);
-  const headlineY = useTransform(scrollYProgress, [0, 0.3], [0, -50]);
+  // Butter-smooth spring interpolation for scrub dynamics
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 95,
+    damping: 26,
+    restDelta: 0.001,
+  });
 
-  // Floating CTA visibility
-  useEffect(() => {
-    return scrollY.on('change', (latest) => {
-      setShowFloatingCTA(latest > 800);
-    });
-  }, [scrollY]);
+  // Actions and secondary elements fade early to focus attention on the architecture
+  const actionsOpacity = useTransform(smoothProgress, [0, 0.20], [1, 0]);
+  const actionsY = useTransform(smoothProgress, [0, 0.20], [0, 16]);
+  const actionsPointerEvents = useTransform(smoothProgress, (v) => (v > 0.15 ? 'none' : 'auto'));
+
+  // Subtext paragraph fades softly
+  const subtextOpacity = useTransform(smoothProgress, [0, 0.28], [1, 0]);
+  const subtextY = useTransform(smoothProgress, [0, 0.28], [0, 20]);
+
+  // Welcoming eyebrow drifts and fades
+  const eyebrowOpacity = useTransform(smoothProgress, [0, 0.36], [1, 0]);
+  const eyebrowY = useTransform(smoothProgress, [0, 0.36], [0, 16]);
+
+  // Main Title: Recedes gracefully into the Grand Archway as a subtle architectural watermark
+  const textScale = useTransform(smoothProgress, [0, 0.75], [1, 0.76]);
+  const textZ = useTransform(smoothProgress, [0, 0.75], [0, -180]);
+  const textY = useTransform(smoothProgress, [0, 0.75], [0, 40]);
+  const textOpacity = useTransform(smoothProgress, [0, 0.5, 0.8, 1], [1, 0.9, 0.55, 0.4]);
+
+  // Courtyard: Cohesive architectural depth push (anchored together, no drifting disorder)
+  const courtyardScale = useTransform(smoothProgress, [0, 0.85], [1, 1.12]);
+  const courtyardY = useTransform(smoothProgress, [0, 0.85], [0, -32]);
+  const archGrandScale = useTransform(smoothProgress, [0, 0.85], [1, 1.06]);
+  const archMiddleY = useTransform(smoothProgress, [0, 0.85], [0, -12]);
+  const archSmallY = useTransform(smoothProgress, [0, 0.85], [0, -8]);
+
+  // Scroll-reactive lantern brilliance: Glow radius and warmth expand with scroll
+  const lanternScale = useTransform(smoothProgress, [0, 0.85], [1, 1.18]);
+  const lanternGlowScale = useTransform(smoothProgress, [0, 0.8], [1, 1.7]);
+  const lanternGlowOpacity = useTransform(smoothProgress, [0, 0.3, 0.8], [0.75, 0.95, 1.35]);
+
+  // Ambient sun wash and botanicals
+  const washScale = useTransform(smoothProgress, [0, 0.85], [1, 1.3]);
+  const washOpacity = useTransform(smoothProgress, [0, 0.7, 1], [1, 0.9, 0.4]);
+  const foliageTopY = useTransform(smoothProgress, [0, 0.85], [0, -40]);
+  const foliageLowerY = useTransform(smoothProgress, [0, 0.85], [0, -25]);
+
+  // Grounded exit: Retains architectural presence and warm lanterns; no empty black/blank void
+  const frameExitOpacity = useTransform(smoothProgress, [0.85, 1], [1, 1]);
+  const hintOpacity = useTransform(smoothProgress, [0, 0.12], [1, 0]);
+
+  const initialReveal = useScrollMotion ? { opacity: 0, y: 14 } : false;
 
   return (
     <section
+      ref={trackRef}
       id="home"
-      ref={containerRef}
-      style={{
-        position: 'relative',
-        height: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-        background: '#050505',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: '80px', // Offset for Navbar height
-      }}
+      className={useScrollMotion ? 'venue-hero-scroll-track venue-hero-scroll-track--active' : 'venue-hero-scroll-track'}
     >
-      {/* Dynamic Video Background Layer */}
-      <motion.div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          scale: videoScale,
-          zIndex: 0,
-        }}
-      >
-        <div style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.3))',
-          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.7), rgba(5,5,5,0.3)), url(${heroPoster})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          zIndex: 1,
-          pointerEvents: 'auto', // Capture all clicks/interactions
-        }} />
+      <div className={useScrollMotion ? 'venue-hero-sticky-frame' : ''}>
+        <motion.div
+          className={`venue-hero ${useScrollMotion ? 'venue-hero--cinematic' : ''}`}
+          style={useScrollMotion ? { opacity: frameExitOpacity } : undefined}
+        >
+          <div className="venue-hero__texture" aria-hidden="true" />
 
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '177.77777778vh',
-          height: '100vh',
-          minWidth: '100vw',
-          minHeight: '56.25vw',
-        }}>
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/qXgr8igDL84?si=qLxbZzpO5cGkX9fY&autoplay=1&mute=1&controls=0&loop=1&playlist=qXgr8igDL84&playsinline=1&modestbranding=1&rel=0&showinfo=0&disablekb=1&enablejsapi=1"
-            title="Dream Avenue Background"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            onLoad={() => setVideoLoaded(true)}
-            style={{
-              width: '100%',
-              height: '100%',
-              border: 'none',
-              opacity: videoLoaded ? (videoOpacity as any) : 0,
-              transition: 'opacity 1s ease-in-out',
-              position: 'relative',
-              zIndex: 2,
-            }}
+          {/* Glowing Sun Wash */}
+          <motion.div
+            className="venue-hero__sun-wash"
+            aria-hidden="true"
+            style={useScrollMotion ? { scale: washScale, opacity: washOpacity } : undefined}
           />
-        </div>
-      </motion.div>
 
-      {/* Main Content Layer */}
-      <motion.div
-        style={{
-          position: 'relative',
-          zIndex: 10,
-          textAlign: 'center',
-          scale: contentScale,
-          opacity: contentOpacity,
-          padding: '20px 24px 0 24px', // Extra top padding inside content
-          maxWidth: '1200px',
-        }}
-      >
-        {/* Floating Badge */}
-        <motion.div
-          style={{ y: badgeY }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            padding: '10px 24px',
-            background: 'rgba(200, 212, 107, 0.1)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(200, 212, 107, 0.3)',
-            borderRadius: '100px',
-            color: '#C8D46B',
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
-            marginBottom: '32px',
-          }}>
-            <Award size={18} />
-            Calicut's Premier Luxury Venue
-            <Sparkles size={18} />
+          {/* Botanicals Top */}
+          <motion.div
+            className="venue-hero__botanicals venue-hero__botanicals--top"
+            aria-hidden="true"
+            style={useScrollMotion ? { y: foliageTopY } : undefined}
+          >
+            <i /><i /><i /><i /><i />
+          </motion.div>
+
+          {/* Botanicals Lower */}
+          <motion.div
+            className="venue-hero__botanicals venue-hero__botanicals--lower"
+            aria-hidden="true"
+            style={useScrollMotion ? { y: foliageLowerY } : undefined}
+          >
+            <i /><i /><i /><i /><i /><i />
+          </motion.div>
+
+          {/* Cohesive Courtyard Architecture */}
+          <motion.div
+            className="venue-hero__courtyard"
+            aria-hidden="true"
+            style={useScrollMotion ? { scale: courtyardScale, y: courtyardY } : undefined}
+          >
+            {/* Grand Arch */}
+            <motion.div
+              className="venue-hero__arch venue-hero__arch--grand"
+              style={useScrollMotion ? { scale: archGrandScale } : undefined}
+            >
+              <span />
+            </motion.div>
+
+            {/* Middle Arch */}
+            <motion.div
+              className="venue-hero__arch venue-hero__arch--middle"
+              style={useScrollMotion ? { y: archMiddleY } : undefined}
+            >
+              <span />
+            </motion.div>
+
+            {/* Small Arch */}
+            <motion.div
+              className="venue-hero__arch venue-hero__arch--small"
+              style={useScrollMotion ? { y: archSmallY } : undefined}
+            >
+              <span />
+            </motion.div>
+
+            {/* Scroll-Reactive Brilliant Lanterns */}
+            <motion.div
+              className="venue-hero__lantern venue-hero__lantern--one"
+              style={useScrollMotion ? { scale: lanternScale } : undefined}
+            >
+              <motion.div
+                className="venue-hero__lantern-glow"
+                style={useScrollMotion ? { scale: lanternGlowScale, opacity: lanternGlowOpacity } : undefined}
+              />
+              <b />
+            </motion.div>
+
+            <motion.div
+              className="venue-hero__lantern venue-hero__lantern--two"
+              style={useScrollMotion ? { scale: lanternScale } : undefined}
+            >
+              <motion.div
+                className="venue-hero__lantern-glow"
+                style={useScrollMotion ? { scale: lanternGlowScale, opacity: lanternGlowOpacity } : undefined}
+              />
+              <b />
+            </motion.div>
+
+            <motion.div
+              className="venue-hero__lantern venue-hero__lantern--three"
+              style={useScrollMotion ? { scale: lanternScale } : undefined}
+            >
+              <motion.div
+                className="venue-hero__lantern-glow"
+                style={useScrollMotion ? { scale: lanternGlowScale, opacity: lanternGlowOpacity } : undefined}
+              />
+              <b />
+            </motion.div>
+
+            <div className="venue-hero__floor" />
+          </motion.div>
+
+          {/* Hero Typography & Content */}
+          <div className={`venue-hero__content ${useScrollMotion ? 'venue-hero__content--watermark' : ''}`}>
+            {/* Welcoming Eyebrow with guaranteed navbar safe top distance */}
+            <motion.div
+              initial={initialReveal}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              style={useScrollMotion ? { opacity: eyebrowOpacity, y: eyebrowY } : undefined}
+              className="venue-hero__eyebrow"
+            >
+              <Sparkles size={13} className="text-[#c9dc85] animate-pulse" />
+              <span>Dream Avenue Welcomes You</span>
+              <span className="opacity-40">·</span>
+              <MapPin size={13} />
+              <span>Calicut, Kerala</span>
+            </motion.div>
+
+            {/* Main Headline: Recedes into Grand Arch */}
+            <motion.h1
+              initial={initialReveal}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.08 }}
+              style={
+                useScrollMotion
+                  ? {
+                      scale: textScale,
+                      z: textZ,
+                      y: textY,
+                      opacity: textOpacity,
+                    }
+                  : undefined
+              }
+              className={useScrollMotion ? 'venue-hero__title--watermark' : ''}
+            >
+              Made for gatherings<br /><em>worth remembering.</em>
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={initialReveal}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.14 }}
+              style={useScrollMotion ? { opacity: subtextOpacity, y: subtextY } : undefined}
+            >
+              A warm, well-appointed event hall for weddings, receptions, family milestones and business gatherings.
+            </motion.p>
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={initialReveal}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              style={
+                useScrollMotion
+                  ? {
+                      opacity: actionsOpacity,
+                      y: actionsY,
+                      pointerEvents: actionsPointerEvents as any,
+                    }
+                  : undefined
+              }
+              className="venue-hero__actions"
+            >
+              <button type="button" onClick={() => navigate('/booking')} className="venue-hero__cta">
+                <CalendarDays size={18} /> Check availability <ArrowRight size={17} />
+              </button>
+              <a href="#facilities" className="venue-hero__secondary">Explore the hall</a>
+            </motion.div>
+
+            {/* Highlights Proof */}
+            <motion.div
+              style={useScrollMotion ? { opacity: actionsOpacity, y: actionsY } : undefined}
+              className="venue-hero__proof"
+              aria-label="Venue highlights"
+            >
+              <span><Users size={15} /> 800 – 1,000+ guests</span>
+              <span><Leaf size={15} /> Central AC & parking</span>
+            </motion.div>
           </div>
+
+          <div className="venue-hero__caption" aria-hidden="true">Dream Avenue · Event Hall</div>
+
+          {/* Gentle Scroll Prompt */}
+          {useScrollMotion && (
+            <motion.div
+              style={{ opacity: hintOpacity }}
+              className="venue-hero__scroll-hint"
+              aria-hidden="true"
+            >
+              <span className="venue-hero__scroll-hint-dot" />
+              <span>Scroll to explore</span>
+            </motion.div>
+          )}
         </motion.div>
-
-        {/* Dynamic Headline */}
-        <motion.h1
-          style={{
-            y: headlineY,
-            fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-            fontFamily: 'var(--font-heading)',
-            lineHeight: 1.1,
-            fontWeight: 800,
-            color: '#FAF9F6',
-            letterSpacing: '-0.03em',
-            margin: '0 0 24px 0',
-          }}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          Elevating Your <br />
-          <span style={{
-            background: 'linear-gradient(135deg, #C8D46B 0%, #E0C097 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>Grandest Moments</span>
-        </motion.h1>
-
-        {/* Description Pill */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          style={{
-            fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-            color: 'rgba(250, 249, 246, 0.8)',
-            maxWidth: '700px',
-            margin: '0 auto 48px auto',
-            lineHeight: 1.6,
-          }}
-        >
-          A masterpiece of architecture and luxury, meticulously designed for
-          unforgettable weddings, corporate galas, and global conventions.
-        </motion.p>
-
-        {/* Dynamic Actions */}
-        <motion.div
-          className="hero-buttons"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '20px',
-            justifyContent: 'center',
-          }}
-        >
-          <motion.button
-            onClick={() => navigate('/booking')}
-            whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(200, 212, 107, 0.3)' }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              padding: '20px 48px',
-              background: '#C8D46B',
-              color: '#050505',
-              borderRadius: '12px',
-              fontSize: '1.125rem',
-              fontWeight: '700',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}
-          >
-            <Calendar size={20} />
-            Book Now
-            <ArrowRight size={20} />
-          </motion.button>
-
-          <motion.a
-            href="#facilities"
-            onClick={(e: any) => handleNavClick(e, '#facilities')}
-            whileHover={{ scale: 1.05, background: 'rgba(250, 249, 246, 0.1)' }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              padding: '20px 48px',
-              background: 'transparent',
-              color: '#FAF9F6',
-              borderRadius: '12px',
-              fontSize: '1.125rem',
-              fontWeight: '600',
-              border: '2px solid rgba(250, 249, 246, 0.2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              textDecoration: 'none',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            View Space
-          </motion.a>
-        </motion.div>
-      </motion.div>
-
-      {/* Floating CTA */}
-      <motion.button
-        onClick={() => navigate('/booking')}
-        initial={{ opacity: 0, y: 100 }}
-        animate={{
-          opacity: showFloatingCTA ? 1 : 0,
-          y: showFloatingCTA ? 0 : 100,
-        }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        style={{
-          position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          zIndex: 1000,
-          background: '#C8D46B',
-          color: '#050505',
-          padding: '16px 32px',
-          borderRadius: '50px',
-          border: 'none',
-          boxShadow: '0 10px 30px rgba(200, 212, 107, 0.4)',
-          fontWeight: 700,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          cursor: 'pointer',
-        }}
-      >
-        <Phone size={18} />
-        Reserve Venue
-      </motion.button>
-
-      {/* Elegant Scroll Indicator */}
-      <motion.div
-        className="hero-explore-indicator"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        style={{
-          position: 'absolute',
-          bottom: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: 'rgba(250, 249, 246, 0.5)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        <span style={{ fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase' }}>Explore</span>
-        <ChevronDown size={20} />
-      </motion.div>
-
-      <style>{`
-        h1 {
-          font-size: clamp(2rem, 10vw, 5.5rem) !important;
-        }
-        @media (max-width: 768px) {
-          .hero-buttons {
-            flex-direction: column;
-            width: 100%;
-            padding: 0 1rem;
-          }
-          .hero-buttons button, .hero-buttons a {
-            width: 100%;
-            justify-content: center;
-          }
-          .hero-explore-indicator {
-            bottom: 20px !important;
-            display: none !important; /* Hide on mobile to prevent overlap */
-          }
-        }
-      `}</style>
+      </div>
     </section>
   );
 }

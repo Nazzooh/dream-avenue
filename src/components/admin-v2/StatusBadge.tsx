@@ -19,13 +19,17 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
       case 'pending':
       case 'ongoing':
         return 'admin-badge-warning';
+      case 'quotation_in_progress':
+        return 'admin-badge-neon';
       
       case 'cancelled':
+      case 'declined':
       case 'inactive':
       case 'rejected':
         return 'admin-badge-danger';
       
       case 'scheduled':
+      case 'appointment_scheduled':
       case 'info':
         return 'admin-badge-info';
       
@@ -34,7 +38,7 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
     }
   };
 
-  const label = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  const label = status.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
   return (
     <span className={`admin-badge ${getStatusClass()} ${className}`} aria-label={`Status: ${label}`}>

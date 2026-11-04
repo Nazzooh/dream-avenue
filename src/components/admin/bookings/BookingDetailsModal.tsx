@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Phone, Mail, User, Users, Clock, 
@@ -8,20 +8,21 @@ import {
   Package, DollarSign, ShoppingCart, FileText
 } from 'lucide-react';
 import { StatusBadge } from '../../admin-v2/StatusBadge';
-import { Booking, BookingStatus } from '../../../src/schemas/bookings';
-import { BookingAction } from '../../../src/types/booking';
-import { Package as PackageType } from '../../../src/schemas/packages';
-import { usePackages } from '../../../src/hooks/usePackages';
+import { AdminSelect } from '../../admin-v2/AdminSelect';
+import { Booking, BookingStatus } from '@/schemas/bookings';
+import { BookingAction } from '@/types/booking';
+import { Package as PackageType } from '@/schemas/packages';
+import { usePackages } from '@/hooks/usePackages';
 import { toast } from 'sonner';
-import { supabase } from '../../../utils/supabase/client';
-import { formatAdminHistory } from '../../../src/utils/formatAdminHistory';
-import { adminUpdateBookingDetails } from '../../../src/api/bookings';
-import { getBookingActions, confirmBooking, adminUpdateBookingExtras } from '../../../src/api/adminBookings';
+import { supabase } from '@/utils/supabase/client';
+import { formatAdminHistory } from '@/utils/formatAdminHistory';
+import { adminUpdateBookingDetails } from '@/api/bookings';
+import { getBookingActions, confirmBooking, adminUpdateBookingExtras, adminUpdateBookingConsultation, getBookingWorkflowHistory } from '@/api/adminBookings';
 
 function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDelete, formatDate, formatTime, formatEventType, formatTimeSlot, updateStatusMutation, refetchBookings }: {
   booking: Booking;
   onClose: () => void;
-  onStatusUpdate: (id: string, status: BookingStatus) => void;
+  onStatusUpdate: (id: string, status: BookingStatus, note?: string, appointmentAt?: string | null, contactOutcome?: string | null) => void;
   onCancel: (booking: Booking) => void;
   onDelete: (booking: Booking) => void;
   formatDate: (date: string | null | undefined) => string;
@@ -31,6 +32,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
   updateStatusMutation: any;
   refetchBookings: () => void;
 }) {
+  const drawerRef = useRef<HTMLDivElement>(null);
   console.log('📋 BookingDetailsModal - booking data:', {
     id: booking.id,
     event_type: booking.event_type,
@@ -67,9 +69,25 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
   const [bookingActions, setBookingActions] = useState<BookingAction[]>([]);
   const [isLoadingActions, setIsLoadingActions] = useState(false);
   const [showAuditTrail, setShowAuditTrail] = useState(false);
+  const [workflowNote, setWorkflowNote] = useState('');
+  const [appointmentAt, setAppointmentAt] = useState(booking.appointment_at ? booking.appointment_at.slice(0, 16) : '');
+  const [consultationNotes, setConsultationNotes] = useState(booking.consultation_notes || '');
+  const [quotedTotal, setQuotedTotal] = useState(booking.quoted_total?.toString() || '');
+  const [contactOutcome, setContactOutcome] = useState(booking.contact_outcome || '');
+  const [isSavingConsultation, setIsSavingConsultation] = useState(false);
+  const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
   
   // Fetch all packages
   const { data: allPackages = [] } = usePackages();
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => drawerRef.current?.focus());
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); onClose(); } };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', onKeyDown); };
+  }, [onClose]);
 
   // Fetch package info
   useEffect(() => {
@@ -110,6 +128,43 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
 
     fetchActions();
   }, [booking.id]);
+
+  useEffect(() => {
+    if (!booking.id) return;
+    getBookingWorkflowHistory(booking.id).then(setWorkflowHistory).catch(() => setWorkflowHistory([]));
+  }, [booking.id]);
+
+  const saveConsultation = async () => {
+    if (!booking.id) return;
+    if (booking.status === 'confirmed' && !workflowNote.trim()) {
+      toast.error('Add a reason before amending a confirmed booking');
+      return;
+    }
+    setIsSavingConsultation(true);
+    try {
+      await adminUpdateBookingConsultation(booking.id, {
+        appointmentAt: appointmentAt ? new Date(appointmentAt).toISOString() : null,
+        consultationNotes: consultationNotes || null,
+        quotedTotal: quotedTotal ? Number(quotedTotal) : null,
+        contactOutcome: contactOutcome || null,
+        changeNote: workflowNote || null,
+      });
+      toast.success('Consultation saved');
+      setWorkflowNote('');
+      setWorkflowHistory(await getBookingWorkflowHistory(booking.id));
+      refetchBookings();
+    } catch (error: any) {
+      toast.error(error.message || 'Unable to save consultation');
+    } finally { setIsSavingConsultation(false); }
+  };
+
+  const moveWorkflow = (status: BookingStatus) => {
+    if ((status === 'declined' || status === 'cancelled') && !workflowNote.trim()) {
+      toast.error('Add a reason before continuing');
+      return;
+    }
+    onStatusUpdate(booking.id!, status, workflowNote || undefined, appointmentAt ? new Date(appointmentAt).toISOString() : null, contactOutcome || null);
+  };
 
   // Auto-clear times when time slot changes to non-short_duration
   useEffect(() => {
@@ -338,29 +393,35 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center"
+      className="da-booking-drawer-backdrop"
       style={{ 
         background: 'rgba(0, 0, 0, 0.6)', 
         backdropFilter: 'blur(8px)',
         zIndex: 9999,
-        padding: 'clamp(0.75rem,3vw,1.5rem)'
+        padding: 0
       }}
-      onClick={onClose}
+      onMouseDown={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.95, y: 20 }}
-        className="rounded-3xl overflow-hidden flex flex-col"
+        initial={{ x: 36, opacity: 0.6 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: 36, opacity: 0 }}
+        className="da-booking-drawer"
         style={{
           background: 'white',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          width: '100%',
-          maxWidth: 'min(56rem, 95vw)',
-          maxHeight: 'min(90vh, 1000px)',
-          margin: '0 auto'
+          width: 'min(46rem, 100vw)',
+          maxWidth: '100vw',
+          height: '100dvh',
+          maxHeight: '100dvh',
+          margin: 0
         }}
-        onClick={(e) => e.stopPropagation()}
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="booking-details-title"
+        tabIndex={-1}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header with Close Button - Fluid */}
         <div 
@@ -384,7 +445,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
               <Calendar style={{ width: '45%', height: '45%' }} />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-[clamp(1.25rem,3vw,1.75rem)] leading-tight mb-[0.25em] truncate" style={{ color: '#2A2A2A' }}>
+              <h2 id="booking-details-title" className="text-[clamp(1.25rem,3vw,1.75rem)] leading-tight mb-[0.25em] truncate" style={{ color: '#2A2A2A' }}>
                 Booking Details
               </h2>
               <p className="text-[clamp(0.75rem,1.5vw,0.875rem)] truncate" style={{ color: '#999' }}>
@@ -393,8 +454,9 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
             </div>
           </div>
           
-          <button
+          <button type="button"
             onClick={onClose}
+            aria-label="Close booking details"
             className="rounded-xl transition-all duration-200 hover:scale-110 flex-shrink-0 ml-[clamp(0.5rem,2vw,1rem)]"
             style={{ 
               background: 'white', 
@@ -438,6 +500,28 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
               </div>
             </div>
 
+            {/* Consultation workflow */}
+            <section className="booking-consultation-panel" aria-label="Consultation workflow">
+              <div className="booking-consultation-heading">
+                <div><p>Venue sales workflow</p><h3>Consultation & quotation</h3></div>
+                <StatusBadge status={booking.status} />
+              </div>
+              <div className="booking-consultation-grid">
+                <label>Appointment <input type="datetime-local" value={appointmentAt} onChange={(event) => setAppointmentAt(event.target.value)} /></label>
+                <label>Quoted total (₹) <input type="number" min="0" value={quotedTotal} onChange={(event) => setQuotedTotal(event.target.value)} placeholder="Agreed quote" /></label>
+                <label className="booking-consultation-wide">Consultation notes <textarea value={consultationNotes} onChange={(event) => setConsultationNotes(event.target.value)} placeholder="Meeting notes, package changes, partner introductions…" /></label>
+                <label className="booking-consultation-wide">Contact outcome / amendment reason <textarea value={contactOutcome || workflowNote} onChange={(event) => { setContactOutcome(event.target.value); setWorkflowNote(event.target.value); }} placeholder="What was agreed with the client? Required for a decline, cancellation, or confirmed-booking amendment." /></label>
+              </div>
+              <div className="booking-consultation-actions">
+                <button type="button" onClick={saveConsultation} disabled={isSavingConsultation}>{isSavingConsultation ? 'Saving…' : 'Save discussion'}</button>
+                {booking.status === 'pending' && <><button type="button" onClick={() => moveWorkflow('appointment_scheduled')}>Schedule appointment</button><button type="button" onClick={() => moveWorkflow('quotation_in_progress')}>Start quotation</button><button type="button" className="is-danger" onClick={() => moveWorkflow('declined')}>Decline</button></>}
+                {booking.status === 'appointment_scheduled' && <><button type="button" onClick={() => moveWorkflow('quotation_in_progress')}>Start quotation</button><button type="button" className="is-danger" onClick={() => moveWorkflow('declined')}>Decline</button></>}
+                {booking.status === 'quotation_in_progress' && <><button type="button" className="is-primary" onClick={() => moveWorkflow('confirmed')}>Confirm agreed quote</button><button type="button" className="is-danger" onClick={() => moveWorkflow('declined')}>Decline</button></>}
+                {booking.status === 'confirmed' && <><button type="button" className="is-primary" onClick={() => moveWorkflow('completed')}>Mark completed</button><button type="button" className="is-danger" onClick={() => moveWorkflow('cancelled')}>Cancel booking</button></>}
+              </div>
+              {workflowHistory.length > 0 && <details className="booking-workflow-history"><summary>Recent workflow activity ({workflowHistory.length})</summary><ol>{workflowHistory.slice(0, 5).map((item) => <li key={item.id}><strong>{item.from_status ? `${item.from_status.replaceAll('_', ' ')} → ` : ''}{item.to_status?.replaceAll('_', ' ') || item.action.replaceAll('_', ' ')}</strong><span>{item.note || 'No note'} · {new Date(item.created_at).toLocaleString()}</span></li>)}</ol></details>}
+            </section>
+
             {/* Admin Booking Editor Section */}
             <div>
               <div className="flex items-center gap-[clamp(0.5rem,1.5vw,0.75rem)] mb-[clamp(0.75rem,2vw,1.25rem)]">
@@ -474,24 +558,10 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                     <label className="block mb-[0.5em] text-[clamp(0.75rem,1.5vw,0.875rem)]" style={{ color: '#666' }}>
                       Event Type
                     </label>
-                    <select
-                      value={editEventType}
-                      onChange={(e) => setEditEventType(e.target.value as any)}
-                      className="w-full rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
-                      style={{
-                        background: 'white',
-                        border: '2px solid #E8E5DB',
-                        color: '#2A2A2A',
-                        outline: 'none',
-                        padding: 'clamp(0.5rem,1.5vw,0.75rem) clamp(0.75rem,2vw,1rem)'
-                      }}
-                    >
-                      <option value="birthday">Birthday Party</option>
-                      <option value="meeting_conference">Meeting / Conference</option>
-                      <option value="get_together">Get Together</option>
-                      <option value="awareness_class">Awareness Class</option>
-                      <option value="normal">Wedding/Reception</option>
-                    </select>
+                    <AdminSelect ariaLabel="Event type" value={editEventType} onValueChange={(value) => setEditEventType(value as any)} options={[
+                      { value: 'birthday', label: 'Birthday Party' }, { value: 'meeting_conference', label: 'Meeting / Conference' },
+                      { value: 'get_together', label: 'Get Together' }, { value: 'awareness_class', label: 'Awareness Class' }, { value: 'normal', label: 'Wedding / Reception' },
+                    ]} />
                   </div>
 
                   {/* Package Selector */}
@@ -499,28 +569,10 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                     <label className="block mb-[0.5em] text-[clamp(0.75rem,1.5vw,0.875rem)]" style={{ color: '#666' }}>
                       Package
                     </label>
-                    <select
-                      value={editPackageId}
-                      onChange={(e) => {
-                        setEditPackageId(e.target.value);
-                        setPackageChanged(true);
-                      }}
-                      className="w-full rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
-                      style={{
-                        background: 'white',
-                        border: '2px solid #E8E5DB',
-                        color: '#2A2A2A',
-                        outline: 'none',
-                        padding: 'clamp(0.5rem,1.5vw,0.75rem) clamp(0.75rem,2vw,1rem)'
-                      }}
-                    >
-                      <option value="">Select a package...</option>
-                      {allPackages.map((pkg) => (
-                        <option key={pkg.id} value={pkg.id}>
-                          {pkg.name} - ₹{pkg.price?.toLocaleString()}
-                        </option>
-                      ))}
-                    </select>
+                    <AdminSelect ariaLabel="Package" value={editPackageId} placeholder="Select a package…" onValueChange={(value) => {
+                      setEditPackageId(value);
+                      setPackageChanged(true);
+                    }} options={allPackages.map((pkg) => ({ value: pkg.id, label: `${pkg.name} - ₹${pkg.price?.toLocaleString() || 0}` }))} />
                     {packageChanged && (
                       <p className="mt-2 text-[clamp(0.75rem,1.5vw,0.875rem)] italic" style={{ color: '#F4B942' }}>
                         ⚠ Package changed — price will be recalculated on save
@@ -533,24 +585,10 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                     <label className="block mb-[0.5em] text-[clamp(0.75rem,1.5vw,0.875rem)]" style={{ color: '#666' }}>
                       Time Slot
                     </label>
-                    <select
-                      value={editTimeSlot}
-                      onChange={(e) => setEditTimeSlot(e.target.value as any)}
-                      className="w-full rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
-                      style={{
-                        background: 'white',
-                        border: '2px solid #E8E5DB',
-                        color: '#2A2A2A',
-                        outline: 'none',
-                        padding: 'clamp(0.5rem,1.5vw,0.75rem) clamp(0.75rem,2vw,1rem)'
-                      }}
-                    >
-                      <option value="morning">Morning</option>
-                      <option value="evening">Evening</option>
-                      <option value="night">Night</option>
-                      <option value="full_day">Full Day</option>
-                      <option value="short_duration">Short Duration (4-5 hours)</option>
-                    </select>
+                    <AdminSelect ariaLabel="Time slot" value={editTimeSlot} onValueChange={(value) => setEditTimeSlot(value as any)} options={[
+                      { value: 'morning', label: 'Morning' }, { value: 'evening', label: 'Evening' }, { value: 'night', label: 'Night' },
+                      { value: 'full_day', label: 'Full Day' }, { value: 'short_duration', label: 'Short Duration (4–5 hours)' },
+                    ]} />
                   </div>
 
                   {/* Start & End Time (conditional) */}
@@ -1345,7 +1383,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
             {booking.status === 'pending' && (
               <>
                 <button
-                  onClick={handleConfirmBooking}
+                  onClick={() => moveWorkflow('quotation_in_progress')}
                   disabled={updateStatusMutation.isPending}
                   className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] disabled:opacity-50 disabled:cursor-not-allowed text-[clamp(0.875rem,1.5vw,1rem)]"
                   style={{
@@ -1356,10 +1394,10 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                   }}
                 >
                   <Check className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Confirm Booking</span>
+                  <span className="font-medium">Start quotation</span>
                 </button>
                 <button
-                  onClick={() => onCancel(booking)}
+                  onClick={() => moveWorkflow('declined')}
                   className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] text-[clamp(0.875rem,1.5vw,1rem)]"
                   style={{
                     background: 'white',
@@ -1377,7 +1415,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                   }}
                 >
                   <XCircle className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Reject</span>
+                  <span className="font-medium">Decline</span>
                 </button>
               </>
             )}
@@ -1385,7 +1423,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
             {booking.status === 'confirmed' && (
               <>
                 <button
-                  onClick={() => onStatusUpdate(booking.id!, 'completed')}
+                  onClick={() => moveWorkflow('completed')}
                   disabled={updateStatusMutation.isPending}
                   className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] disabled:opacity-50 disabled:cursor-not-allowed text-[clamp(0.875rem,1.5vw,1rem)]"
                   style={{
@@ -1399,7 +1437,7 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                   <span className="font-medium">Mark Completed</span>
                 </button>
                 <button
-                  onClick={() => onCancel(booking)}
+                  onClick={() => moveWorkflow('cancelled')}
                   className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] text-[clamp(0.875rem,1.5vw,1rem)]"
                   style={{
                     background: 'white',

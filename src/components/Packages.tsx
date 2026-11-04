@@ -1,345 +1,651 @@
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Sparkles } from 'lucide-react';
-import { usePackages } from '../src/hooks/usePackages';
+import {
+  Check,
+  Sparkles,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  ShieldCheck,
+  Users,
+  CheckCircle2,
+  Clock,
+  Sparkle
+} from 'lucide-react';
+import { usePackages } from '@/hooks/usePackages';
 import { CardSkeleton } from './SkeletonLoader';
-import { useState, useMemo } from 'react';
-import { Package } from '../src/schemas/packages';
-import { getOptimizedSupabaseUrl } from '../src/utils/imageUtils';
+import { Package } from '@/schemas/packages';
 
 const FALLBACK_PACKAGES: Package[] = [
   {
-    id: 'fallback-1',
-    name: 'Luxury Wedding Package',
-    description: 'A complete package for your perfect day, including premium catering, exquisite floral arrangements, and exclusive use of the grand hall.',
-    features: ['Premium 5-Course Catering', 'Custom Floral Decor', 'Grand Hall Access', 'Bridal Suite', 'Dedicated Event Planner'],
-    price: 0,
+    id: 'pkg-popular',
+    name: 'Popular Package',
+    description: 'Our most comprehensive package with all amenities, designed for memorable wedding receptions and large celebrations.',
+    features: [
+      'Full Grand Hall & Staging Access',
+      'Central Air-Conditioning Throughout',
+      'Air-Conditioned Dining Hall Access',
+      'Private Bridal Suite Sanctuary',
+      'Generous Parking Plaza Entry',
+      'Uninterrupted Generator Power Backup'
+    ],
+    price: 40000,
     created_at: new Date().toISOString()
   },
   {
-    id: 'fallback-2',
-    name: 'Corporate Excellence',
-    description: 'Professional setup for conferences and corporate galas with state-of-the-art AV equipment and executive dining.',
-    features: ['Advanced AV Setup', 'Executive Dining', 'High-Speed Wi-Fi', 'Breakout Rooms', 'Valet Parking'],
-    price: 0,
+    id: 'pkg-demanded',
+    name: 'Demanded Package',
+    description: 'Our most sought-after event package with essential amenities for vibrant family celebrations and ceremonies.',
+    features: [
+      'Grand Event Hall Access',
+      'Central Air-Conditioning',
+      'Dining Hall Access for Guests',
+      'Dedicated Stage Setup Area',
+      'Dedicated Parking Area',
+      'Power Generator Backup'
+    ],
+    price: 35000,
     created_at: new Date().toISOString()
   },
   {
-    id: 'fallback-3',
-    name: 'Grand Celebration',
-    description: 'Ideal for anniversaries and milestone birthdays with flexible spaces, entertainment options, and custom menus.',
-    features: ['Flexible Space Layout', 'Custom Menu Design', 'Entertainment Stage', 'Dance Floor', 'Photography Points'],
-    price: 0,
+    id: 'pkg-meeting',
+    name: 'Meeting Package',
+    description: 'Our premier package configured for business conferences, corporate conclaves, counseling, and seminars.',
+    features: [
+      'Acoustically Tuned Stage & Hall',
+      'Central Air-Conditioning',
+      'Seating Setup for Attendees',
+      'Executive Dining & Refreshment Area',
+      'Parking for Attendees & VIPs',
+      'Uninterrupted Power Backup'
+    ],
+    price: 30000,
     created_at: new Date().toISOString()
   }
 ];
 
 export function Packages() {
   const navigate = useNavigate();
-  const { data: packages = [], isLoading, error, refetch } = usePackages();
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const { data: rawPackages = [], isLoading } = usePackages();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
 
-  if (isLoading) {
-    return (
-      <section id="packages" className="section" style={{ background: 'var(--gray-50)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
-        <div className="container" style={{ width: '100%' }}>
-          <motion.div
-            className="section-header"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="section-badge">Packages</div>
-            <h2 className="section-title">Curated Event Packages</h2>
-            <p className="section-description">
-              Choose from our all-inclusive luxury packages designed to make your wedding or corporate event truly extraordinary.
+  // Mouse drag-to-scroll state
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
+
+  const packages = (rawPackages && rawPackages.length > 0) ? rawPackages : FALLBACK_PACKAGES;
+
+  const updateScrollButtons = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+    setCanScrollLeft(scrollLeft > 15);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 15);
+
+    // Calculate approximate active card
+    const cardWidth = 380 + 24; // width + gap
+    const index = Math.round(scrollLeft / cardWidth);
+    setActiveCardIndex(Math.min(Math.max(index, 0), packages.length - 1));
+  };
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollButtons, { passive: true });
+    updateScrollButtons();
+    return () => el.removeEventListener('scroll', updateScrollButtons);
+  }, [packages]);
+
+  const scrollByAmount = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    const scrollAmount = 400;
+    scrollContainerRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const scrollToCard = (index: number) => {
+    if (!scrollContainerRef.current) return;
+    const cardWidth = 380 + 24;
+    scrollContainerRef.current.scrollTo({
+      left: index * cardWidth,
+      behavior: 'smooth'
+    });
+  };
+
+  // Mouse Drag Handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeftState(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollContainerRef.current.scrollLeft = scrollLeftState - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false);
+  };
+
+  return (
+    <section 
+      id="packages" 
+      style={{ 
+        background: '#FAF8F5', 
+        padding: '100px 24px 90px 24px', 
+        borderBottom: '1px solid #E8E3DA',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        {/* SECTION HEADER WITH INTEGRATED CONTROLS */}
+        <div 
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-end', 
+            marginBottom: '40px',
+            flexWrap: 'wrap',
+            gap: '24px'
+          }}
+        >
+          <div>
+            <div 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                letterSpacing: '2px',
+                textTransform: 'uppercase',
+                color: '#537517',
+                marginBottom: '10px',
+              }}
+            >
+              <Sparkles size={14} style={{ color: '#537517' }} />
+              <span>Curated Venue Packages</span>
+            </div>
+            <h2 
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: 'clamp(2.1rem, 4.2vw, 3.2rem)',
+                color: '#1B221B',
+                margin: '0 0 12px 0',
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Transparent Plans for Every Occasion
+            </h2>
+            <p style={{ color: '#737E72', fontSize: '1rem', maxWidth: '620px', margin: 0, lineHeight: 1.6 }}>
+              Swipe horizontally to explore curated offerings. Choose your preferred plan to pre-fill your reservation folio instantly.
             </p>
-          </motion.div>
-          <p style={{
-            color: 'var(--gray-300)',
-            fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
-            lineHeight: 1.65,
-            marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
-            margin: 0,
-          }}>
-            Calicut's premier luxury venue for weddings, corporate events, and grand celebrations. Experience world-class hospitality and state-of-the-art facilities.
-          </p>
-          <div
-            className="packages-container"
-            style={{
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              display: 'flex',
-              gap: 'clamp(1rem, 3vw, 1.5rem)',
-              padding: '1rem 0.5rem',
-              scrollBehavior: 'smooth',
-              scrollbarWidth: 'none',
-            }}
-          >
+          </div>
+
+          {/* DESKTOP / TABLET SLIDER NAVIGATION CONTROLS */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <span style={{ fontSize: '0.8125rem', color: '#737E72', fontWeight: 600 }}>
+              0{activeCardIndex + 1} / 0{packages.length}
+            </span>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => scrollByAmount('left')}
+                disabled={!canScrollLeft}
+                aria-label="Previous Package"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '50%',
+                  background: canScrollLeft ? '#FFFFFF' : 'rgba(232, 227, 218, 0.4)',
+                  border: '1px solid #DFCAAB',
+                  color: canScrollLeft ? '#1B221B' : '#B0A89C',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: canScrollLeft ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s ease',
+                  boxShadow: canScrollLeft ? '0 4px 12px rgba(0, 0, 0, 0.06)' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (canScrollLeft) {
+                    e.currentTarget.style.background = '#537517';
+                    e.currentTarget.style.color = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '#537517';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (canScrollLeft) {
+                    e.currentTarget.style.background = '#FFFFFF';
+                    e.currentTarget.style.color = '#1B221B';
+                    e.currentTarget.style.borderColor = '#DFCAAB';
+                  }
+                }}
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => scrollByAmount('right')}
+                disabled={!canScrollRight}
+                aria-label="Next Package"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '50%',
+                  background: canScrollRight ? '#537517' : 'rgba(232, 227, 218, 0.4)',
+                  border: canScrollRight ? '1px solid #537517' : '1px solid #DFCAAB',
+                  color: canScrollRight ? '#FFFFFF' : '#B0A89C',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: canScrollRight ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s ease',
+                  boxShadow: canScrollRight ? '0 4px 14px rgba(83, 117, 23, 0.3)' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (canScrollRight) {
+                    e.currentTarget.style.background = '#3E5811';
+                    e.currentTarget.style.borderColor = '#3E5811';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (canScrollRight) {
+                    e.currentTarget.style.background = '#537517';
+                    e.currentTarget.style.borderColor = '#537517';
+                  }
+                }}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* HORIZONTAL SCROLL CARDS CONTAINER */}
+        {isLoading ? (
+          <div style={{ display: 'flex', gap: '24px', overflowX: 'hidden' }}>
             {[1, 2, 3].map((i) => (
-              <div key={i} style={{ minWidth: 'clamp(300px, 85vw, 380px)', width: 'clamp(300px, 85vw, 380px)' }}>
+              <div key={i} style={{ flex: '0 0 380px' }}>
                 <CardSkeleton />
               </div>
             ))}
           </div>
-        </div>
-      </section>
-    );
-  }
+        ) : (
+          <div
+            ref={scrollContainerRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+            style={{
+              display: 'flex',
+              gap: '24px',
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              scrollBehavior: 'smooth',
+              padding: '16px 4px 32px 4px',
+              cursor: isDragging ? 'grabbing' : 'grab',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {packages.map((pkg, index) => {
+              const isPopular = index === 0;
+              const formattedPrice = pkg.price && pkg.price > 0
+                ? `\u20B9${Number(pkg.price).toLocaleString('en-IN')}`
+                : 'Custom Quote';
 
-  if (error) {
-    return (
-      <section id="packages" className="section" style={{ background: 'var(--gray-50)' }}>
-        <div className="container">
-          <div className="text-center">
-            <p style={{ color: '#ef4444', marginBottom: 'var(--space-4)' }}>
-              Error: {error instanceof Error ? error.message : 'Failed to load packages'}
-            </p>
-            <button onClick={() => refetch()} className="btn btn-primary">
-              Retry
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="packages" className="section" style={{ background: 'var(--gray-50)', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
-      <div className="container" style={{ width: '100%' }}>
-        {/* Section Header */}
-        <motion.div
-          className="section-header"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="section-badge">Packages</div>
-          <h2 className="section-title">Curated Event Packages</h2>
-          <p className="section-description">
-            Choose from our all-inclusive luxury packages designed to make your wedding or corporate event truly extraordinary.
-          </p>
-        </motion.div>
-
-        {/* Description paragraph */}
-        <p style={{
-          color: 'var(--gray-300)',
-          fontSize: 'clamp(0.875rem, 1.75vw, 0.9375rem)',
-          lineHeight: 1.65,
-          marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
-          margin: 0,
-        }}>
-          Calicut's premier luxury venue for weddings, corporate events, and grand celebrations. Experience world-class hospitality and state-of-the-art facilities.
-        </p>
-
-        <div
-          className="packages-container"
-          style={{
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            display: 'flex',
-            gap: 'clamp(1rem, 3vw, 1.5rem)',
-            padding: '1rem 0.5rem 2rem',
-            scrollBehavior: 'smooth',
-            WebkitOverflowScrolling: 'touch',
-            scrollSnapType: 'x mandatory',
-            // Hide scrollbar
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
-        >
-          <style>{`
-            .packages-container::-webkit-scrollbar {
-              display: none;
-            }
-            @media (max-width: 768px) {
-              .packages-container {
-                flex-direction: column;
-                align-items: center;
-                overflow-x: hidden;
-                scroll-snap-type: none;
-              }
-              .package-card {
-                width: 100% !important;
-                max-width: 100% !important;
-                min-width: unset !important;
-                flex: none !important;
-              }
-            }
-          `}</style>
-
-          {(packages.length > 0 ? packages : FALLBACK_PACKAGES).map((pkg: Package, index: number) => (
-            <motion.article
-              key={pkg.id}
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="package-card"
-              style={{
-                flex: '0 0 clamp(300px, 85vw, 380px)',
-                minWidth: 'clamp(300px, 85vw, 380px)',
-                maxWidth: '380px',
-                minHeight: '500px',
-                scrollSnapAlign: 'start',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'all 0.4s ease',
-                boxShadow: hoveredCard === pkg.id
-                  ? '0 20px 60px rgba(0, 0, 0, 0.4)'
-                  : 'var(--shadow-lg)',
-                backgroundColor: 'var(--gray-900)', // fallback
-              }}
-              onMouseEnter={() => setHoveredCard(pkg.id ?? null)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              {/* Background Image */}
-              {pkg.image_url ? (
-                <img
-                  src={getOptimizedSupabaseUrl(pkg.image_url, 600)}
-                  alt={pkg.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                  width="600"
-                  height="800"
-                  decoding="async"
-                />
-              ) : (
+              return (
                 <div
-                  className="absolute inset-0 w-full h-full"
-                  style={{ background: 'linear-gradient(135deg, var(--lime-primary), var(--lime-secondary))' }}
-                />
-              )}
-              {/* Dark overlay */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: hoveredCard === pkg.id
-                    ? 'rgba(0, 0, 0, 0.75)'
-                    : 'rgba(0, 0, 0, 0.5)',
-                  transition: 'background-color 0.4s ease',
-                  zIndex: 1,
-                }}
-              />
+                  key={pkg.id || index}
+                  className="package-card"
+                  style={{
+                    flex: '0 0 clamp(320px, 84vw, 380px)',
+                    scrollSnapAlign: 'start',
+                    background: '#FFFFFF',
+                    borderRadius: '24px',
+                    border: isPopular ? '2px solid #537517' : '1px solid #E8E3DA',
+                    boxShadow: isPopular
+                      ? '0 16px 40px rgba(83, 117, 23, 0.12)'
+                      : '0 8px 24px rgba(27, 34, 27, 0.05)',
+                    padding: '36px 30px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    position: 'relative',
+                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    userSelect: 'none',
+                  }}
+                >
+                  {/* Popular Badge */}
+                  {isPopular && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '-13px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: '#537517',
+                        color: '#FFFFFF',
+                        padding: '4px 18px',
+                        borderRadius: '999px',
+                        fontSize: '0.6875rem',
+                        fontWeight: 700,
+                        letterSpacing: '1px',
+                        textTransform: 'uppercase',
+                        boxShadow: '0 4px 12px rgba(83, 117, 23, 0.35)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Most Popular Choice
+                    </div>
+                  )}
 
-              {/* Package Content */}
-              <div
-                className="package-card-content"
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  padding: 'clamp(1.2rem, 4vw, 1.8rem)',
-                  position: 'relative',
-                  zIndex: 2,
-                  overflow: 'hidden',
-                  paddingBottom: '5rem', // Space for button
-                }}
-              >
-                <h3 style={{
-                  marginBottom: 'var(--space-3)',
-                  color: 'white',
-                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
-                }}>
-                  {pkg.name}
-                </h3>
-                <p style={{
-                  marginBottom: 'var(--space-4)',
-                  color: 'rgba(255, 255, 255, 0.95)',
-                  textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
-                  lineHeight: '1.6',
-                }}>
-                  {pkg.description}
-                </p>
-
-                {/* Features */}
-                {pkg.features && pkg.features.length > 0 && (
-                  <ul style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: 0,
-                  }}>
-                    {pkg.features.map((feature: string, idx: number) => (
-                      <li
-                        key={idx}
+                  <div>
+                    {/* Header */}
+                    <div style={{ marginBottom: '22px' }}>
+                      <h3 
                         style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: 'var(--space-2)',
-                          marginBottom: 'var(--space-2)',
+                          fontFamily: "'Playfair Display', Georgia, serif",
+                          fontSize: '1.625rem',
+                          fontWeight: 700,
+                          color: '#1B221B',
+                          marginBottom: '8px',
+                          letterSpacing: '-0.015em',
                         }}
                       >
-                        <Check
-                          size={16}
-                          style={{
-                            color: 'var(--lime-primary)',
-                            flexShrink: 0,
-                            marginTop: '2px',
-                            filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))',
-                          }}
-                        />
-                        <span style={{
-                          fontSize: '0.875rem',
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
-                        }}>
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                        {pkg.name}
+                      </h3>
+                      <p 
+                        style={{ 
+                          color: '#737E72', 
+                          fontSize: '0.90625rem', 
+                          lineHeight: 1.55, 
+                          minHeight: '44px', 
+                          margin: 0 
+                        }}
+                      >
+                        {pkg.description}
+                      </p>
+                    </div>
 
-              {/* Book Button - Always visible at bottom */}
-              <button
-                className="btn btn-primary"
-                style={{
-                  position: 'absolute',
-                  bottom: '1.2rem',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 'calc(100% - 2.4rem)',
-                  zIndex: 3,
-                  background: 'var(--lime-primary)',
-                  color: '#000',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(182, 245, 0, 0.4)',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(182, 245, 0, 0.6)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateX(-50%) translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(182, 245, 0, 0.4)';
-                }}
-                onClick={() => navigate('/booking')}
-              >
-                <Sparkles size={18} />
-                <span>Book Now</span>
-              </button>
-            </motion.article>
+                    {/* Pricing Box */}
+                    <div 
+                      className="package-card__price-box"
+                      style={{
+                        padding: '18px 20px',
+                        background: '#FAF8F5',
+                        borderRadius: '16px',
+                        border: '1px solid #F0EBE2',
+                        marginBottom: '26px',
+                      }}
+                    >
+                      <div 
+                        style={{ 
+                          fontSize: '0.6875rem', 
+                          color: '#737E72', 
+                          textTransform: 'uppercase', 
+                          letterSpacing: '1px', 
+                          fontWeight: 600,
+                          marginBottom: '4px' 
+                        }}
+                      >
+                        Package Investment
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                        <span 
+                          style={{
+                            fontFamily: "'Playfair Display', Georgia, serif",
+                            fontSize: '2.1rem',
+                            fontWeight: 700,
+                            color: '#1B221B',
+                          }}
+                        >
+                          {formattedPrice}
+                        </span>
+                        {pkg.price && pkg.price > 0 && (
+                          <span style={{ fontSize: '0.8125rem', color: '#737E72', fontWeight: 500 }}>/ slot</span>
+                        )}
+                      </div>
+                      <div 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          color: '#537517', 
+                          fontWeight: 600, 
+                          marginTop: '6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        <span>+</span>
+                        <span>₹3,000 Mandatory Floor Cleaning Service</span>
+                      </div>
+                    </div>
+
+                    {/* Features List */}
+                    <div style={{ marginBottom: '32px' }}>
+                      <div 
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          fontWeight: 700, 
+                          color: '#1B221B', 
+                          textTransform: 'uppercase', 
+                          letterSpacing: '1px', 
+                          marginBottom: '14px' 
+                        }}
+                      >
+                        Included In This Plan:
+                      </div>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '11px' }}>
+                        {pkg.features && pkg.features.map((feature: string, fIdx: number) => (
+                          <li 
+                            key={fIdx} 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'flex-start', 
+                              gap: '10px', 
+                              fontSize: '0.875rem', 
+                              color: '#3B453B',
+                              lineHeight: 1.45
+                            }}
+                          >
+                            <div 
+                              className="package-card__check-icon"
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '50%',
+                                background: '#EDF6DE',
+                                color: '#537517',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                marginTop: '2px',
+                              }}
+                            >
+                              <Check size={11} strokeWidth={3} />
+                            </div>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Action CTA */}
+                  <button
+                    type="button"
+                    className={`package-card__cta ${isPopular ? 'package-card__cta--popular' : 'package-card__cta--secondary'}`}
+                    onClick={() => navigate(`/booking?package=${pkg.id}`)}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: isPopular ? 'linear-gradient(135deg, #537517 0%, #3B5410 100%)' : '#FFFFFF',
+                      color: isPopular ? '#FFFFFF' : '#1B221B',
+                      border: isPopular ? 'none' : '1px solid #DFCAAB',
+                      borderRadius: '12px',
+                      fontSize: '0.9375rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      boxShadow: isPopular ? '0 6px 18px rgba(83, 117, 23, 0.3)' : 'none',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (isPopular) {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #5F861B 0%, #486614 100%)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      } else {
+                        e.currentTarget.style.background = '#FAF8F5';
+                        e.currentTarget.style.borderColor = '#537517';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (isPopular) {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, #537517 0%, #3B5410 100%)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      } else {
+                        e.currentTarget.style.background = '#FFFFFF';
+                        e.currentTarget.style.borderColor = '#DFCAAB';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    <span>Select Plan & Reserve</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* INTERACTIVE CARD INDICATOR PILLS */}
+        <div 
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            gap: '8px', 
+            marginTop: '8px',
+            marginBottom: '44px' 
+          }}
+        >
+          {packages.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => scrollToCard(idx)}
+              aria-label={`Go to package ${idx + 1}`}
+              style={{
+                width: activeCardIndex === idx ? '28px' : '8px',
+                height: '8px',
+                borderRadius: '999px',
+                background: activeCardIndex === idx ? '#537517' : '#DFCAAB',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+            />
           ))}
         </div>
 
-        {/* Fallback packages already shown if empty, so no need for 'No packages' text */}
+        {/* ALL-INCLUSIVE AMENITIES GUARANTEE BANNER */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8E3DA',
+            borderRadius: '20px',
+            padding: '24px 28px',
+            boxShadow: '0 8px 24px rgba(27, 34, 27, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '20px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div 
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: '#EDF6DE',
+                color: '#537517',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <ShieldCheck size={22} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: '#1B221B', fontSize: '0.9375rem' }}>
+                Every Package Includes Full Sanctuary Standards
+              </div>
+              <div style={{ color: '#737E72', fontSize: '0.8125rem', marginTop: '2px' }}>
+                Central Air Conditioning &bull; Heavy-Duty Generator Power Backup &bull; Dedicated Security &bull; Eco Zero-Plastic Hall
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate('/booking')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '10px',
+              background: '#FAF8F5',
+              border: '1px solid #DFCAAB',
+              color: '#537517',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#537517';
+              e.currentTarget.style.color = '#FFFFFF';
+              e.currentTarget.style.borderColor = '#537517';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FAF8F5';
+              e.currentTarget.style.color = '#537517';
+              e.currentTarget.style.borderColor = '#DFCAAB';
+            }}
+          >
+            <span>Compare Time Slots</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
       </div>
     </section>
   );

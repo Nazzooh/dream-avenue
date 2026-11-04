@@ -1,5 +1,5 @@
 // src/components/admin/bookings/exportBookingsUtils.ts
-import { Booking } from '../../../src/schemas/bookings';
+import { Booking } from '@/schemas/bookings';
 
 export function exportBookingsToCSV(bookings: Booking[], filename = 'bookings-report.csv') {
   if (!bookings || !bookings.length) return;

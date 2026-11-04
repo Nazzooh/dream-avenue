@@ -1,324 +1,279 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
+import { Eye, ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { X, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
-import { useGalleryItems } from '../src/hooks/useGallery';
+import { useGalleryItems } from '@/hooks/useGallery';
 import { GalleryImageSkeleton } from './SkeletonLoader';
+import { usePublicPreferences } from '@/context/PublicPreferences';
+import { GalleryLightbox } from './gallery/GalleryLightbox';
+
+const CURATED_GALLERY_FALLBACKS = [
+  {
+    id: 'gal-1',
+    image_url: '/new-gallery-images/banquet-hall.png',
+    title: 'The Grand Event Hall',
+    category: 'Architecture',
+  },
+  {
+    id: 'gal-2',
+    image_url: '/new-gallery-images/dining.png',
+    title: 'Banquet Dining Hall',
+    category: 'Dining',
+  },
+  {
+    id: 'gal-3',
+    image_url: '/new-gallery-images/outdoor.png',
+    title: 'Landscaped Garden & Lawn',
+    category: 'Outdoor',
+  },
+  {
+    id: 'gal-4',
+    image_url: '/new-gallery-images/corporate-event.png',
+    title: 'Conclave & Stage Setup',
+    category: 'Ceremony',
+  },
+];
 
 export function Gallery() {
-  const { data: galleryImages = [], isLoading, error, refetch } = useGalleryItems();
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const revealCards = motionEnabled && desktopMotionAllowed;
+  const { data: rawImages = [], isLoading } = useGalleryItems();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<string>('All');
+  const [showAll, setShowAll] = useState(false);
+
+  const galleryImages = (rawImages && rawImages.length > 0) ? rawImages : CURATED_GALLERY_FALLBACKS;
+  const categories = ['All', 'Hall', 'Dining', 'Outdoor', 'Ceremony'];
+
+  const filteredImages = activeFilter === 'All'
+    ? galleryImages
+    : galleryImages.filter((img: any) =>
+        (img.category && img.category.toLowerCase().includes(activeFilter.toLowerCase())) ||
+        (img.title && img.title.toLowerCase().includes(activeFilter.toLowerCase()))
+      );
+
+  const displayList = filteredImages.length > 0 ? filteredImages : galleryImages;
+  const visibleList = showAll ? displayList : displayList.slice(0, 6);
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
     setLightboxOpen(true);
   };
 
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-  };
+  const closeLightbox = () => setLightboxOpen(false);
+  const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % displayList.length);
+  const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + displayList.length) % displayList.length);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
-  };
-
-  if (isLoading) {
-    return (
-      <section id="gallery" className="section" style={{ background: 'var(--white)' }}>
-        <div className="container">
-          <motion.div
-            className="section-header"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="section-badge">Gallery</div>
-            <h2 className="section-title">Moments We've Created</h2>
-            <p className="section-description">
-              A glimpse into the beautiful events and celebrations we've hosted
-            </p>
-          </motion.div>
-          <div 
+  return (
+    <section id="gallery" style={{ background: '#FAF8F5', padding: '100px 24px', borderBottom: '1px solid #E8E3DA' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: 'var(--space-6)',
+              display: 'inline-block',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              color: '#537517',
+              marginBottom: '10px',
             }}
           >
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            Visual Journey
+          </div>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              color: '#1B221B',
+              margin: '0 0 16px 0',
+              fontWeight: 700,
+            }}
+          >
+            A Glimpse Into Dream Avenue
+          </h2>
+          <p style={{ color: '#737E72', fontSize: '1.0625rem', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6 }}>
+            Explore the harmonious architecture, ambient lighting, and celebratory spaces that bring your milestones to life.
+          </p>
+
+          {/* Filter Pills */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '10px',
+              marginTop: '32px',
+            }}
+          >
+            {categories.map((cat) => {
+              const isSelected = activeFilter === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setActiveFilter(cat);
+                    setShowAll(false);
+                  }}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '999px',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    border: isSelected ? '1px solid #537517' : '1px solid #E8E3DA',
+                    background: isSelected ? '#537517' : '#FFFFFF',
+                    color: isSelected ? '#FFFFFF' : '#485247',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Gallery Grid */}
+        {isLoading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+            {[1, 2, 3, 4].map((i) => (
               <GalleryImageSkeleton key={i} />
             ))}
           </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section id="gallery" className="section" style={{ background: 'var(--white)' }}>
-        <div className="container">
-          <div className="text-center">
-            <p style={{ color: '#ef4444', marginBottom: 'var(--space-4)' }}>
-              Error: {error instanceof Error ? error.message : 'Failed to load gallery'}
-            </p>
-            <button onClick={() => refetch()} className="btn btn-primary">
-              Retry
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="gallery" className="section" style={{ background: 'var(--white)' }}>
-      <div className="container">
-        {/* Section Header */}
-        <motion.div
-          className="section-header"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="section-badge">Gallery</div>
-          <h2 className="section-title">Moments We've Created</h2>
-          <p className="section-description">
-            A glimpse into the beautiful events and celebrations we've hosted
-          </p>
-        </motion.div>
-
-        {/* Gallery Grid */}
-        {galleryImages.length > 0 ? (
-          <div 
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: 'var(--space-6)',
-            }}
-          >
-            {galleryImages.map((image, index) => (
-              <motion.div
-                key={image.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.6, delay: index * 0.05 }}
-                onClick={() => openLightbox(index)}
-                style={{
-                  cursor: 'pointer',
-                  position: 'relative',
-                  height: '300px',
-                  borderRadius: 'var(--radius-xl)',
-                  overflow: 'hidden',
-                  boxShadow: 'var(--shadow-md)',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-xl)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                }}
-              >
-                <ImageWithFallback
-                  src={image.image_url}
-                  alt={image.title || 'Gallery image'}
+        ) : (
+          <>
+            <div
+              className="mobile-card-rail mobile-gallery-rail"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                gap: '24px',
+              }}
+            >
+              {visibleList.map((image: any, index: number) => (
+                <motion.div
+                  className="mobile-rail-card"
+                  key={image.id || index}
+                  initial={revealCards ? { opacity: 0, y: 20 } : false}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: (index % 6) * 0.05 }}
+                  onClick={() => openLightbox(index)}
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    height: '320px',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    background: '#F4EFEB',
+                    border: '1px solid #E8E3DA',
+                    boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
                   }}
-                />
-                {image.title && (
+                  whileHover={{
+                    y: -4,
+                    boxShadow: '0 16px 36px rgba(27, 34, 27, 0.08)',
+                    borderColor: '#DFCAAB',
+                  }}
+                >
+                  <ImageWithFallback
+                    src={image.image_url}
+                    alt={image.title || 'Dream Avenue Event Hall'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.5s ease',
+                    }}
+                  />
                   <div
                     style={{
                       position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      padding: 'var(--space-4)',
-                      background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent)',
-                      color: 'white',
+                      inset: 0,
+                      background: 'linear-gradient(to top, rgba(27, 34, 27, 0.75) 0%, transparent 60%)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-end',
+                      padding: '20px',
+                      color: '#FAF8F5',
                     }}
                   >
-                    <h4 style={{ color: 'white', margin: 0 }}>{image.title}</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        {image.category && (
+                          <div style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#DFCAAB', marginBottom: '2px' }}>
+                            {image.category}
+                          </div>
+                        )}
+                        <h4 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.15rem', margin: 0, fontWeight: 600 }}>
+                          {image.title || 'Event Hall Ambiance'}
+                        </h4>
+                      </div>
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          backdropFilter: 'blur(8px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Eye size={16} />
+                      </div>
+                    </div>
                   </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div 
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: 'var(--space-6)',
-            }}
-          >
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.6, delay: i * 0.05 }}
-                style={{
-                  height: '300px',
-                  borderRadius: 'var(--radius-xl)',
-                  overflow: 'hidden',
-                  background: `linear-gradient(135deg, rgba(200, 212, 107, 0.${i + 2}), rgba(100, 100, 100, 0.1))`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  border: '1px dashed rgba(200, 212, 107, 0.3)',
-                }}
-              >
-                <ImageIcon size={48} style={{ color: 'rgba(200, 212, 107, 0.5)', marginBottom: '1rem' }} />
-                <h4 style={{ color: 'var(--text-muted)', margin: 0, fontWeight: 500 }}>Coming Soon</h4>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
+                </motion.div>
+              ))}
+            </div>
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {lightboxOpen && galleryImages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.95)',
-              zIndex: 200,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 'var(--space-6)',
-            }}
-            onClick={closeLightbox}
-          >
-            <button
-              onClick={closeLightbox}
-              style={{
-                position: 'absolute',
-                top: 'var(--space-6)',
-                right: 'var(--space-6)',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <X size={24} />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevImage();
-              }}
-              style={{
-                position: 'absolute',
-                left: 'var(--space-6)',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <ChevronLeft size={24} />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextImage();
-              }}
-              style={{
-                position: 'absolute',
-                right: 'var(--space-6)',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            <motion.div
-              key={currentImageIndex}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                position: 'relative',
-              }}
-            >
-              <img
-                src={galleryImages[currentImageIndex].image_url}
-                alt={galleryImages[currentImageIndex].title || 'Gallery image'}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '90vh',
-                  objectFit: 'contain',
-                }}
-              />
-              {galleryImages[currentImageIndex].title && (
-                <div
+            {/* Top 6 Expansion Action: See More / Show Less */}
+            {displayList.length > 6 && (
+              <div style={{ textAlign: 'center', marginTop: '40px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAll((prev) => !prev)}
+                  className="btn-editorial-outline"
                   style={{
-                    marginTop: 'var(--space-4)',
-                    textAlign: 'center',
-                    color: 'white',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '13px 30px',
+                    borderRadius: '999px',
+                    cursor: 'pointer',
+                    fontSize: '0.9375rem',
+                    fontWeight: 600,
                   }}
                 >
-                  <h3 style={{ color: 'white' }}>{galleryImages[currentImageIndex].title}</h3>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
+                  <span>
+                    {showAll ? 'Show Fewer Photos' : `Explore All Photos (${displayList.length})`}
+                  </span>
+                  <ChevronDown
+                    size={17}
+                    style={{
+                      transform: showAll ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.25s ease',
+                    }}
+                  />
+                </button>
+              </div>
+            )}
+          </>
         )}
-      </AnimatePresence>
+
+        <GalleryLightbox
+          isOpen={lightboxOpen}
+          images={displayList}
+          currentIndex={currentImageIndex}
+          onClose={closeLightbox}
+          onNext={nextImage}
+          onPrev={prevImage}
+        />
+      </div>
     </section>
   );
 }

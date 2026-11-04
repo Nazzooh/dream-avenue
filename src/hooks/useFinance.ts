@@ -1,0 +1,9 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFinancialTransaction, getFinancialTransactions, reverseFinancialTransaction, updateFinancialTransaction, type FinancialTransaction, type FinancialTransactionInput } from '../api/finance';
+import { toast } from 'sonner';
+
+const financeKey = ['finance', 'transactions'] as const;
+export function useFinancialTransactions(enabled = true) { return useQuery({ queryKey: financeKey, queryFn: getFinancialTransactions, enabled }); }
+export function useCreateFinancialTransaction() { const client = useQueryClient(); return useMutation({ mutationFn: (input: FinancialTransactionInput) => createFinancialTransaction(input), onSuccess: () => { client.invalidateQueries({ queryKey: financeKey }); client.invalidateQueries({ queryKey: ['workspace', 'activity'] }); toast.success('Financial record saved'); }, onError: (error: Error) => toast.error(error.message || 'Could not save financial record') }); }
+export function useUpdateFinancialTransaction() { const client = useQueryClient(); return useMutation({ mutationFn: ({ id, input }: { id: string; input: Partial<FinancialTransactionInput> }) => updateFinancialTransaction(id, input), onSuccess: () => { client.invalidateQueries({ queryKey: financeKey }); toast.success('Financial draft updated'); }, onError: (error: Error) => toast.error(error.message || 'Could not update financial draft') }); }
+export function useReverseFinancialTransaction() { const client = useQueryClient(); return useMutation({ mutationFn: (transaction: FinancialTransaction) => reverseFinancialTransaction(transaction), onSuccess: () => { client.invalidateQueries({ queryKey: financeKey }); client.invalidateQueries({ queryKey: ['workspace', 'activity'] }); toast.success('Reversal posted'); }, onError: (error: Error) => toast.error(error.message || 'Could not post reversal') }); }

@@ -1,132 +1,129 @@
-import { motion } from 'motion/react';
-import {
-  Sparkles,
-  Building2,
-  Trees,
-  Sunset,
-  UtensilsCrossed,
-  Car,
-  Music,
-  Wind,
-  Utensils
-} from 'lucide-react';
-import { useFacilities } from '../src/hooks/useFacilities';
+import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { useFacilities } from '@/hooks/useFacilities';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 import { FacilitySkeleton } from './SkeletonLoader';
-import { getOptimizedSupabaseUrl } from '../src/utils/imageUtils';
-
-const FALLBACK_FACILITIES = [
-  { id: 'f-1', title: 'Grand Banquet Hall', description: 'Spacious hall with magnificent chandeliers and versatile seating.', icon: 'banquet' },
-  { id: 'f-2', title: 'Lush Gardens', description: 'Beautifully landscaped gardens perfect for outdoor ceremonies and photography.', icon: 'garden' },
-  { id: 'f-3', title: 'Premium Catering', description: 'World-class culinary team offering customizable menus for all tastes.', icon: 'catering' },
-  { id: 'f-4', title: 'Ample Parking', description: 'Secure parking space with valet services for your guests.', icon: 'parking' },
-  { id: 'f-5', title: 'A/C Dining Areas', description: 'Fully air-conditioned dining halls ensuring comfort during events.', icon: 'ac' },
-  { id: 'f-6', title: 'Acoustic Sound System', description: 'State-of-the-art audio setup for music and announcements.', icon: 'music' }
-];
-
-const iconMap: Record<string, any> = {
-  'banquet': Building2,
-  'garden': Trees,
-  'terrace': Sunset,
-  'catering': UtensilsCrossed,
-  'parking': Car,
-  'music': Music,
-  'ac': Wind,
-  'dining': Utensils,
-};
-
-const getIcon = (iconName?: string) => {
-  if (!iconName) return Sparkles;
-  const Icon = iconMap[iconName.toLowerCase()] || Sparkles;
-  return Icon;
-};
+import { CURATED_SPACES } from './facilities/facilitiesData';
+import { FacilityCard } from './facilities/FacilityCard';
 
 export function Facilities() {
-  const { data: facilities, isLoading, error } = useFacilities();
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const revealCards = motionEnabled && desktopMotionAllowed;
+  const { data: facilities, isLoading } = useFacilities();
+  const [showAll, setShowAll] = useState(false);
 
-  // Log for debugging - Now using direct Supabase queries (fast & reliable)
-  console.log('🏢 Facilities Component:', {
-    count: facilities?.length || 0,
-    isLoading,
-    hasError: !!error
-  });
+  // Merge remote facilities with curated imagery if remote facilities exist
+  const displayItems = (facilities && facilities.length > 0)
+    ? facilities.map((f: any, idx: number) => ({
+        id: f.id,
+        title: f.title || f.name,
+        category: f.category || CURATED_SPACES[idx % CURATED_SPACES.length].category,
+        capacity: f.capacity || CURATED_SPACES[idx % CURATED_SPACES.length].capacity,
+        subtitles: f.subtitles || CURATED_SPACES[idx % CURATED_SPACES.length].subtitles,
+        description: f.description || CURATED_SPACES[idx % CURATED_SPACES.length].description,
+        image: f.image_url || f.image || CURATED_SPACES[idx % CURATED_SPACES.length].image,
+        icon: f.icon || CURATED_SPACES[idx % CURATED_SPACES.length].icon,
+      }))
+    : CURATED_SPACES;
+
+  // Show top 6 cards initially; toggle to view all
+  const visibleItems = showAll ? displayItems : displayItems.slice(0, 6);
 
   return (
-    <div>
-      <section id="facilities" className="section" style={{ background: 'var(--white)' }}>
-        <div className="container">
-          <motion.div
-            className="section-header"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+    <section id="facilities" style={{ background: '#FAF8F5', padding: '100px 24px', borderBottom: '1px solid #E8E3DA' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div
+            style={{
+              display: 'inline-block',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              color: '#537517',
+              marginBottom: '10px',
+            }}
           >
-            <div className="section-badge">Facilities</div>
-            <h2 className="section-title">World-Class Amenities</h2>
-            <p className="section-description">
-              Everything you need to create an unforgettable event experience
-            </p>
-          </motion.div>
+            Spaces & Facilities
+          </div>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              color: '#1B221B',
+              margin: '0 0 16px 0',
+              fontWeight: 700,
+            }}
+          >
+            Crafted for Unforgettable Occasions
+          </h2>
+          <p style={{ color: '#737E72', fontSize: '1.0625rem', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6 }}>
+            Every square foot of Dream Avenue Event Hall is curated with practical layout, acoustics, and aesthetic warmth.
+          </p>
+        </div>
 
-          {isLoading ? (
-            <div className="grid grid-cols-3 p-[5px]">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <FacilitySkeleton key={i} />
+        {/* Spaces Grid */}
+        {isLoading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+            {[1, 2, 3].map((i) => (
+              <FacilitySkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <>
+            <div
+              className="mobile-card-rail"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+                gap: '32px',
+              }}
+            >
+              {visibleItems.map((space: any, index: number) => (
+                <FacilityCard
+                  key={space.id || index}
+                  space={space}
+                  index={index}
+                  revealCards={revealCards}
+                />
               ))}
             </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p style={{ color: 'var(--error)', marginBottom: '8px' }}>
-                Failed to load facilities. Please try again later.
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-                Error: {error instanceof Error ? error.message : 'Unknown error'}
-              </p>
-              {/* Debug info */}
-              <details style={{ marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                <summary style={{ cursor: 'pointer' }}>Debug Info</summary>
-                <pre style={{ textAlign: 'left', background: '#f5f5f5', padding: '12px', borderRadius: '8px', marginTop: '8px' }}>
-                  {JSON.stringify({ error: error?.toString() }, null, 2)}
-                </pre>
-              </details>
-            </div>
-          ) : (
-            <div className="grid grid-cols-3">
-              {(facilities && facilities.length > 0 ? facilities : FALLBACK_FACILITIES).map((facility: any, index: number) => {
-                const Icon = getIcon(facility.icon || undefined);
-                const imageUrl = facility.image_url || facility.image;
-                return (
-                  <motion.div
-                    key={facility.id}
-                    className="facility-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.15 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    {imageUrl ? (
-                      <img
-                        src={getOptimizedSupabaseUrl(imageUrl || undefined, 600)}
-                        alt={facility.title}
-                        className="w-full object-cover rounded-lg mb-4 shadow-md bg-gray-100"
-                        style={{ height: '350px', width: '100%', objectFit: 'cover' }}
-                        loading="lazy"
-                        decoding="async"
-                        width="600"
-                        height="400"
-                      />
-                    ) : (
-                      <div className="facility-icon" style={{ background: 'var(--gradient-radial-soft)' }}>
-                        <Icon size={28} style={{ color: 'var(--primary)' }} />
-                      </div>
-                    )}
-                    <h3>{facility.title}</h3>
-                    <p>{facility.description}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
+
+            {/* Top 6 Expansion Action: See More / Show Less */}
+            {displayItems.length > 6 && (
+              <div style={{ textAlign: 'center', marginTop: '48px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAll((prev) => !prev)}
+                  className="btn-editorial-outline"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '13px 30px',
+                    borderRadius: '999px',
+                    cursor: 'pointer',
+                    fontSize: '0.9375rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  <span>
+                    {showAll ? 'Show Fewer Facilities' : `Explore All Facilities (${displayItems.length})`}
+                  </span>
+                  <ChevronDown
+                    size={17}
+                    style={{
+                      transform: showAll ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.25s ease',
+                    }}
+                  />
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </section>
   );
 }

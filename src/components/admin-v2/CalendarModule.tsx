@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Clock, Users, ChevronLeft, ChevronRight, X, CheckCircle } from 'lucide-react';
-import { useBookings } from '../../src/hooks/useBookings';
+import { useBookings } from '@/hooks/useBookings';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
 
 interface BookingDetail {

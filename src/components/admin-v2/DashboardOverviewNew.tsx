@@ -14,9 +14,9 @@ import {
   ArrowRight,
   Star
 } from 'lucide-react';
-import { useBookings } from '../../src/hooks/useBookings';
-import { usePackages } from '../../src/hooks/usePackages';
-import { useEvents } from '../../src/hooks/useEvents';
+import { useBookings } from '@/hooks/useBookings';
+import { usePackages } from '@/hooks/usePackages';
+import { useEvents } from '@/hooks/useEvents';
 import { motion } from 'motion/react';
 
 interface RecentBooking {
