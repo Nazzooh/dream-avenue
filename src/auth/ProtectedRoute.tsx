@@ -98,7 +98,7 @@ export function ProtectedRoute({ children, requireAdmin = false, permission }: P
   // Show loading state while checking auth
   // Only show blocking loading state on initial load when no user session exists yet
   if (loading || !verified || isLoggingOut) {
-    console.log('🛡️ ProtectedRoute: Loading auth state...');
+    if (import.meta.env.DEV) console.log('🛡️ ProtectedRoute: Loading auth state...');
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--bg-cream)' }}>
         <div className="text-center">
@@ -115,7 +115,7 @@ export function ProtectedRoute({ children, requireAdmin = false, permission }: P
     );
   }
 
-  console.log('🛡️ ProtectedRoute: Auth loaded', { hasUser: !!user, isAdmin, requireAdmin });
+  if (import.meta.env.DEV) console.log('🛡️ ProtectedRoute: Auth loaded', { hasUser: !!user, isAdmin, requireAdmin });
 
   // Show friendly error if there was a profile fetch problem
   if (profileError) {
@@ -150,13 +150,13 @@ export function ProtectedRoute({ children, requireAdmin = false, permission }: P
 
   // Redirect to login if not authenticated
   if (!user) {
-    console.log('🚫 ProtectedRoute: No user, redirecting to login');
+    if (import.meta.env.DEV) console.log('🚫 ProtectedRoute: No user, redirecting to login');
     return <Navigate to="/admin/login" replace />;
   }
 
   // Check admin requirement
   if (requireAdmin && !isAdmin) {
-    console.log('🚫 ProtectedRoute: Admin required but user is not admin');
+    if (import.meta.env.DEV) console.log('🚫 ProtectedRoute: Admin required but user is not admin');
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--bg-cream)' }}>
         <div className="text-center max-w-md mx-auto p-6">
@@ -200,7 +200,7 @@ export function ProtectedRoute({ children, requireAdmin = false, permission }: P
     );
   }
 
-  console.log('✅ ProtectedRoute: Access granted');
+  if (import.meta.env.DEV) console.log('✅ ProtectedRoute: Access granted');
   // Render protected content
   return <>{children}</>;
 }

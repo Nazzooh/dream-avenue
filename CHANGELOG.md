@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.6.2] - 2026-11-04
+### Changed
+- Increased auth session and profile fetch timeouts from 2500ms → 5000ms for better cold-connection reliability (`useAdminGuard.ts`).
+- Added 30-second stale-check guard to `refreshAdminSession()` to skip redundant fetches during rapid auth events.
+
+### Fixed
+- Reduced excessive `ProtectedRoute` re-render logging — all `console.log` calls now gated behind `import.meta.env.DEV`.
+- Changed profile timeout fallback log from `console.warn` to `console.debug` to reduce production console noise.
+
 ## [v1.6.1] - 2026-11-04
 ### Added
 - Standardized Warm Editorial Form Controls (`.admin-form-group`, `.admin-label`, `.admin-input`, `.admin-textarea`, `.admin-select`, `.admin-modal-*`) in `admin-workspace.css`, ensuring full-width stacked inputs and uppercase tracking across `PackagesModule`, `GalleryModule`, and `FacilitiesModule`.

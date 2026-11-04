@@ -10,6 +10,8 @@ import { queryClient } from '../lib/queryClient';
 
 const STORAGE_KEY = 'da_admin_guard_cache_v2';
 const SB_TOKEN_KEY = 'sb-njxtiaokvgoaxjcrnxzo-auth-token';
+const STALE_THRESHOLD_MS = 30_000; // Skip redundant refreshes if last verified < 30s ago
+let lastVerifiedAt = 0;
 
 export interface AdminGuardState {
   loading: boolean;
@@ -107,6 +109,18 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
     return inFlightPromise;
   }
 
+  // Skip redundant refresh if already verified with the same user recently
+  const now = Date.now();
+  if (
+    globalState.verified &&
+    globalState.profile &&
+    globalState.user &&
+    now - lastVerifiedAt < STALE_THRESHOLD_MS &&
+    (!passedSession?.user?.id || passedSession.user.id === globalState.user.id)
+  ) {
+    return globalState;
+  }
+
   inFlightPromise = (async () => {
     try {
       // Only set loading if not already verified and have no cached profile
@@ -132,7 +146,7 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
       if (!session) {
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise<{ data: { session: null }; error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Session verification timeout')), 2500)
+          setTimeout(() => reject(new Error('Session verification timeout')), 5000)
         );
         const { data, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]);
         if (sessionError) throw sessionError;
@@ -145,17 +159,17 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
         return globalState;
       }
 
-      // Fetch fresh profile from database with 2500ms safety timeout
+      // Fetch fresh profile from database with 5000ms safety timeout
       const profilePromise = fetchUserProfileStrict(session.user.id);
       const profileTimeoutPromise = new Promise<AdminProfile | null>((_, reject) =>
-        setTimeout(() => reject(new Error('Profile query timeout')), 2500)
+        setTimeout(() => reject(new Error('Profile query timeout')), 5000)
       );
 
       let userProfile: AdminProfile | null = null;
       try {
         userProfile = await Promise.race([profilePromise, profileTimeoutPromise]);
       } catch (profileErr) {
-        console.warn('Profile fetch latency, falling back to cached profile if present:', profileErr);
+        console.debug('Profile fetch latency, falling back to cached profile if present:', profileErr);
         if (globalState.profile && globalState.isAdmin) {
           userProfile = globalState.profile;
         }
@@ -182,6 +196,7 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
         profile: userProfile,
         profileError: null,
       });
+      lastVerifiedAt = Date.now();
       return globalState;
     } catch (err) {
       console.error('Admin guard refresh error:', err);
@@ -218,7 +233,7 @@ function ensureAuthListener() {
   isAuthListenerInitialized = true;
 
   supabase.auth.onAuthStateChange((event, session) => {
-    console.log('AdminGuard Auth Event:', event);
+    if (import.meta.env.DEV) console.log('AdminGuard Auth Event:', event);
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
       refreshAdminSession(session).then((state) => {
         if (state.verified && state.isAdmin) {
