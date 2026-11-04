@@ -315,6 +315,7 @@ export function Packages() {
               return (
                 <div
                   key={pkg.id || index}
+                  className="package-card"
                   style={{
                     flex: '0 0 clamp(320px, 84vw, 380px)',
                     scrollSnapAlign: 'start',
@@ -387,6 +388,7 @@ export function Packages() {
 
                     {/* Pricing Box */}
                     <div 
+                      className="package-card__price-box"
                       style={{
                         padding: '18px 20px',
                         background: '#FAF8F5',
@@ -434,7 +436,7 @@ export function Packages() {
                         }}
                       >
                         <span>+</span>
-                        <span>\u20B93,000 Mandatory Floor Cleaning Service</span>
+                        <span>₹3,000 Mandatory Floor Cleaning Service</span>
                       </div>
                     </div>
 
@@ -466,6 +468,7 @@ export function Packages() {
                             }}
                           >
                             <div 
+                              className="package-card__check-icon"
                               style={{
                                 width: '18px',
                                 height: '18px',
@@ -491,6 +494,7 @@ export function Packages() {
                   {/* Action CTA */}
                   <button
                     type="button"
+                    className={`package-card__cta ${isPopular ? 'package-card__cta--popular' : 'package-card__cta--secondary'}`}
                     onClick={() => navigate(`/booking?package=${pkg.id}`)}
                     style={{
                       width: '100%',

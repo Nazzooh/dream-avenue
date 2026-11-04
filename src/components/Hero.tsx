@@ -41,11 +41,11 @@ export function Hero() {
   const eyebrowOpacity = useTransform(smoothProgress, [0, 0.36], [1, 0]);
   const eyebrowY = useTransform(smoothProgress, [0, 0.36], [0, 16]);
 
-  // Main Title: Recedes into the Grand Archway without blurry font-rasterization
-  const textScale = useTransform(smoothProgress, [0, 0.75], [1, 0.72]);
-  const textZ = useTransform(smoothProgress, [0, 0.75], [0, -220]);
-  const textY = useTransform(smoothProgress, [0, 0.75], [0, 52]);
-  const textOpacity = useTransform(smoothProgress, [0, 0.5, 0.78, 0.94], [1, 0.9, 0.25, 0]);
+  // Main Title: Recedes gracefully into the Grand Archway as a subtle architectural watermark
+  const textScale = useTransform(smoothProgress, [0, 0.75], [1, 0.76]);
+  const textZ = useTransform(smoothProgress, [0, 0.75], [0, -180]);
+  const textY = useTransform(smoothProgress, [0, 0.75], [0, 40]);
+  const textOpacity = useTransform(smoothProgress, [0, 0.5, 0.8, 1], [1, 0.9, 0.55, 0.4]);
 
   // Courtyard: Cohesive architectural depth push (anchored together, no drifting disorder)
   const courtyardScale = useTransform(smoothProgress, [0, 0.85], [1, 1.12]);
@@ -65,8 +65,8 @@ export function Hero() {
   const foliageTopY = useTransform(smoothProgress, [0, 0.85], [0, -40]);
   const foliageLowerY = useTransform(smoothProgress, [0, 0.85], [0, -25]);
 
-  // Smooth exit transition: Dissolves cleanly without broken/disordered fragments
-  const frameExitOpacity = useTransform(smoothProgress, [0.85, 0.99], [1, 0]);
+  // Grounded exit: Retains architectural presence and warm lanterns; no empty black/blank void
+  const frameExitOpacity = useTransform(smoothProgress, [0.85, 1], [1, 1]);
   const hintOpacity = useTransform(smoothProgress, [0, 0.12], [1, 0]);
 
   const initialReveal = useScrollMotion ? { opacity: 0, y: 14 } : false;

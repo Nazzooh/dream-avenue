@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, UtensilsCrossed, Palette, FileText, Sparkles, ShieldCheck, Leaf, Zap } from 'lucide-react';
 import { usePublicPreferences } from '@/context/PublicPreferences';
@@ -89,6 +89,7 @@ export function FAQ() {
             return (
               <motion.div
                 key={index}
+                className="faq-item"
                 initial={revealCards ? { opacity: 0, y: 15 } : false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.6.3] - 2026-11-04
+### Fixed
+- Resolved Hero animation empty space & black screen: removed `frameExitOpacity` extinction so architectural arches and warm lanterns stay grounded throughout, kept headline as a graceful watermark to balance the left viewport, and tightened scroll runway from `260vh` down to `180vh`.
+- Corrected raw unicode `\u20B93,000` literal in `Packages.tsx` to properly formatted `+ ₹3,000 Mandatory Floor Cleaning Service`.
+- Fixed dark mode color collisions: added `.package-card`, `.faq-item`, and `.satisfaction-card` class mappings to `--hall-card` (`#1b2920`), styled price boxes (`--hall-card-alt`) and checkmark badges (`--hall-olive-light`), and lifted dark ink (`#1B221B`, `#172315`, `#485247`, `#737E72`) to readable Warm Ivory (`#f4eddd`) and Sage (`#d2d8c8`).
+- Cleaned TypeScript errors and missing type declarations in `EnhancedCalendarModule.tsx`.
+
 ## [v1.6.2] - 2026-11-04
 ### Changed
 - Increased auth session and profile fetch timeouts from 2500ms → 5000ms for better cold-connection reliability (`useAdminGuard.ts`).

@@ -269,7 +269,7 @@
 .public-theme[data-public-theme='dark'] .venue-hero p, .public-theme[data-public-theme='dark'] .venue-hero__proof { color: #d5dccd !important; }
 .public-theme[data-public-theme='dark'] .venue-hero__cta { background: #b7d76d; color: #172315; box-shadow: 0 14px 30px rgba(0,0,0,.3); }
 .venue-hero-scroll-track { position: relative; width: 100%; }
-.venue-hero-scroll-track--active { height: 260vh; }
+.venue-hero-scroll-track--active { height: 180vh; }
 .venue-hero-sticky-frame { position: sticky; top: 0; height: 100vh; height: 100svh; width: 100%; display: flex; align-items: center; justify-content: flex-start; overflow: hidden; background: #e5d7bc; z-index: 10; }
 .public-theme[data-public-theme='dark'] .venue-hero-sticky-frame { background: #09120f; }
 .venue-hero--cinematic {
@@ -445,4 +445,102 @@
     height: 36px;
     font-size: 0.8125rem;
   }
+}
+
+/* ==========================================================================
+   Comprehensive Dark Mode Surface & Contrast Calibration
+   Eliminates white cards, invisible text, and black ink on dark backgrounds
+   ========================================================================== */
+
+.public-theme[data-public-theme='dark'] :is(.package-card, .mobile-rail-card, .faq-item, .satisfaction-card) {
+  background-color: var(--hall-card) !important;
+  border-color: var(--hall-border) !important;
+}
+
+/* Package Card Inner Theming */
+.public-theme[data-public-theme='dark'] .package-card__price-box {
+  background-color: var(--hall-card-alt) !important;
+  border-color: var(--hall-border-subtle) !important;
+}
+
+.public-theme[data-public-theme='dark'] .package-card__check-icon {
+  background-color: var(--hall-olive-light) !important;
+  color: var(--hall-olive) !important;
+}
+
+.public-theme[data-public-theme='dark'] .package-card__cta--secondary {
+  background-color: var(--hall-card-alt) !important;
+  color: var(--hall-ink) !important;
+  border-color: var(--hall-border) !important;
+}
+
+.public-theme[data-public-theme='dark'] .package-card__cta--secondary:hover {
+  background-color: var(--hall-card-hover) !important;
+  border-color: var(--hall-olive) !important;
+}
+
+/* FAQ Inner Theming */
+.public-theme[data-public-theme='dark'] .faq-item button {
+  color: var(--hall-ink) !important;
+}
+
+.public-theme[data-public-theme='dark'] .faq-item div[style*="#FAF4EB"],
+.public-theme[data-public-theme='dark'] .faq-item div[style*="#EDF6DE"] {
+  background-color: var(--hall-card-alt) !important;
+  border: 1px solid var(--hall-border-subtle) !important;
+}
+
+/* Facility Card Subtitle Chips & Capacity Pill */
+.public-theme[data-public-theme='dark'] .mobile-rail-card span[style*="#F6F3ED"] {
+  background-color: var(--hall-card-alt) !important;
+  border-color: var(--hall-border-subtle) !important;
+  color: var(--hall-ink-secondary) !important;
+}
+
+.public-theme[data-public-theme='dark'] .mobile-rail-card div[style*="rgba(255, 255, 255, 0.94)"] {
+  background-color: rgba(16, 25, 20, 0.88) !important;
+  color: var(--hall-ink) !important;
+  border: 1px solid var(--hall-border) !important;
+}
+
+/* Satisfaction & Events Icon Circles */
+.public-theme[data-public-theme='dark'] .mobile-rail-card div[style*="#FAF4EB"],
+.public-theme[data-public-theme='dark'] .mobile-rail-card div[style*="#EDF6DE"] {
+  background-color: var(--hall-card-alt) !important;
+}
+
+/* Gallery Filter Pills */
+.public-theme[data-public-theme='dark'] #gallery button[style*="#FFFFFF"] {
+  background-color: var(--hall-card) !important;
+  color: var(--hall-ink) !important;
+  border-color: var(--hall-border) !important;
+}
+
+/* Global Dark Ink Lift: Lift any hardcoded #1B221B / #172315 / #485247 text to Warm Ivory */
+.public-theme[data-public-theme='dark'] [style*="#1B221B"],
+.public-theme[data-public-theme='dark'] [style*="#1b221b"],
+.public-theme[data-public-theme='dark'] [style*="#172315"],
+.public-theme[data-public-theme='dark'] [style*="#485247"] {
+  color: var(--hall-ink) !important;
+}
+
+.public-theme[data-public-theme='dark'] [style*="#737E72"],
+.public-theme[data-public-theme='dark'] [style*="#737e72"] {
+  color: var(--hall-ink-secondary) !important;
+}
+
+/* Availability Calendar in Dark Mode */
+.public-theme[data-public-theme='dark'] .availability-calendar-shell {
+  background: var(--hall-card) !important;
+  border-color: var(--hall-border) !important;
+}
+
+.public-theme[data-public-theme='dark'] .availability-calendar-shell button[style*="background: #F6F3ED"],
+.public-theme[data-public-theme='dark'] .availability-calendar-shell button[style*="background:#F6F3ED"] {
+  background: var(--hall-card-alt) !important;
+  border-color: var(--hall-border-subtle) !important;
+}
+
+.public-theme[data-public-theme='dark'] .availability-calendar-shell button span {
+  color: var(--hall-ink) !important;
 }

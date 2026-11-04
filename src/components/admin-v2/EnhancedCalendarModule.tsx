@@ -60,11 +60,6 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
     );
   };
 
-  export const getEventsForDate = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return events.filter((event: any) => event.event_date === dateStr);
-  };
-
   const isDateManuallyBlocked = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return events.some((event: any) => 
@@ -116,12 +111,12 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
     
     try {
       await createEventMutation.mutateAsync({
-        event_name: `Blocked: ${blockReason || 'Manual Block'}`,
-        event_type: 'blocked',
+        title: `Blocked: ${blockReason || 'Manual Block'}`,
         event_date: dateStr,
-        status: 'blocked',
+        is_active: false,
+        type: 'blocked',
         description: blockReason || 'Date manually blocked by admin',
-      });
+      } as any);
 
       setShowBlockModal(false);
       setDateToBlock(null);
@@ -149,10 +144,10 @@ export function EnhancedCalendarModule({ onDateSelect }: CalendarModuleProps) {
       e.status === 'blocked'
     );
 
-    if (!blockedEvent) return;
+    if (!blockedEvent?.id) return;
 
     try {
-      await deleteEventMutation.mutateAsync(blockedEvent.id);
+      await deleteEventMutation.mutateAsync(blockedEvent.id!);
 
       toast.success(
         <div>

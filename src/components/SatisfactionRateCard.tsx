@@ -1,4 +1,4 @@
-﻿import { motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { Heart } from 'lucide-react';
 
 interface SatisfactionRateCardProps {
@@ -15,6 +15,7 @@ export function SatisfactionRateCard({ value, delay = 0 }: SatisfactionRateCardP
 
   return (
     <motion.div
+      className="mobile-rail-card satisfaction-card"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
