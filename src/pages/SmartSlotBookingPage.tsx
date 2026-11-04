@@ -26,16 +26,18 @@ import { Footer } from '../components/Footer';
 import { SEOHead } from '../components/SEOHead';
 import { PublicBookingCalendar } from '../components/PublicBookingCalendar';
 import { SlotSelectorGrid, SLOT_OPTIONS, SHORT_DURATION_SLOT } from '../components/slot-booking/SlotSelectorGrid';
-import { usePackages } from '../src/hooks/usePackages';
+import { usePackages } from '@/hooks/usePackages';
 import { toast } from 'sonner';
-import { createBooking, normalizeTimes } from '../src/api/createBooking';
-import { CONTACT_INFO } from '../src/constants/contact';
+import { createBooking, normalizeTimes } from '@/api/createBooking';
+import { CONTACT_INFO } from '@/constants/contact';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 const MANDATORY_CLEANING_FEE = 3000;
 const SHORT_DURATION_PRICE = 26000;
 const STANDARD_HALL_PRICE = 30000;
 
 export default function SmartSlotBookingPage() {
+  const { theme } = usePublicPreferences();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialDate = searchParams.get('date') || '';
@@ -58,6 +60,7 @@ export default function SmartSlotBookingPage() {
   const [email, setEmail] = useState<string>('');
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isFolioOpen, setIsFolioOpen] = useState(false);
 
   // Completed booking pass state
   const [bookingConfirmation, setBookingConfirmation] = useState<{
@@ -219,7 +222,7 @@ export default function SmartSlotBookingPage() {
   }, [bookingConfirmation]);
 
   return (
-    <div className="editorial-page" style={{ minHeight: '100vh', background: '#FAF8F5', paddingTop: '90px', paddingBottom: '80px' }}>
+    <div className="editorial-page public-theme booking-route-shell" data-public-theme={theme} style={{ minHeight: '100dvh', background: 'var(--hall-bg)', paddingTop: '90px', display: 'flex', flexDirection: 'column' }}>
       <SEOHead
         title="Reserve Dream Avenue Event Hall | Online Booking Concierge"
         description="Check real-time date availability, select time slots, explore curated packages, and reserve Dream Avenue Event Hall in Calicut with complete transparent pricing."
@@ -227,7 +230,7 @@ export default function SmartSlotBookingPage() {
       />
       <Navbar />
 
-      <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '0 20px 56px', width: '100%', flex: 1 }}>
         {/* Step Indicator Header (Steps 1-4) */}
         {currentStep < 5 && (
           <div style={{ marginBottom: '40px' }}>
@@ -984,7 +987,11 @@ export default function SmartSlotBookingPage() {
             </div>
 
             {/* Right Column: Sticky Live Folio Breakdown */}
-            <div style={{ position: 'sticky', top: '100px' }}>
+            <div className={`booking-folio ${isFolioOpen ? 'is-open' : ''}`} style={{ position: 'sticky', top: '100px' }}>
+              <button type="button" className="booking-folio__toggle" onClick={() => setIsFolioOpen((value) => !value)} aria-expanded={isFolioOpen}>
+                <span>Stage {currentStep} · Estimated total</span>
+                <strong>₹{priceLedger.total.toLocaleString('en-IN')} {isFolioOpen ? '−' : '+'}</strong>
+              </button>
               <div
                 style={{
                   background: '#FFFFFF',

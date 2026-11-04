@@ -1,7 +1,7 @@
 // src/components/admin-v2/DeleteMediaConfirmModal.tsx
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-import { MediaItem } from '../../src/api/media';
+import { MediaItem } from '@/api/media';
 
 interface DeleteMediaConfirmModalProps {
   item: MediaItem | null;

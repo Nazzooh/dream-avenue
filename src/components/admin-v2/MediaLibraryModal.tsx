@@ -11,8 +11,8 @@ import {
   useUploadMedia,
   useBatchUploadMedia,
   useDeleteMedia,
-} from '../../src/hooks/useMediaLibrary';
-import { MediaItem } from '../../src/api/media';
+} from '@/hooks/useMediaLibrary';
+import { MediaItem } from '@/api/media';
 
 interface MediaLibraryModalProps {
   isOpen: boolean;

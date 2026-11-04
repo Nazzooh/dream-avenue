@@ -13,9 +13,9 @@ import {
   Clock,
   Sparkle
 } from 'lucide-react';
-import { usePackages } from '../src/hooks/usePackages';
+import { usePackages } from '@/hooks/usePackages';
 import { CardSkeleton } from './SkeletonLoader';
-import { Package } from '../src/schemas/packages';
+import { Package } from '@/schemas/packages';
 
 const FALLBACK_PACKAGES: Package[] = [
   {

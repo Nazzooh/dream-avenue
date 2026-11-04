@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Activity } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../../utils/supabase/client';
-import { useAuth } from '../../src/auth/useAuth';
+import { supabase } from '@/utils/supabase/client';
+import { useAuth } from '@/auth/useAuth';
 
 export function KeepAliveWidget() {
   const { profile } = useAuth();

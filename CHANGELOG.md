@@ -1,4 +1,18 @@
-﻿# Changelog
+# Changelog
+
+## [v1.6.0] - 2026-11-04
+### Added
+- Facilities space badges, capacity limits, and feature highlights (`category`, `capacity`, `subtitles`) in facilities management and landing display.
+- Fail-safe Netlify SPA routing rules in `public/_redirects` to accompany `netlify.toml` security headers.
+- Consolidated top-level path aliasing (`@/*`) across all application modules, hooks, and schemas.
+
+### Changed
+- Migrated Vite React build plugin to `@vitejs/plugin-react` for robust production bundling and zero native memory overhead.
+- Consolidated nested `src/src` tree into standard modular root directory structure.
+
+### Fixed
+- Fixed module resolution anomalies in admin access, bookings, and public preference providers.
+- Cleaned up obsolete local build and deployment logs.
 
 ## [v1.5.1] - 2026-10-26
 ### Fixed

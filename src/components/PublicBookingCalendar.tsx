@@ -1,8 +1,8 @@
 ﻿import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { useCalendarMonth } from '../src/hooks/useCalendar';
-import type { CalendarDaySlots } from '../src/api/calendar';
+import { useCalendarMonth } from '@/hooks/useCalendar';
+import type { CalendarDaySlots } from '@/api/calendar';
 import { CalendarLoadingSpinner } from './LoadingFallback';
 
 interface PublicBookingCalendarProps {

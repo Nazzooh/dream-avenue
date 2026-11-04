@@ -1,7 +1,7 @@
 ﻿// src/components/admin-v2/DashboardSidebar.tsx — Redesigned Warm Editorial Luxury Sidebar
 import logoImage from '../../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../src/auth/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { 
   LayoutDashboard, 
   Package, 
@@ -21,8 +21,8 @@ import {
   Users,
   ExternalLink
 } from 'lucide-react';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can, roleLabel } from '../../src/lib/adminPermissions';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can, roleLabel } from '@/lib/adminPermissions';
 
 interface DashboardSidebarProps {
   currentPage: string;

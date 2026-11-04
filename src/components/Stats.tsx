@@ -1,10 +1,13 @@
 ﻿import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Users, Award, Star } from 'lucide-react';
-import { useLatestAnalytics } from '../src/hooks/useAnalyticsAppendOnly';
+import { useLatestAnalytics } from '@/hooks/useAnalyticsAppendOnly';
 import { SatisfactionRateCard } from './SatisfactionRateCard';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 export function Stats() {
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const revealCards = motionEnabled && desktopMotionAllowed;
   const { data: latestAnalytics, isLoading } = useLatestAnalytics();
 
   // Animated counter states
@@ -65,7 +68,7 @@ export function Stats() {
   ];
 
   return (
-    <section 
+    <section className="public-content-section"
       style={{
         background: '#FAF8F5',
         padding: '72px 24px',
@@ -106,7 +109,7 @@ export function Stats() {
         </div>
 
         {/* Stats Grid */}
-        <div 
+        <div className="mobile-card-rail mobile-card-rail--metrics"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
@@ -114,9 +117,9 @@ export function Stats() {
           }}
         >
           {metrics.map((item, idx) => (
-            <motion.div
+            <motion.div className="mobile-rail-card"
               key={idx}
-              initial={{ opacity: 0, y: 20 }}
+              initial={revealCards ? { opacity: 0, y: 20 } : false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
@@ -168,7 +171,7 @@ export function Stats() {
           ))}
 
           {/* Satisfaction card */}
-          <SatisfactionRateCard value={satisfactionCount} delay={0.3} />
+          <div className="mobile-rail-card"><SatisfactionRateCard value={satisfactionCount} delay={0.3} /></div>
         </div>
       </div>
     </section>

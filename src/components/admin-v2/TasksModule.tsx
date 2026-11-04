@@ -1,10 +1,10 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { CheckCircle2, Circle, Clock3, ListTodo, Plus, X } from 'lucide-react';
 import AdminLayout from './AdminLayout';
-import { AdminTask, TaskPriority, TaskStatus, WorkspaceMember } from '../../src/api/adminWorkspace';
-import { useAdminTasks, useCreateTask, useUpdateTaskStatus, useWorkspaceMembers } from '../../src/hooks/useAdminWorkspace';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
+import { AdminTask, TaskPriority, TaskStatus, WorkspaceMember } from '@/api/adminWorkspace';
+import { useAdminTasks, useCreateTask, useUpdateTaskStatus, useWorkspaceMembers } from '@/hooks/useAdminWorkspace';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can } from '@/lib/adminPermissions';
 import { AdminSelect } from './AdminSelect';
 
 const priorityOrder: Record<TaskPriority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };

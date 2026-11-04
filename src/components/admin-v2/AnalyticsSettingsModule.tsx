@@ -3,8 +3,8 @@
 
 import React, { motion } from 'motion/react';
 import { Calendar, Users, Heart, Save, RefreshCw, TrendingUp, AlertCircle, Sparkles, Database, Zap, Globe } from 'lucide-react';
-import { useAnalyticsSummary, useUpdateAnalyticsSummary } from '../../src/hooks/useAnalyticsSummary';
-import { useAuth } from '../../src/auth/useAuth';
+import { useAnalyticsSummary, useUpdateAnalyticsSummary } from '@/hooks/useAnalyticsSummary';
+import { useAuth } from '@/auth/useAuth';
 import { toast } from 'sonner';
 
 interface AnimatedNumberProps {

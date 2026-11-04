@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
-import { useCreateManualBooking } from '../../src/hooks/useCalendar';
-import { usePackages } from '../../src/hooks/usePackages';
+import { useCreateManualBooking } from '@/hooks/useCalendar';
+import { usePackages } from '@/hooks/usePackages';
 
 interface AdminManualBookingModalProps {
   isOpen: boolean;

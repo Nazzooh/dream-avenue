@@ -5,7 +5,7 @@ import {
   Phone, Mail, Calendar, Clock, Users, Eye, Ban
 } from 'lucide-react';
 import { StatusBadge } from '../../admin-v2/StatusBadge';
-import { Booking } from '../../../src/schemas/bookings';
+import { Booking } from '@/schemas/bookings';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 

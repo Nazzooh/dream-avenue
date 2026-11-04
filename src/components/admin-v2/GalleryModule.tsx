@@ -1,4 +1,4 @@
-﻿// src/components/admin-v2/GalleryModule.tsx — Redesigned Warm Editorial Luxury Gallery
+// src/components/admin-v2/GalleryModule.tsx — Redesigned Warm Editorial Luxury Gallery
 import React, { useState, useMemo } from 'react';
 import AdminLayout from './AdminLayout';
 import { Modal } from './Modal';
@@ -14,9 +14,9 @@ import {
   useCreateGalleryItem, 
   useUpdateGalleryItem, 
   useDeleteGalleryItem 
-} from '../../src/hooks/useGallery';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { canManageGallery, roleLabel } from '../../src/lib/adminPermissions';
+} from '@/hooks/useGallery';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { canManageGallery, roleLabel } from '@/lib/adminPermissions';
 import { 
   Image as ImageIcon, 
   Edit2, 
@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AdminLoadingFallback } from '../LoadingFallback';
-import { GalleryItem } from '../../src/schemas/gallery';
+import { GalleryItem } from '@/schemas/gallery';
 import { AdminSelect } from './AdminSelect';
 
 const categoryOptions = [
@@ -48,7 +48,7 @@ const categoryOptions = [
 
 export default function GalleryModule() {
   // Authorization
-  const { profile, loading: authLoading } = useAdminGuard();
+  const { profile } = useAdminGuard();
   const userRole = profile?.role;
   const canManage = canManageGallery(userRole);
 
@@ -209,14 +209,6 @@ export default function GalleryModule() {
     return result;
   }, [galleryImages, selectedCategory, searchQuery, sortBy]);
 
-  if (isLoading || authLoading) {
-    return (
-      <AdminLayout>
-        <AdminLoadingFallback />
-      </AdminLayout>
-    );
-  }
-
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -337,7 +329,21 @@ export default function GalleryModule() {
 
       {/* 5. Redesigned Gallery Grid with Structured Aspect Cards */}
       <div className="gallery-lux-grid">
-        {filteredImages.map((image, index) => (
+        {isLoading ? (
+          [1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="gallery-lux-card animate-pulse"
+              style={{
+                height: '240px',
+                background: '#F5EFE8',
+                borderRadius: '16px',
+                border: '1px solid #E8E2D8',
+              }}
+            />
+          ))
+        ) : (
+          filteredImages.map((image, index) => (
           <motion.div
             key={image.id || index}
             initial={{ opacity: 0, y: 15 }}
@@ -446,11 +452,11 @@ export default function GalleryModule() {
               </div>
             </div>
           </motion.div>
-        ))}
+        )))}
       </div>
 
       {/* 6. Empty State */}
-      {filteredImages.length === 0 && (
+      {!isLoading && filteredImages.length === 0 && (
         <div className="workspace-empty mt-8">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-2"

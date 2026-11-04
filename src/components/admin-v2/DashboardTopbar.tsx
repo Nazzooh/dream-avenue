@@ -1,12 +1,12 @@
 // src/components/admin-v2/DashboardTopbar.tsx — Redesigned Warm Editorial Luxury Topbar
 import { useState, useRef, useEffect } from 'react';
 import { Menu, Bell, ExternalLink, LogOut, ChevronDown, User } from 'lucide-react';
-import { useAuth } from '../../src/auth/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../src/hooks/useNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationDropdown } from './NotificationDropdown';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { roleLabel } from '../../src/lib/adminPermissions';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { roleLabel } from '@/lib/adminPermissions';
 
 interface DashboardTopbarProps {
   pageTitle: string;

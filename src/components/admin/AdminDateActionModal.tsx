@@ -4,11 +4,11 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useAuth } from '../../src/auth/useAuth';
-import { useBlockDate, useUnblockDate, useCalendarEvents } from '../../src/hooks/useCalendar';
-import type { CalendarEvent } from '../../src/api/calendar';
+import { useAuth } from '@/auth/useAuth';
+import { useBlockDate, useUnblockDate, useCalendarEvents } from '@/hooks/useCalendar';
+import type { CalendarEvent } from '@/api/calendar';
 import { AdminManualBookingModal } from './AdminManualBookingModal';
-import { getEventTimes } from '../../src/utils/timeFallbacks';
+import { getEventTimes } from '@/utils/timeFallbacks';
 
 interface AdminDateActionModalProps {
   isOpen: boolean;

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-import { useCalendarMonth } from '../../src/hooks/useCalendar';
-import type { CalendarDaySlots } from '../../src/api/calendar';
-import { supabase } from '../../utils/supabase/client';
+import { useCalendarMonth } from '@/hooks/useCalendar';
+import type { CalendarDaySlots } from '@/api/calendar';
+import { supabase } from '@/utils/supabase/client';
 
 interface CalendarViewProps {
   selectedDate?: string;

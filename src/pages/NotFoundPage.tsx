@@ -3,7 +3,7 @@ import { Home, ArrowLeft, Phone, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { CONTACT_INFO } from '../src/constants/contact';
+import { CONTACT_INFO } from '@/constants/contact';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();

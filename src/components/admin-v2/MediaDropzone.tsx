@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
 import { MediaUploadQueue, QueuedUploadItem } from './MediaUploadQueue';
-import { MediaItem } from '../../src/api/media';
+import { MediaItem } from '@/api/media';
 
 export interface MediaDropzoneProps {
   onFileSelect?: (file: File) => void;

@@ -4,9 +4,9 @@ import {
   X, User, Phone, Mail, Users, Calendar, Clock, 
   Package, FileText, DollarSign, Trash2, Plus, Check, Loader2 
 } from 'lucide-react';
-import { usePackages } from '../../src/hooks/usePackages';
+import { usePackages } from '@/hooks/usePackages';
 import { toast } from 'sonner';
-import { supabase } from '../../utils/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 
 interface AdminAddBookingModalProps {
   isOpen: boolean;

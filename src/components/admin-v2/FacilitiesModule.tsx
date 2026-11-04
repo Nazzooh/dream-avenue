@@ -4,8 +4,8 @@ import {
   Building2, Edit3, Eye, EyeOff, Grid3X3, Image as ImageIcon, List, Loader2,
   Plus, Search, Sparkles, Trash2, Trees, Sunset, Utensils, Car, Music, Wind,
 } from 'lucide-react';
-import { useCreateFacility, useDeleteFacility, useFacilities, useUpdateFacility } from '../../hooks/useFacilities';
-import type { Facility } from '../../api/facilities';
+import { useCreateFacility, useDeleteFacility, useFacilities, useUpdateFacility } from '@/hooks/useFacilities';
+import type { Facility } from '@/api/facilities';
 import { AdminLoadingFallback } from '../LoadingFallback';
 import { Button } from './Button';
 import { FormInput } from './FormInput';
@@ -42,7 +42,7 @@ export default function FacilitiesModule() {
   const deleteMutation = useDeleteFacility();
 
   const visibleFacilities = useMemo(() => facilities.filter((facility) => {
-    const matchingSearch = `${facility.title} ${facility.description || ''}`.toLowerCase().includes(search.trim().toLowerCase());
+    const matchingSearch = `${facility.title} ${facility.category || ''} ${facility.subtitles || ''} ${facility.description || ''}`.toLowerCase().includes(search.trim().toLowerCase());
     const matchingVisibility = visibility === 'all' || (visibility === 'active' ? facility.is_active : !facility.is_active);
     return matchingSearch && matchingVisibility;
   }), [facilities, search, visibility]);
@@ -63,8 +63,11 @@ export default function FacilitiesModule() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const data = {
-      title: String(form.get('title') || ''),
-      description: String(form.get('description') || ''),
+      title: String(form.get('title') || '').trim(),
+      category: String(form.get('category') || '').trim() || null,
+      capacity: String(form.get('capacity') || '').trim() || null,
+      subtitles: String(form.get('subtitles') || '').trim() || null,
+      description: String(form.get('description') || '').trim(),
       icon: String(form.get('icon') || 'sparkles'),
       image_url: imageUrl,
       is_active: form.get('status') === 'Active',
@@ -98,8 +101,6 @@ export default function FacilitiesModule() {
     }
   };
 
-  if (isLoading) return <AdminLoadingFallback />;
-
   const activeCount = facilities.filter((facility) => facility.is_active).length;
   const hasFilters = search.trim() || visibility !== 'all';
 
@@ -109,7 +110,7 @@ export default function FacilitiesModule() {
         <div>
           <p className="da-page-eyebrow">Public venue showcase</p>
           <h1>Venue facilities</h1>
-          <p className="da-header-copy">Curate the details guests see when deciding whether Dream Avenue is right for their event.</p>
+          <p className="da-header-copy">Curate the spaces, titles, badges, and subtitles guests see when exploring Dream Avenue.</p>
         </div>
         <AdminActionButton type="button" data-admin-shortcut="new-facility" variant="primary" icon={<Plus size={17} />} onClick={() => openEditor()}>Add facility</AdminActionButton>
       </header>
@@ -124,7 +125,7 @@ export default function FacilitiesModule() {
         <div className="da-catalogue-toolbar">
           <label className="da-booking-search">
             <Search size={18} aria-hidden="true" />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search facilities" />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search facilities or tags" />
           </label>
           <div className="da-catalogue-toolbar-actions">
             <AdminSelect value={visibility} onValueChange={(value) => setVisibility(value as typeof visibility)} ariaLabel="Filter facility visibility" options={[{ value: 'all', label: 'All visibility' }, { value: 'active', label: 'Live only' }, { value: 'hidden', label: 'Hidden only' }]} className="da-catalogue-select" />
@@ -135,7 +136,13 @@ export default function FacilitiesModule() {
           </div>
         </div>
 
-        {!visibleFacilities.length ? (
+        {isLoading ? (
+          <div className={`da-facility-collection ${viewMode === 'list' ? 'is-list' : ''}`}>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="da-facility-card animate-pulse" style={{ height: '220px', background: '#F5EFE8', borderRadius: '16px' }} />
+            ))}
+          </div>
+        ) : !visibleFacilities.length ? (
           <div className="da-catalogue-empty"><Building2 size={34} /><h2>No facilities found</h2><p>{hasFilters ? 'Try changing the search or visibility filter.' : 'Add the first facility that helps clients picture their event.'}</p>{hasFilters && <Button type="button" variant="outline" onClick={() => { setSearch(''); setVisibility('all'); }}>Clear filters</Button>}</div>
         ) : (
           <div className={`da-facility-collection ${viewMode === 'list' ? 'is-list' : ''}`}>
@@ -149,7 +156,26 @@ export default function FacilitiesModule() {
                   </div>
                   <div className="da-facility-content">
                     <div className="da-facility-icon"><Icon size={20} /></div>
-                    <div className="da-facility-copy"><h2>{facility.title}</h2><p>{facility.description || 'No description has been added yet.'}</p></div>
+                    <div className="da-facility-copy">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h2>{facility.title}</h2>
+                        {facility.category && (
+                          <span className="da-status-chip" style={{ background: '#edf6de', color: '#31511b', borderColor: '#c1d986', fontSize: '0.68rem', padding: '2px 8px' }}>
+                            {facility.category}
+                          </span>
+                        )}
+                      </div>
+                      {facility.subtitles && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', margin: '4px 0 8px' }}>
+                          {facility.subtitles.split(',').map((sub, i) => (
+                            <span key={i} style={{ fontSize: '0.72rem', background: '#f5f0e8', color: '#534d3c', padding: '2px 7px', borderRadius: '4px', border: '1px solid #e4dacb' }}>
+                              {sub.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p>{facility.description || 'No description has been added yet.'}</p>
+                    </div>
                     <div className="da-catalogue-card-actions">
                       <button type="button" onClick={() => toggleVisibility(facility)} title={facility.is_active ? 'Hide from website' : 'Show on website'}>{facility.is_active ? <EyeOff size={17} /> : <Eye size={17} />}</button>
                       <button type="button" onClick={() => openEditor(facility)} title="Edit facility"><Edit3 size={17} /></button>
@@ -165,7 +191,10 @@ export default function FacilitiesModule() {
 
       <Modal isOpen={isEditorOpen} onClose={closeEditor} title={editingFacility ? 'Edit facility' : 'Add facility'}>
         <form onSubmit={saveFacility} className="da-catalogue-form">
-          <FormInput name="title" label="Facility name" placeholder="e.g. Private bridal suite" defaultValue={editingFacility?.title} required />
+          <FormInput name="title" label="Facility name (e.g. The Grand Event Hall)" placeholder="e.g. The Grand Event Hall" defaultValue={editingFacility?.title} required />
+          <FormInput name="category" label="Badge title / Category" placeholder="e.g. Main Auditorium, Dining Experience" defaultValue={editingFacility?.category || ''} />
+          <FormInput name="subtitles" label="Subtitles & Highlights (comma-separated)" placeholder="e.g. 800+ Guests, Sound System, Central AC" defaultValue={editingFacility?.subtitles || ''} />
+          <FormInput name="capacity" label="Capacity badge (optional)" placeholder="e.g. 1,000+ Guests" defaultValue={editingFacility?.capacity || ''} />
           <FormTextarea name="description" label="Description" placeholder="What should clients know about it?" defaultValue={editingFacility?.description || ''} required />
           <FormSelect name="icon" label="Icon" defaultValue={editingFacility?.icon || 'sparkles'} options={iconOptions.map(({ value, label }) => ({ value, label }))} required />
           <ImageUploadField label="Facility image (optional)" value={imageUrl} onChange={setImageUrl} />

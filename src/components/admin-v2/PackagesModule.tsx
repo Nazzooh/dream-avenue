@@ -1,8 +1,8 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ArrowUpDown, Check, Edit3, Image as ImageIcon, IndianRupee, ListPlus, Loader2, PackageOpen, Plus, Search, Trash2, X } from 'lucide-react';
-import { useAllPackages, useCreatePackage, useDeletePackage, useUpdatePackage } from '../../src/hooks/usePackages';
-import type { Package as PackageData } from '../../src/schemas/packages';
+import { useAllPackages, useCreatePackage, useDeletePackage, useUpdatePackage } from '@/hooks/usePackages';
+import type { Package as PackageData } from '@/schemas/packages';
 import { AdminLoadingFallback } from '../LoadingFallback';
 import { Button } from './Button';
 import { FormInput } from './FormInput';
@@ -102,7 +102,6 @@ export default function PackagesModule() {
 
   const updateFeature = (index: number, value: string) => setFeatures((current) => current.map((feature, position) => position === index ? value : feature));
 
-  if (isLoading) return <AdminLoadingFallback />;
   const liveCount = packages.filter((pkg) => pkg.is_active).length;
   const hasFilters = search.trim() || visibility !== 'all';
 
@@ -132,7 +131,13 @@ export default function PackagesModule() {
           <AdminSelect value={visibility} onValueChange={(value) => setVisibility(value as typeof visibility)} ariaLabel="Filter package visibility" options={[{ value: 'all', label: 'All visibility' }, { value: 'active', label: 'Live only' }, { value: 'hidden', label: 'Hidden only' }]} className="da-catalogue-select" />
         </div>
 
-        {!visiblePackages.length ? (
+        {isLoading ? (
+          <div className="da-package-collection">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="da-package-card animate-pulse" style={{ height: '260px', background: '#F5EFE8', borderRadius: '16px' }} />
+            ))}
+          </div>
+        ) : !visiblePackages.length ? (
           <div className="da-catalogue-empty"><PackageOpen size={34} /><h2>No packages found</h2><p>{hasFilters ? 'Try changing the current search or visibility filter.' : 'Create your first offer to help clients understand your venue options.'}</p>{hasFilters ? <Button type="button" variant="outline" onClick={() => { setSearch(''); setVisibility('all'); }}>Clear filters</Button> : <Button type="button" onClick={() => openEditor()}><Plus size={16} /> Add package</Button>}</div>
         ) : (
           <div className="da-package-collection">

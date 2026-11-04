@@ -9,10 +9,11 @@ import { AdminWorkspaceShell } from './components/admin-v2/AdminLayout';
 import { CookieConsent } from './components/CookieConsent';
 import { AdminLoadingFallback, LoadingFallback } from './components/LoadingFallback';
 import { MainWebsite } from './pages/MainWebsite';
-import { ProtectedRoute } from './src/auth/ProtectedRoute';
-import type { AdminPermission } from './src/lib/adminPermissions';
-import { queryClient } from './src/lib/queryClient';
-import { initializePerformanceOptimizations } from './src/utils/performanceOptimizations';
+import { ProtectedRoute } from '@/auth/ProtectedRoute';
+import type { AdminPermission } from '@/lib/adminPermissions';
+import { queryClient } from '@/lib/queryClient';
+import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations';
+import { PublicPreferencesProvider } from '@/context/PublicPreferences';
 
 import './styles/admin-dashboard.css';
 import './styles/admin-login-pastel.css';
@@ -59,11 +60,11 @@ export default function App() {
         <Router>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
-              <Route path="/" element={<MainWebsite />} />
-              <Route path="/booking" element={<SmartSlotBookingPage />} />
-              <Route path="/slot-booking" element={<SmartSlotBookingPage />} />
-              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/" element={<PublicPreferencesProvider><MainWebsite /></PublicPreferencesProvider>} />
+              <Route path="/booking" element={<PublicPreferencesProvider><SmartSlotBookingPage /></PublicPreferencesProvider>} />
+              <Route path="/slot-booking" element={<PublicPreferencesProvider><SmartSlotBookingPage /></PublicPreferencesProvider>} />
+              <Route path="/terms-and-conditions" element={<PublicPreferencesProvider><TermsAndConditions /></PublicPreferencesProvider>} />
+              <Route path="/terms" element={<PublicPreferencesProvider><TermsAndConditions /></PublicPreferencesProvider>} />
               <Route path="/admin/login" element={<AdminLogin />} />
 
               <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>

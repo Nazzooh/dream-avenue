@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { CONTACT_INFO } from '../src/constants/contact';
+import { CONTACT_INFO } from '@/constants/contact';
 
 interface SEOHeadProps {
   title?: string;

@@ -11,8 +11,8 @@ import {
   useCancelBooking,
   useDeleteBooking,
   useUpdateBookingStatus,
-} from '../../src/hooks/useBookings';
-import { Booking, BookingStatus } from '../../src/schemas/bookings';
+} from '@/hooks/useBookings';
+import { Booking, BookingStatus } from '@/schemas/bookings';
 import { BookingCard } from '../../components/admin/bookings/BookingCard';
 import { BookingDetailsModal } from '../../components/admin/bookings/BookingDetailsModal';
 import { BookingTable } from '../../components/admin/bookings/BookingTable';
@@ -24,12 +24,16 @@ import { AdminActionButton } from '../../components/admin-v2/AdminActionButton';
 const statusFilters: Array<{ value: BookingStatus | 'all'; label: string; count: keyof BookingStats }> = [
   { value: 'all', label: 'All', count: 'total' },
   { value: 'pending', label: 'Needs review', count: 'pending' },
+  { value: 'appointment_scheduled', label: 'Appointments', count: 'appointment_scheduled' },
+  { value: 'quotation_in_progress', label: 'Quotations', count: 'quotation_in_progress' },
   { value: 'confirmed', label: 'Confirmed', count: 'confirmed' },
   { value: 'completed', label: 'Completed', count: 'completed' },
+  { value: 'declined', label: 'Declined', count: 'declined' },
   { value: 'cancelled', label: 'Cancelled', count: 'cancelled' },
 ];
 
-type BookingStats = { total: number; pending: number; confirmed: number; completed: number; cancelled: number };
+type BookingStats = { total: number; pending: number; appointment_scheduled: number; quotation_in_progress: number; confirmed: number; completed: number; declined: number; cancelled: number };
+const emptyStats: BookingStats = { total: 0, pending: 0, appointment_scheduled: 0, quotation_in_progress: 0, confirmed: 0, completed: 0, declined: 0, cancelled: 0 };
 
 function BookingMetric({ label, value, note, tone, icon }: {
   label: string; value: number; note: string; tone: 'default' | 'attention' | 'success' | 'muted'; icon: ReactNode;
@@ -56,10 +60,10 @@ export function AdminBookings() {
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
   const limit = 20;
 
-  const { data: paginatedData, isLoading: isBookingsLoading, refetch: refetchBookings } = useAdminPaginatedBookings({
+  const { data: paginatedData, isLoading: isBookingsLoading, isError: isBookingsError, error: bookingsError, refetch: refetchBookings } = useAdminPaginatedBookings({
     page, limit, status: statusFilter, searchQuery,
   });
-  const { data: stats = { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 }, isLoading: isStatsLoading, refetch: refetchStats } = useAdminBookingStats();
+  const { data: stats = emptyStats, isLoading: isStatsLoading, isError: isStatsError, error: statsError, refetch: refetchStats } = useAdminBookingStats();
   const cancelBookingMutation = useCancelBooking();
   const deleteBookingMutation = useDeleteBooking();
   const updateStatusMutation = useUpdateBookingStatus();
@@ -77,15 +81,15 @@ export function AdminBookings() {
     setIsViewModalOpen(true);
   };
 
-  const updateStatus = async (bookingId: string, status: BookingStatus) => {
+  const updateStatus = async (bookingId: string, status: BookingStatus, note?: string, appointmentAt?: string | null, contactOutcome?: string | null) => {
     try {
-      await updateStatusMutation.mutateAsync({ id: bookingId, status });
+      await updateStatusMutation.mutateAsync({ id: bookingId, status, note, appointmentAt, contactOutcome });
       setIsViewModalOpen(false);
       setSelectedBooking(null);
       refresh();
-      toast.success(`Booking marked as ${status}`);
-    } catch {
-      toast.error('Unable to update this booking');
+      toast.success(`Booking moved to ${status.replaceAll('_', ' ')}`);
+    } catch (error: any) {
+      toast.error(error?.message || 'Unable to update this booking');
     }
   };
 
@@ -156,6 +160,7 @@ export function AdminBookings() {
       <div className="da-booking-metrics" aria-label="Booking summary">
         <BookingMetric label="All bookings" value={stats.total} note="All venue requests" tone="default" icon={<CalendarDays size={20} />} />
         <BookingMetric label="Needs review" value={stats.pending} note={stats.pending ? 'Action required' : 'Nothing waiting'} tone="attention" icon={<Clock3 size={20} />} />
+        <BookingMetric label="Quotations" value={stats.quotation_in_progress} note="Client discussion active" tone="attention" icon={<Clock3 size={20} />} />
         <BookingMetric label="Confirmed" value={stats.confirmed} note="Scheduled events" tone="success" icon={<CheckCircle2 size={20} />} />
         <BookingMetric label="Completed" value={stats.completed} note="Successfully hosted" tone="default" icon={<UsersRound size={20} />} />
         <BookingMetric label="Cancelled" value={stats.cancelled} note="Closed requests" tone="muted" icon={<CircleX size={20} />} />
@@ -179,7 +184,13 @@ export function AdminBookings() {
           </div>
         </div>
 
-        {isBookingsLoading ? (
+        {(isBookingsError || isStatsError) ? (
+          <div className="da-booking-empty" role="alert">
+            <CircleX size={34} /><h2>Booking data could not load</h2>
+            <p>{(bookingsError || statsError)?.message || 'Check your connection and admin access, then try again.'}</p>
+            <Button type="button" variant="outline" onClick={refresh}>Try again</Button>
+          </div>
+        ) : isBookingsLoading ? (
           <div className="da-booking-empty"><RefreshCw size={28} className="animate-spin" /><p>Loading booking operations…</p></div>
         ) : !paginatedData?.data.length ? (
           <div className="da-booking-empty">

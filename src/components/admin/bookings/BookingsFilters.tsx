@@ -1,7 +1,7 @@
 // src/components/admin/bookings/BookingsFilters.tsx
 import React from 'react';
 import { Search, X } from 'lucide-react';
-import { BookingStatus } from '../../../src/schemas/bookings';
+import { BookingStatus } from '@/schemas/bookings';
 import { Input } from '../../ui/input';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';

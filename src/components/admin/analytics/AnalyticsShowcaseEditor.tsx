@@ -19,8 +19,8 @@ import {
   useLatestAnalytics,
   useAnalyticsHistory,
   useInsertAnalyticsSnapshot
-} from '../../../src/hooks/useAnalyticsAppendOnly';
-import { supabase } from '../../../utils/supabase/client';
+} from '@/hooks/useAnalyticsAppendOnly';
+import { supabase } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 
 const METRIC_CONFIG = [

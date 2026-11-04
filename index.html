@@ -15,15 +15,22 @@
 
   <!-- Microsoft Clarity -->
   <script type="text/javascript">
+    if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
       (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
           t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
       })(window, document, "clarity", "script", "ufqlt12vt6");
+    }
   </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function () {
+      try { document.documentElement.dataset.publicTheme = localStorage.getItem('da_public_theme') === 'dark' ? 'dark' : 'light'; } catch (_) {}
+    })();
+  </script>
   <title>Dream Avenue Event Hall | Bespoke Event Venue in Calicut</title>
   <meta name="description"
     content="Dream Avenue is Calicut's premier contemporary event hall, offering refined spaces and bespoke hospitality for weddings, corporate events, and grand celebrations." />

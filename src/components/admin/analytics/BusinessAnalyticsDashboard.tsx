@@ -1,10 +1,10 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays, Download, IndianRupee, Landmark, Plus, ReceiptText, RefreshCw, TrendingUp, UsersRound, WalletCards } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useBookings } from '../../../src/hooks/useBookings';
-import { useFinancialTransactions, useCreateFinancialTransaction } from '../../../src/hooks/useFinance';
-import { can } from '../../../src/lib/adminPermissions';
-import { useAdminGuard } from '../../../src/hooks/useAdminGuard';
+import { useBookings } from '@/hooks/useBookings';
+import { useFinancialTransactions, useCreateFinancialTransaction } from '@/hooks/useFinance';
+import { can } from '@/lib/adminPermissions';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
 import { AdminActionButton } from '../../admin-v2/AdminActionButton';
 import { AdminSelect } from '../../admin-v2/AdminSelect';
 

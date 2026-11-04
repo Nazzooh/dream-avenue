@@ -5,8 +5,8 @@ import {
   Calendar, Clock, Users, ChevronLeft, ChevronRight, X, CheckCircle,
   Lock, Unlock, Sparkles, AlertCircle
 } from 'lucide-react';
-import { useBookings } from '../../src/hooks/useBookings';
-import { useEvents, useCreateEvent, useDeleteEvent } from '../../src/hooks/useEvents';
+import { useBookings } from '@/hooks/useBookings';
+import { useEvents, useCreateEvent, useDeleteEvent } from '@/hooks/useEvents';
 import { 
   format, startOfMonth, endOfMonth, eachDayOfInterval, 
   isSameMonth, isSameDay, addMonths, subMonths, 

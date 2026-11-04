@@ -1,6 +1,7 @@
 ﻿import { motion } from 'motion/react';
 import { Sparkles, Calendar, Heart, Award, Building, Cake } from 'lucide-react';
 import { AvailabilityCalendar } from './AvailabilityCalendar';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 const OCCASIONS = [
   {
@@ -30,6 +31,8 @@ const OCCASIONS = [
 ];
 
 export function Events() {
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const revealCards = motionEnabled && desktopMotionAllowed;
   return (
     <section id="events" style={{ background: '#FAF8F5', padding: '100px 24px', borderBottom: '1px solid #E8E3DA' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -65,7 +68,7 @@ export function Events() {
         </div>
 
         {/* Occasions 4-card Grid */}
-        <div 
+        <div className="mobile-card-rail"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
@@ -74,9 +77,9 @@ export function Events() {
           }}
         >
           {OCCASIONS.map((occ, idx) => (
-            <motion.div
+            <motion.div className="mobile-rail-card"
               key={idx}
-              initial={{ opacity: 0, y: 20 }}
+              initial={revealCards ? { opacity: 0, y: 20 } : false}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}

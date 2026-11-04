@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Sun, Sunset, Moon, Check } from 'lucide-react';
-import { TIME_SLOT_DEFINITIONS, type TimeSlot } from '../../src/constants/timeSlots';
+import { TIME_SLOT_DEFINITIONS, type TimeSlot } from '@/constants/timeSlots';
 
 export type { TimeSlot };
 

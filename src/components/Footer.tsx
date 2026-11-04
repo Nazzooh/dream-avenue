@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { revokeConsent } from './CookieConsent';
 import logoImage from '../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
-import { CONTACT_INFO } from '../src/constants/contact';
+import { CONTACT_INFO } from '@/constants/contact';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -30,7 +30,7 @@ export function Footer() {
   };
 
   return (
-    <footer 
+    <footer className="public-footer"
       style={{
         background: '#121813',
         color: '#FAF8F5',
@@ -40,7 +40,7 @@ export function Footer() {
     >
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Footer Grid */}
-        <div 
+        <div className="public-footer__grid"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -112,8 +112,9 @@ export function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 
+          <details className="public-footer__disclosure" open>
+            <summary>
+              <h4 
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
                 fontSize: '1.125rem',
@@ -121,9 +122,10 @@ export function Footer() {
                 marginBottom: '20px',
                 fontWeight: 600,
               }}
-            >
-              Quick Navigation
-            </h4>
+              >
+                Quick Navigation
+              </h4>
+            </summary>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
                 { label: 'The Hall', href: '#home' },
@@ -152,11 +154,12 @@ export function Footer() {
                 </a>
               ))}
             </div>
-          </div>
+          </details>
 
           {/* Contact Details */}
-          <div>
-            <h4 
+          <details className="public-footer__disclosure" open>
+            <summary>
+              <h4 
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
                 fontSize: '1.125rem',
@@ -164,9 +167,10 @@ export function Footer() {
                 marginBottom: '20px',
                 fontWeight: 600,
               }}
-            >
-              Direct Concierge
-            </h4>
+              >
+                Direct Concierge
+              </h4>
+            </summary>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', color: 'rgba(250, 248, 245, 0.75)', fontSize: '0.9375rem' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <MapPin size={18} style={{ color: '#DFCAAB', flexShrink: 0, marginTop: '3px' }} />
@@ -196,7 +200,7 @@ export function Footer() {
                 </a>
               </div>
             </div>
-          </div>
+          </details>
         </div>
 
         {/* Footer Bottom */}

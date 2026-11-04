@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, UtensilsCrossed, Palette, FileText, Sparkles, ShieldCheck, Leaf, Zap } from 'lucide-react';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 const faqs = [
   {
@@ -36,7 +37,10 @@ const faqs = [
 ];
 
 export function FAQ() {
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const revealCards = motionEnabled && desktopMotionAllowed;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [showAll, setShowAll] = useState(false);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -78,14 +82,14 @@ export function FAQ() {
 
         {/* Accordion */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {faqs.map((faq, index) => {
+          {faqs.slice(0, showAll ? faqs.length : 3).map((faq, index) => {
             const isOpen = openIndex === index;
             const Icon = faq.icon;
 
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 15 }}
+                initial={revealCards ? { opacity: 0, y: 15 } : false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
@@ -176,6 +180,9 @@ export function FAQ() {
             );
           })}
         </div>
+        <button type="button" className="faq-show-more" onClick={() => setShowAll((value) => !value)}>
+          {showAll ? 'Show fewer questions' : `View ${faqs.length - 3} more questions`}
+        </button>
       </div>
     </section>
   );

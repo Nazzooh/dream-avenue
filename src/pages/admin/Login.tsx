@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Sparkles, Mail, Lock } from 'lucide-react';
-import { useAuth } from '../../src/auth/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { toast } from 'sonner';
 
 export function AdminLogin() {

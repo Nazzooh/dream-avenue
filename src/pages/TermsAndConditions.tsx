@@ -7,13 +7,15 @@ import { Footer } from '../components/Footer';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import termsImage1 from 'figma:asset/fc2506f550c6d919223dabea349d993424eba7ac.png';
 import termsImage2 from 'figma:asset/faebd163188685a7655f5105047bc98e08cb5968.png';
-import { CONTACT_INFO } from '../src/constants/contact';
+import { CONTACT_INFO } from '@/constants/contact';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 export default function TermsAndConditions() {
   const navigate = useNavigate();
+  const { theme } = usePublicPreferences();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAF8F5', display: 'flex', flexDirection: 'column' }}>
+    <div className="editorial-page public-theme" data-public-theme={theme} style={{ minHeight: '100vh', background: 'var(--hall-bg)', color: 'var(--hall-ink)', display: 'flex', flexDirection: 'column' }}>
       <SEOHead 
         title="Terms and Conditions | Dream Avenue Event Hall"
         description="Read the Hall Rules and Guidelines for Dream Avenue Event Hall. Important information for planning your cherished celebration."

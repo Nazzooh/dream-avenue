@@ -1,7 +1,7 @@
 ﻿// src/components/admin-v2/DeleteGalleryConfirmModal.tsx
 import React from 'react';
 import { Trash2, AlertTriangle } from 'lucide-react';
-import { GalleryItem } from '../../src/schemas/gallery';
+import { GalleryItem } from '@/schemas/gallery';
 import { Button } from './Button';
 
 interface DeleteGalleryConfirmModalProps {

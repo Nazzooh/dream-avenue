@@ -4,6 +4,7 @@ import { SEOHead } from '../components/SEOHead';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { Stats } from '../components/Stats';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 // Lazy load below-the-fold sections for optimized performance
 const Packages = lazy(() => import('../components/Packages').then(m => ({ default: m.Packages })));
@@ -26,8 +27,9 @@ const SectionLoader = () => (
 );
 
 export function MainWebsite() {
+  const { theme } = usePublicPreferences();
   return (
-    <div className="editorial-page min-h-screen" style={{ background: '#FAF8F5', color: '#1B221B' }}>
+    <div className="editorial-page public-theme min-h-screen" data-public-theme={theme} style={{ background: 'var(--hall-bg)', color: 'var(--hall-ink)' }}>
       {/* SEO Meta Tags */}
       <SEOHead />
 

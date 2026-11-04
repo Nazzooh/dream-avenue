@@ -1,25 +1,21 @@
-// Dream Avenue — Notifications Hook
-// Manages realtime notifications for admin users with Supabase integration
+// Supabase Notification System Hook
+// Real-time notifications using Supabase only
 
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../utils/supabase/client';
-import { isAdminRole } from '../src/lib/adminPermissions';
+import { useEffect, useState, useCallback } from 'react';
+import { supabase } from '@/utils/supabase/client';
+import { toast } from 'sonner';
+import { isAdminRole } from '../lib/adminPermissions';
 
 export interface NotificationItem {
   id: string;
-  title?: string;
+  title: string;
   message: string;
-  type?: string;
-  priority?: string;
+  type: 'booking' | 'system' | 'admin' | 'info';
+  priority: 'low' | 'medium' | 'high';
   is_read: boolean;
   created_at: string;
-  user_id?: string | null;
-  booking_data?: {
-    booking_date?: string;
-    guest_count?: number;
-    [key: string]: any;
-  };
-  metadata?: Record<string, any>;
+  user_id: string | null;
+  metadata?: any;
 }
 
 interface UseNotificationsReturn {
@@ -27,8 +23,9 @@ interface UseNotificationsReturn {
   unreadCount: number;
   isLoading: boolean;
   isRealtimeConnected: boolean;
-  markAsRead: (id: string) => Promise<void>;
+  markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  deleteNotification: (notificationId: string) => Promise<void>;
   refreshNotifications: () => Promise<void>;
 }
 
@@ -37,53 +34,38 @@ export function useNotifications(): UseNotificationsReturn {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check if user is admin
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setIsAdmin(false);
-          setIsLoading(false);
-          return;
-        }
-
-        // Check admin status via profiles table
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.log('Profile check error:', profileError);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(isAdminRole(profile?.role));
-        }
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, []);
-
-  // Fetch notifications
+  // Fetch notifications from Supabase
   const fetchNotifications = useCallback(async () => {
-    if (!isAdmin) {
-      setNotifications([]);
-      setUnreadCount(0);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log('📢 No user authenticated');
+        setNotifications([]);
+        setUnreadCount(0);
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const isAdmin = isAdminRole(profile?.role);
+
+      if (!isAdmin) {
+        console.log('📢 User is not admin - notifications disabled');
+        setNotifications([]);
+        setUnreadCount(0);
+        setIsLoading(false);
+        return;
+      }
+
+      // Fetch notifications for admin
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -91,64 +73,34 @@ export function useNotifications(): UseNotificationsReturn {
         .limit(50);
 
       if (error) {
-        // Silently handle permission errors (RLS policies)
-        if (error.code === '42501') {
-          console.log('📢 Notifications table requires database function permissions');
-          setNotifications([]);
-          setUnreadCount(0);
-          setIsLoading(false);
-          return;
-        }
         console.error('Error fetching notifications:', error);
-        setNotifications([]);
-        setUnreadCount(0);
-        setIsLoading(false);
         return;
       }
 
-      // Transform data to match NotificationItem interface
-      const transformedNotifications: NotificationItem[] = (data || []).map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        message: item.message || item.title || '',
-        type: item.type,
-        priority: item.priority,
-        is_read: item.read || item.is_read || false,
-        created_at: item.created_at,
-        user_id: item.user_id,
-        booking_data: item.booking_data || item.metadata?.booking_data,
-        metadata: item.metadata,
-      }));
-
-      setNotifications(transformedNotifications);
-      setUnreadCount(transformedNotifications.filter(n => !n.is_read).length);
+      setNotifications(data || []);
+      setUnreadCount(data?.filter((n) => !n.is_read).length || 0);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setNotifications([]);
-      setUnreadCount(0);
+      console.error('Error in fetchNotifications:', error);
       setIsLoading(false);
     }
-  }, [isAdmin]);
+  }, []);
 
-  // Mark notification as read
-  const markAsRead = useCallback(async (id: string) => {
+  // Mark single notification as read
+  const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('id', id);
+        .eq('id', notificationId);
 
-      if (error) {
-        console.error('Error marking notification as read:', error);
-        return;
-      }
+      if (error) throw error;
 
       // Update local state
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -157,66 +109,201 @@ export function useNotifications(): UseNotificationsReturn {
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
-      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
-      if (unreadIds.length === 0) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .in('id', unreadIds);
+        .eq('is_read', false);
 
-      if (error) {
-        console.error('Error marking all notifications as read:', error);
-        return;
-      }
+      if (error) throw error;
 
       // Update local state
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, is_read: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
+      toast.success('All notifications marked as read');
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.error('Error marking all as read:', error);
+      toast.error('Failed to mark all as read');
     }
-  }, [notifications]);
+  }, []);
+
+  // Delete notification
+  const deleteNotification = useCallback(async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      // Update local state
+      setNotifications((prev) => {
+        const deleted = prev.find((n) => n.id === notificationId);
+        if (deleted && !deleted.is_read) {
+          setUnreadCount((count) => Math.max(0, count - 1));
+        }
+        return prev.filter((n) => n.id !== notificationId);
+      });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  }, []);
 
   // Refresh notifications
   const refreshNotifications = useCallback(async () => {
-    setIsLoading(true);
     await fetchNotifications();
   }, [fetchNotifications]);
 
-  // Initial fetch and setup realtime subscription
+  // Setup real-time subscription
   useEffect(() => {
-    if (!isAdmin) {
-      return;
-    }
+    let channel: any;
 
-    fetchNotifications();
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
-    // Set up realtime subscription
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-        },
-        (payload) => {
-          console.log('Realtime notification update:', payload);
-          fetchNotifications();
-        }
-      )
-      .subscribe((status) => {
-        setIsRealtimeConnected(status === 'SUBSCRIBED');
-      });
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    return () => {
-      supabase.removeChannel(channel);
+      const isAdmin = isAdminRole(profile?.role);
+
+      if (!isAdmin) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Initial fetch
+      await fetchNotifications();
+
+      // Setup Supabase Realtime channel
+      console.log('📢 Setting up real-time notifications...');
+
+      channel = supabase
+        .channel('admin-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+          },
+          (payload) => {
+            console.log('📢 New notification received:', payload.new);
+            
+            const newNotification = payload.new as NotificationItem;
+
+            // Add to notifications list
+            setNotifications((prev) => [newNotification, ...prev]);
+            
+            if (!newNotification.is_read) {
+              setUnreadCount((count) => count + 1);
+            }
+
+            // Show toast notification
+            const typeEmoji = {
+              booking: '📅',
+              system: '⚙️',
+              admin: '👤',
+              info: 'ℹ️',
+            }[newNotification.type] || '🔔';
+
+            toast.success(`${typeEmoji} ${newNotification.title}`, {
+              description: newNotification.message,
+              duration: 5000,
+            });
+
+            // Play notification sound
+            try {
+              const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDGH0fPTgjMGHm7A7+OZURE=');
+              audio.volume = 0.3;
+              audio.play().catch(() => {
+                // Ignore if autoplay is blocked
+              });
+            } catch (err) {
+              // Ignore audio errors
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+          },
+          (payload) => {
+            console.log('📢 Notification updated:', payload.new);
+            
+            const updated = payload.new as NotificationItem;
+            
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === updated.id ? updated : n))
+            );
+
+            // Update unread count
+            const oldNotification = notifications.find((n) => n.id === updated.id);
+            if (oldNotification && !oldNotification.is_read && updated.is_read) {
+              setUnreadCount((count) => Math.max(0, count - 1));
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'notifications',
+          },
+          (payload) => {
+            console.log('📢 Notification deleted:', payload.old);
+            
+            const deletedId = (payload.old as any).id;
+            
+            setNotifications((prev) => {
+              const deleted = prev.find((n) => n.id === deletedId);
+              if (deleted && !deleted.is_read) {
+                setUnreadCount((count) => Math.max(0, count - 1));
+              }
+              return prev.filter((n) => n.id !== deletedId);
+            });
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Connected to notifications channel');
+            setIsRealtimeConnected(true);
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Error connecting to notifications channel');
+            setIsRealtimeConnected(false);
+          } else if (status === 'TIMED_OUT') {
+            console.error('⏱️ Connection timed out');
+            setIsRealtimeConnected(false);
+          }
+        });
     };
-  }, [isAdmin, fetchNotifications]);
+
+    setupRealtimeSubscription();
+
+    // Cleanup
+    return () => {
+      if (channel) {
+        console.log('🔕 Unsubscribing from notifications');
+        supabase.removeChannel(channel);
+        setIsRealtimeConnected(false);
+      }
+    };
+  }, [fetchNotifications]);
 
   return {
     notifications,
@@ -225,6 +312,7 @@ export function useNotifications(): UseNotificationsReturn {
     isRealtimeConnected,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     refreshNotifications,
   };
 }

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Lock } from 'lucide-react';
-import { useCalendarMonth, useCalendarEvents } from '../../src/hooks/useCalendar';
+import { useCalendarMonth, useCalendarEvents } from '@/hooks/useCalendar';
 import { format } from 'date-fns';
-import type { CalendarDaySlots, CalendarEvent } from '../../src/api/calendar';
+import type { CalendarDaySlots, CalendarEvent } from '@/api/calendar';
 import { AdminDateActionModal } from './AdminDateActionModal';
 import { CalendarLoadingSpinner } from '../LoadingFallback';
 

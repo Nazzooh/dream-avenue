@@ -1,9 +1,9 @@
 // src/components/admin/analytics/useAnalyticsData.ts
 import { useMemo } from 'react';
-import { useBookings } from '../../../src/hooks/useBookings';
-import { usePackages } from '../../../src/hooks/usePackages';
-import { useAnalyticsSummary } from '../../../src/hooks/useAnalyticsSummary';
-import type { Booking } from '../../../src/schemas/bookings';
+import { useBookings } from '@/hooks/useBookings';
+import { usePackages } from '@/hooks/usePackages';
+import { useAnalyticsSummary } from '@/hooks/useAnalyticsSummary';
+import type { Booking } from '@/schemas/bookings';
 import { 
   DateRangeFilter, 
   AnalyticsSummaryStats, 

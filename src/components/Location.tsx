@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { MapPin, Phone, Mail, Clock, MessageCircle, ArrowRight } from "lucide-react";
-import { CONTACT_INFO } from "../src/constants/contact";
+import { CONTACT_INFO } from "@/constants/contact";
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 export function Location() {
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const revealMap = motionEnabled && desktopMotionAllowed;
 
   return (
     <section
       id="location"
+      className="location-section"
       style={{ 
         background: "#FAF8F5", 
         padding: "90px 24px 70px 24px",
@@ -53,8 +57,8 @@ export function Location() {
         {/* Content Layout */}
         <div style={{ display: "flex", flexDirection: "column", gap: "36px" }}>
           {/* Interactive Google Map Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div className="location-map-card"
+            initial={revealMap ? { opacity: 0, y: 20 } : false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
@@ -121,7 +125,7 @@ export function Location() {
           </motion.div>
 
           {/* Three Key Contact Cards */}
-          <div
+          <div className="mobile-card-rail location-contact-rail"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -129,7 +133,7 @@ export function Location() {
             }}
           >
             {/* Card 1: Address */}
-            <div 
+            <div className="mobile-rail-card"
               style={{
                 background: "#FFFFFF",
                 borderRadius: "20px",
@@ -193,7 +197,7 @@ export function Location() {
             </div>
 
             {/* Card 2: Phone & WhatsApp */}
-            <div 
+            <div className="mobile-rail-card"
               style={{
                 background: "#FFFFFF",
                 borderRadius: "20px",
@@ -253,7 +257,7 @@ export function Location() {
             </div>
 
             {/* Card 3: Email & Desk Hours */}
-            <div 
+            <div className="mobile-rail-card"
               style={{
                 background: "#FFFFFF",
                 borderRadius: "20px",

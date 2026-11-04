@@ -1,13 +1,15 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Calendar } from 'lucide-react';
+import { Menu, X, Calendar, Phone, Moon, Sun, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import logoImage from '../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
+import { usePublicPreferences } from '@/context/PublicPreferences';
 
 export function Navbar() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme, motionEnabled, setMotionEnabled, desktopMotionAllowed } = usePublicPreferences();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,6 +19,16 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && setIsMobileMenuOpen(false);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isMobileMenuOpen]);
 
   const navLinks = [
     { href: '#facilities', label: 'Spaces' },
@@ -51,9 +63,9 @@ export function Navbar() {
       <nav 
         className={isScrolled ? 'navbar scrolled' : 'navbar'}
         style={{
-          background: isScrolled ? 'rgba(250, 248, 245, 0.96)' : 'rgba(250, 248, 245, 0.88)',
+          background: isScrolled ? 'var(--hall-nav-solid)' : 'var(--hall-nav)',
           backdropFilter: 'blur(16px)',
-          borderBottom: isScrolled ? '1px solid #E8E3DA' : '1px solid rgba(232, 227, 218, 0.6)',
+          borderBottom: '1px solid var(--hall-border)',
           transition: 'all 0.3s ease',
         }}
       >
@@ -78,7 +90,7 @@ export function Navbar() {
                     fontFamily: "'Playfair Display', Georgia, serif", 
                     fontSize: '1.35rem', 
                     fontWeight: 700, 
-                    color: '#1B221B',
+                    color: 'var(--hall-ink)',
                     letterSpacing: '-0.02em',
                     lineHeight: 1.1
                   }}
@@ -90,7 +102,7 @@ export function Navbar() {
                   style={{ 
                     fontSize: '0.6875rem', 
                     fontWeight: 600, 
-                    color: '#537517', 
+                    color: 'var(--hall-olive)', 
                     letterSpacing: '2px', 
                     textTransform: 'uppercase',
                     marginTop: '2px'
@@ -110,20 +122,33 @@ export function Navbar() {
                   onClick={(e) => handleNavClick(e, link.href)}
                   className="navbar-link"
                   style={{
-                    color: '#485247',
+                    color: 'var(--hall-ink-secondary)',
                     fontSize: '0.9375rem',
                     fontWeight: 500,
                     textDecoration: 'none',
                     transition: 'color 0.2s ease',
                     position: 'relative',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#537517')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#485247')}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--hall-olive)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--hall-ink-secondary)')}
                 >
                   {link.label}
                 </a>
               ))}
             </div>
+
+            <div className="navbar-preferences" aria-label="Appearance settings">
+              <button type="button" className="navbar-preference-button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`}>
+                {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+              </button>
+              <button type="button" className="navbar-preference-button navbar-motion-toggle" onClick={() => setMotionEnabled(!motionEnabled)} aria-pressed={motionEnabled} title={desktopMotionAllowed ? `Scroll motion ${motionEnabled ? 'on' : 'off'}` : 'Scroll motion is desktop only'}>
+                <Sparkles size={16} /><span>{motionEnabled ? 'Motion on' : 'Motion off'}</span>
+              </button>
+            </div>
+
+            <a className="navbar-phone-shortcut" href="tel:+918606206096" aria-label="Call Dream Avenue">
+              <Phone size={18} />
+            </a>
 
             {/* Desktop CTA Button */}
             <button
@@ -134,7 +159,7 @@ export function Navbar() {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '10px 22px',
-                background: '#537517',
+                background: 'var(--hall-olive)',
                 color: '#FFFFFF',
                 borderRadius: '10px',
                 fontWeight: 600,
@@ -145,11 +170,11 @@ export function Navbar() {
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#3E5811';
+                e.currentTarget.style.background = 'var(--hall-olive-dark)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#537517';
+                e.currentTarget.style.background = 'var(--hall-olive)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
@@ -165,7 +190,7 @@ export function Navbar() {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#1B221B',
+                color: 'var(--hall-ink)',
                 cursor: 'pointer',
                 display: 'none',
               }}
@@ -179,17 +204,20 @@ export function Navbar() {
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={{ opacity: 0, x: '100%' }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: '100%' }}
               transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="navbar-mobile-menu"
               style={{
-                background: 'rgba(250, 248, 245, 0.98)',
+                background: 'var(--hall-nav-solid)',
                 backdropFilter: 'blur(20px)',
-                borderBottom: '1px solid #E8E3DA',
-                padding: '24px',
+                borderBottom: '1px solid var(--hall-border)',
+                padding: '104px 28px 32px',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
+                position: 'fixed',
+                inset: 0,
+                zIndex: 90,
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -201,7 +229,7 @@ export function Navbar() {
                     style={{
                       fontSize: '1.0625rem',
                       fontWeight: 500,
-                      color: '#1B221B',
+                      color: 'var(--hall-ink)',
                       textDecoration: 'none',
                       padding: '8px 0',
                       borderBottom: '1px solid rgba(232, 227, 218, 0.4)',
@@ -210,6 +238,10 @@ export function Navbar() {
                     {link.label}
                   </a>
                 ))}
+                <div className="navbar-mobile-preferences">
+                  <button type="button" onClick={toggleTheme}><span>{theme === 'light' ? 'Dark appearance' : 'Light appearance'}</span>{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
+                  <button type="button" onClick={() => setMotionEnabled(!motionEnabled)} aria-pressed={motionEnabled}><span>Desktop scroll motion</span><span>{motionEnabled ? 'On' : 'Off'}</span></button>
+                </div>
                 
                 <button
                   onClick={() => {
@@ -223,7 +255,7 @@ export function Navbar() {
                     gap: '10px',
                     width: '100%',
                     padding: '14px',
-                    background: '#537517',
+                    background: 'var(--hall-olive)',
                     color: '#FFFFFF',
                     borderRadius: '12px',
                     fontWeight: 600,

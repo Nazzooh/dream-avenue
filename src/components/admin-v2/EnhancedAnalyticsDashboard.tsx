@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Users, Heart, TrendingUp, Award, Sparkles } from 'lucide-react';
 import { SmartMetricCard } from './SmartMetricCard';
-import { useAnalyticsSummary } from '../../src/hooks/useAnalyticsSummary';
+import { useAnalyticsSummary } from '@/hooks/useAnalyticsSummary';
 
 export function EnhancedAnalyticsDashboard() {
   const { data: summary, isLoading, isFetching } = useAnalyticsSummary();

@@ -1,9 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Camera, Mail, Plus, RefreshCw, ShieldCheck, UsersRound } from 'lucide-react';
 import AdminLayout from '../../components/admin-v2/AdminLayout';
-import { supabase } from '../../utils/supabase/client';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { roleLabel, type AdminRole } from '../../src/lib/adminPermissions';
+import { supabase } from '@/utils/supabase/client';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { roleLabel, type AdminRole } from '@/lib/adminPermissions';
 import { toast } from 'sonner';
 import { AdminSelect } from '../../components/admin-v2/AdminSelect';
 

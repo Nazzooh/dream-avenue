@@ -2,8 +2,8 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useCalendarMonth } from '../src/hooks/useCalendar';
-import type { CalendarDaySlots } from '../src/api/calendar';
+import { useCalendarMonth } from '@/hooks/useCalendar';
+import type { CalendarDaySlots } from '@/api/calendar';
 
 interface DateCellProps {
   date: Date;

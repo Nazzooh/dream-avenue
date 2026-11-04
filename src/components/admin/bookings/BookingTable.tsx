@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, Eye, Ban, Users } from 'lucide-react';
-import { Booking } from '../../../src/schemas/bookings';
+import { Booking } from '@/schemas/bookings';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
@@ -100,7 +100,7 @@ export function BookingTable({ bookings, onView, onCancel, formatDate, formatTim
                     className="da-booking-cancel-action"
                     >
                       <Ban className="h-3.5 w-3.5" aria-hidden="true" />
-                      Cancel
+                      <span className="da-booking-cancel-label">Cancel</span>
                     </Button>
                   )}
                 </div>
