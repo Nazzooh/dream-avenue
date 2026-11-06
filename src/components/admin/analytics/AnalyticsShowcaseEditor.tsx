@@ -1,7 +1,7 @@
 // src/components/admin/analytics/AnalyticsShowcaseEditor.tsx
 // Redesigned public website showcase stats editor using shadcn components
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Calendar, Users, Heart, Save, RotateCcw, Sparkles,
   History, Clock, Trash2, AlertTriangle

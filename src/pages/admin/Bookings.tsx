@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import {
   CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleX, Clock3,
   Download, Inbox, RefreshCw, Search, UsersRound, X,

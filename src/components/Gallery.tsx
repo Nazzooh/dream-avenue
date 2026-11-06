@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
 import { Eye, ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useGalleryItems } from '@/hooks/useGallery';
 import { GalleryImageSkeleton } from './SkeletonLoader';
-import { usePublicPreferences } from '@/context/PublicPreferences';
 import { GalleryLightbox } from './gallery/GalleryLightbox';
 
 const CURATED_GALLERY_FALLBACKS = [
@@ -35,8 +33,6 @@ const CURATED_GALLERY_FALLBACKS = [
 ];
 
 export function Gallery() {
-  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
-  const revealCards = motionEnabled && desktopMotionAllowed;
   const { data: rawImages = [], isLoading } = useGalleryItems();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -154,13 +150,9 @@ export function Gallery() {
               }}
             >
               {visibleList.map((image: any, index: number) => (
-                <motion.div
+                <div
                   className="mobile-rail-card"
                   key={image.id || index}
-                  initial={revealCards ? { opacity: 0, y: 20 } : false}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: (index % 6) * 0.05 }}
                   onClick={() => openLightbox(index)}
                   style={{
                     cursor: 'pointer',
@@ -172,15 +164,12 @@ export function Gallery() {
                     border: '1px solid #E8E3DA',
                     boxShadow: '0 4px 16px rgba(27, 34, 27, 0.04)',
                   }}
-                  whileHover={{
-                    y: -4,
-                    boxShadow: '0 16px 36px rgba(27, 34, 27, 0.08)',
-                    borderColor: '#DFCAAB',
-                  }}
                 >
                   <ImageWithFallback
                     src={image.image_url}
                     alt={image.title || 'Dream Avenue Event Hall'}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -227,7 +216,7 @@ export function Gallery() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
 

@@ -85,6 +85,34 @@
   min-height: 82px;
 }
 
+/* Tailwind breakpoint utilities are not guaranteed in this stylesheet-only
+   admin shell. Use explicit controls so desktop never shows both arrows. */
+.sidebar-lux-collapse-button,
+.sidebar-lux-mobile-close-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+}
+
+.sidebar-lux-collapse-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  color: #78716c;
+}
+
+.sidebar-lux-collapse-button:hover { background: rgba(231, 229, 228, .7); color: #1c1917; }
+.sidebar-lux-mobile-close-button { display: none; padding: 6px; border-radius: 8px; background: transparent; color: #78716c; }
+.sidebar-lux-mobile-close-button:hover { background: rgba(231, 229, 228, .55); color: #292524; }
+
+@media (max-width: 1024px) {
+  .sidebar-lux-collapse-button { display: none; }
+  .sidebar-lux-mobile-close-button { display: inline-flex; }
+}
+
 .sidebar-lux-logo-box {
   display: flex;
   align-items: center;

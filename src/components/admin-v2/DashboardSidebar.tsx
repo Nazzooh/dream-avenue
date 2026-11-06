@@ -136,7 +136,7 @@ export function DashboardSidebar({
           {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
-              className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 transition-colors"
+              className="sidebar-lux-collapse-button"
               title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
               aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             >
@@ -147,7 +147,7 @@ export function DashboardSidebar({
           {/* Mobile Close Button */}
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-stone-500 hover:text-stone-800 hover:bg-stone-200/50 transition-colors"
+            className="sidebar-lux-mobile-close-button"
             aria-label="Close Sidebar"
           >
             <X size={18} />

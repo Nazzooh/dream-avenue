@@ -1,6 +1,6 @@
 // src/components/admin/analytics/AnalyticsHeader.tsx
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Download, RefreshCw, Calendar, SlidersHorizontal, BarChart3 } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { 

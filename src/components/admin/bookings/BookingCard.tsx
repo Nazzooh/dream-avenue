@@ -1,6 +1,6 @@
 // src/components/admin/bookings/BookingCard.tsx
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   Phone, Mail, Calendar, Clock, Users, Eye, Ban
 } from 'lucide-react';

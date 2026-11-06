@@ -19,7 +19,9 @@ export const queryClient = new QueryClient({
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
       refetchOnWindowFocus: true,
       refetchOnReconnect: true, // Refetch on network reconnect
-      refetchOnMount: 'always',
+      // Reuse fresh data while navigating between admin routes; stale data still
+      // refetches on mount after the one-minute freshness window.
+      refetchOnMount: true,
       networkMode: 'online', // Only run queries when online
       // Suspense mode for better loading states
       suspense: false,

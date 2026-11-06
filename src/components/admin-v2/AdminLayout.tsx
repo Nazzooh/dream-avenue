@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AutoLogout } from './AutoLogout';

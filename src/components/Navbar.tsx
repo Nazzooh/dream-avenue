@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Calendar, Phone, Moon, Sun, Sparkles } from 'lucide-react';
+import { Menu, X, Calendar, Phone, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import logoImage from '../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 import { usePublicPreferences } from '@/context/PublicPreferences';
@@ -9,7 +9,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, toggleTheme, motionEnabled, setMotionEnabled, desktopMotionAllowed } = usePublicPreferences();
+  const { theme, toggleTheme } = usePublicPreferences();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,9 +141,6 @@ export function Navbar() {
               <button type="button" className="navbar-preference-button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`}>
                 {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
               </button>
-              <button type="button" className="navbar-preference-button navbar-motion-toggle" onClick={() => setMotionEnabled(!motionEnabled)} aria-pressed={motionEnabled} title={desktopMotionAllowed ? `Scroll motion ${motionEnabled ? 'on' : 'off'}` : 'Scroll motion is desktop only'}>
-                <Sparkles size={16} /><span>{motionEnabled ? 'Motion on' : 'Motion off'}</span>
-              </button>
             </div>
 
             <a className="navbar-phone-shortcut" href="tel:+918606206096" aria-label="Call Dream Avenue">
@@ -240,7 +237,6 @@ export function Navbar() {
                 ))}
                 <div className="navbar-mobile-preferences">
                   <button type="button" onClick={toggleTheme}><span>{theme === 'light' ? 'Dark appearance' : 'Light appearance'}</span>{theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}</button>
-                  <button type="button" onClick={() => setMotionEnabled(!motionEnabled)} aria-pressed={motionEnabled}><span>Desktop scroll motion</span><span>{motionEnabled ? 'On' : 'Off'}</span></button>
                 </div>
                 
                 <button

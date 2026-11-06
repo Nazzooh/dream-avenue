@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useFacilities } from '@/hooks/useFacilities';
-import { usePublicPreferences } from '@/context/PublicPreferences';
 import { FacilitySkeleton } from './SkeletonLoader';
 import { CURATED_SPACES } from './facilities/facilitiesData';
 import { FacilityCard } from './facilities/FacilityCard';
 
 export function Facilities() {
-  const { motionEnabled, desktopMotionAllowed } = usePublicPreferences();
-  const revealCards = motionEnabled && desktopMotionAllowed;
   const { data: facilities, isLoading } = useFacilities();
   const [showAll, setShowAll] = useState(false);
 
@@ -85,7 +82,6 @@ export function Facilities() {
                   key={space.id || index}
                   space={space}
                   index={index}
-                  revealCards={revealCards}
                 />
               ))}
             </div>

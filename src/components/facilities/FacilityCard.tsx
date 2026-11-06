@@ -1,4 +1,3 @@
-import { motion } from 'motion/react';
 import { Users } from 'lucide-react';
 import { getOptimizedSupabaseUrl } from '@/utils/imageUtils';
 import { getFacilityIcon } from './facilitiesData';
@@ -15,10 +14,9 @@ interface FacilityCardProps {
     icon?: string;
   };
   index: number;
-  revealCards: boolean;
 }
 
-export function FacilityCard({ space, index, revealCards }: FacilityCardProps) {
+export function FacilityCard({ space }: FacilityCardProps) {
   const Icon = getFacilityIcon(space.icon);
 
   // Parse comma-separated subtitles or tags
@@ -29,12 +27,8 @@ export function FacilityCard({ space, index, revealCards }: FacilityCardProps) {
     : [];
 
   return (
-    <motion.div
+    <div
       className="mobile-rail-card"
-      initial={revealCards ? { opacity: 0, y: 25 } : false}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.5, delay: (index % 6) * 0.08 }}
       style={{
         background: '#FFFFFF',
         borderRadius: '20px',
@@ -44,11 +38,6 @@ export function FacilityCard({ space, index, revealCards }: FacilityCardProps) {
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-      }}
-      whileHover={{
-        y: -6,
-        boxShadow: '0 16px 36px rgba(27, 34, 27, 0.08)',
-        borderColor: '#DFCAAB',
       }}
     >
       {/* Space Image or Fallback Header */}
@@ -211,6 +200,6 @@ export function FacilityCard({ space, index, revealCards }: FacilityCardProps) {
           {space.description}
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 }
