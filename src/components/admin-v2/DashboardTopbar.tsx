@@ -63,7 +63,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
       <div className="topbar-lux-left">
         <button
           onClick={onMenuClick}
-          className="topbar-lux-menu-btn lg:hidden"
+          className="topbar-lux-menu-btn"
           aria-label="Toggle navigation menu"
         >
           <Menu size={20} />
@@ -82,7 +82,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
       {/* Right: Status, Notifications, Website Link & Profile */}
       <div className="topbar-lux-right">
         {/* Live Venue Status Pill (Desktop) */}
-        <div className="topbar-lux-status-pill hidden md:inline-flex">
+        <div className="topbar-lux-status-pill topbar-lux-status-desktop">
           <span className="topbar-lux-status-dot" />
           <span>Venue Active</span>
         </div>
@@ -92,7 +92,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="topbar-lux-action-btn hidden sm:inline-flex"
+          className="topbar-lux-action-btn topbar-lux-live-site"
           title="Open live venue website in new tab"
         >
           <ExternalLink size={15} />
@@ -132,7 +132,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
             <div className="topbar-lux-user-avatar">
               <User size={16} className="text-stone-700" />
             </div>
-            <div className="hidden lg:flex flex-col text-left">
+            <div className="topbar-lux-profile-details">
               <span className="text-xs font-bold text-stone-900 leading-tight">
                 {roleLabel(userRole)}
               </span>
@@ -142,7 +142,7 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
             </div>
             <ChevronDown
               size={14}
-              className={`text-stone-400 hidden sm:block transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`}
+              className={`topbar-lux-profile-chevron ${isProfileMenuOpen ? 'rotate-180' : ''}`}
             />
           </button>
 

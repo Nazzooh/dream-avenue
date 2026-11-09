@@ -144,6 +144,23 @@
   .topbar-lux-breadcrumbs { display: none; }
 }
 
+/* Topbar breakpoint rules must follow the component defaults in
+   admin-redesign.css. These selectors replace utility classes that are not
+   compiled into this app. */
+.topbar-lux-menu-btn { display: none; }
+.topbar-lux-profile-details { display: flex; flex-direction: column; text-align: left; }
+
+@media (max-width: 1024px) {
+  .topbar-lux-menu-btn { display: inline-flex; }
+  .topbar-lux-profile-details { display: none; }
+}
+
+@media (max-width: 767px) {
+  .topbar-lux-status-desktop,
+  .topbar-lux-live-site,
+  .topbar-lux-profile-chevron { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .admin-container *, .admin-container *::before, .admin-container *::after {
     scroll-behavior: auto !important;

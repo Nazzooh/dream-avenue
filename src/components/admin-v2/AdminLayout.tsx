@@ -6,6 +6,7 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardTopbar } from './DashboardTopbar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { AdminShortcuts } from './AdminShortcuts';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
 
 const routeMap: Record<string, { title: string; id: string }> = {
   '/admin': { title: 'Dashboard', id: 'dashboard' },
@@ -33,11 +34,10 @@ function AdminWorkspaceFrame({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
-  const loading = false;
-  const isAdmin = true;
+  const { loading, verified, isAdmin } = useAdminGuard();
   const currentRoute = routeMap[location.pathname] || { title: 'Dream Avenue Admin', id: 'dashboard' };
 
-  if (loading) {
+  if (loading || !verified) {
     return (
       <div className="admin-shell-loading">
         <motion.div
