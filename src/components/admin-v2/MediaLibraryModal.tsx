@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { X, Search } from 'lucide-react';
 import { MediaGrid } from './MediaGrid';
 import { MediaDropzone } from './MediaDropzone';
-import { MediaModalHeader } from './MediaModalHeader';
+import { Modal } from './Modal';
 import { MediaModalFooter } from './MediaModalFooter';
 import { DeleteMediaConfirmModal } from './DeleteMediaConfirmModal';
 import {
@@ -164,28 +164,51 @@ export function MediaLibraryModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="media-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
-      <div
-        className="media-modal-container"
-        onClick={(e) => e.stopPropagation()}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={title}
+        description={`${mediaItems.length} ${mediaItems.length === 1 ? 'image' : 'images'} in library`}
+        size="xl"
+        footer={
+          <MediaModalFooter
+            activeUrl={activeUrl}
+            selectedUrls={selectedUrls}
+            selectedName={selectedItem?.name}
+            multiple={multiple}
+            onClose={onClose}
+            onConfirm={handleConfirmSelect}
+          />
+        }
       >
-        <MediaModalHeader
-          title={title}
-          totalImages={mediaItems.length}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onClose={onClose}
-        />
+        <div className="flex flex-col gap-3 min-h-0 h-full">
+          {/* Segmented Tab Switcher */}
+          <div className="media-header-tabs" style={{ margin: 0 }}>
+            <button
+              type="button"
+              onClick={() => setActiveTab('library')}
+              className={`media-header-tab-btn ${activeTab === 'library' ? 'active' : ''}`}
+            >
+              <span>Browse Library</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-semibold ml-1">
+                {mediaItems.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('upload')}
+              className={`media-header-tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
+            >
+              <span>Upload New</span>
+            </button>
+          </div>
 
-        {/* Responsive Scrollable Body */}
-        <div className="p-3 sm:p-5 overflow-y-auto flex-1 flex flex-col min-h-0">
           {activeTab === 'library' ? (
             <>
               {/* Touch-Friendly Search Bar */}
-              <div className="relative mb-3 sm:mb-4 flex-shrink-0">
+              <div className="relative flex-shrink-0">
                 <Search
                   size={16}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
@@ -210,7 +233,7 @@ export function MediaLibraryModal({
               </div>
 
               {/* Responsive Grid */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto min-h-[300px]">
                 <MediaGrid
                   items={filteredItems}
                   selectedUrl={activeUrl}
@@ -235,16 +258,7 @@ export function MediaLibraryModal({
             </div>
           )}
         </div>
-
-        <MediaModalFooter
-          activeUrl={activeUrl}
-          selectedUrls={selectedUrls}
-          selectedName={selectedItem?.name}
-          multiple={multiple}
-          onClose={onClose}
-          onConfirm={handleConfirmSelect}
-        />
-      </div>
+      </Modal>
 
       <DeleteMediaConfirmModal
         item={deleteConfirmItem}
@@ -252,6 +266,6 @@ export function MediaLibraryModal({
         onConfirm={handleDeleteConfirm}
         isDeleting={deleteMutation.isPending}
       />
-    </div>
+    </>
   );
 }

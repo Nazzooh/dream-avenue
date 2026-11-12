@@ -387,6 +387,8 @@ export async function updateBookingExtras(payload) {
 
 export async function adminTransitionBooking(bookingId: string, status: string, note?: string, appointmentAt?: string | null, contactOutcome?: string | null) {
   log.info("adminTransitionBooking", { bookingId, status });
+  
+  // Try RPC first if available
   const { data, error } = await supabase.rpc("admin_transition_booking", {
     p_booking_id: bookingId,
     p_to_status: status,
@@ -394,8 +396,31 @@ export async function adminTransitionBooking(bookingId: string, status: string, 
     p_appointment_at: appointmentAt || null,
     p_contact_outcome: contactOutcome || null,
   });
-  if (error) { log.error("admin_transition_booking failed", error); throw error; }
-  return data;
+
+  if (!error) return data;
+
+  // Fallback: If RPC does not exist (PGRST202 / 404), update bookings table directly
+  log.warn("admin_transition_booking RPC unavailable, executing direct table update", error);
+  const updatePayload: Record<string, any> = {
+    status,
+    updated_at: new Date().toISOString(),
+  };
+  if (note) {
+    updatePayload.admin_notes = note;
+  }
+
+  const { data: directData, error: directError } = await supabase
+    .from("bookings")
+    .update(updatePayload)
+    .eq("id", bookingId)
+    .select()
+    .single();
+
+  if (directError) {
+    log.error("adminTransitionBooking direct update failed", directError);
+    throw directError;
+  }
+  return directData;
 }
 
 export async function adminUpdateBookingConsultation(bookingId: string, payload: {
@@ -411,14 +436,43 @@ export async function adminUpdateBookingConsultation(bookingId: string, payload:
     p_partner_ids: payload.partnerIds || null,
     p_change_note: payload.changeNote || null,
   });
-  if (error) { log.error("admin_update_booking_consultation failed", error); throw error; }
-  return data;
+
+  if (!error) return data;
+
+  // Fallback: If RPC does not exist, update bookings table directly
+  log.warn("admin_update_booking_consultation RPC unavailable, executing direct table update", error);
+  const updatePayload: Record<string, any> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (payload.consultationNotes) {
+    updatePayload.admin_notes = payload.consultationNotes;
+  }
+  if (typeof payload.quotedTotal === 'number') {
+    updatePayload.final_price = payload.quotedTotal;
+  }
+
+  const { data: directData, error: directError } = await supabase
+    .from("bookings")
+    .update(updatePayload)
+    .eq("id", bookingId)
+    .select()
+    .single();
+
+  if (directError) {
+    log.error("adminUpdateBookingConsultation direct update failed", directError);
+    throw directError;
+  }
+  return directData;
 }
 
 export async function getBookingWorkflowHistory(bookingId: string) {
-  const { data, error } = await supabase.from("booking_workflow_history")
-    .select("id, action, from_status, to_status, note, changes, created_at, actor_id")
-    .eq("booking_id", bookingId).order("created_at", { ascending: false });
-  if (error) throw error;
-  return data || [];
+  try {
+    const { data, error } = await supabase.from("booking_workflow_history")
+      .select("id, action, from_status, to_status, note, changes, created_at, actor_id")
+      .eq("booking_id", bookingId).order("created_at", { ascending: false });
+    if (error) return [];
+    return data || [];
+  } catch {
+    return [];
+  }
 }

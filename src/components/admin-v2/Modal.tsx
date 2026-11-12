@@ -8,9 +8,26 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Dialogs are centered on desktop and become bottom sheets on mobile. */
+  variant?: 'dialog' | 'drawer';
+  footer?: React.ReactNode;
+  description?: string;
+  alert?: boolean;
+  initialFocusRef?: React.RefObject<HTMLElement>;
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  variant = 'dialog',
+  footer,
+  description,
+  alert = false,
+  initialFocusRef,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
@@ -19,7 +36,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const frame = requestAnimationFrame(() => dialogRef.current?.focus());
+    const frame = requestAnimationFrame(() => (initialFocusRef?.current || dialogRef.current)?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
       if (event.key !== 'Tab' || !dialogRef.current) return;
@@ -52,17 +69,21 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     <div className="admin-modal-overlay" onMouseDown={onClose}>
       {/* Modal */}
       <div 
-        className={`admin-modal ${sizeClasses[size]}`}
+        className={`admin-modal admin-modal-${variant} ${sizeClasses[size]}`}
         ref={dialogRef}
-        role="dialog"
+        role={alert ? 'alertdialog' : 'dialog'}
         aria-modal="true"
         aria-labelledby="admin-modal-title"
+        aria-describedby={description ? 'admin-modal-description' : undefined}
         tabIndex={-1}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="admin-modal-header">
-          <h3 id="admin-modal-title" className="admin-modal-title">{title}</h3>
+          <div className="admin-modal-heading">
+            <h3 id="admin-modal-title" className="admin-modal-title">{title}</h3>
+            {description && <p id="admin-modal-description" className="admin-modal-description">{description}</p>}
+          </div>
           <button type="button" onClick={onClose} className="admin-modal-close" aria-label={`Close ${title}`}>
             <X size={20} />
           </button>
@@ -72,6 +93,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         <div className="admin-modal-body">
           {children}
         </div>
+        {footer && <div className="admin-modal-footer">{footer}</div>}
       </div>
     </div>, document.body
   );

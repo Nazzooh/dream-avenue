@@ -6,7 +6,7 @@ export async function adminGetPaginatedBookings({
   page = 1,
   limit = 20,
   status,
-  searchQuery
+  searchQuery,
 }: {
   page?: number;
   limit?: number;
@@ -15,14 +15,13 @@ export async function adminGetPaginatedBookings({
 }) {
   log.info("adminGetPaginatedBookings", { page, limit, status, searchQuery });
 
-  let query = supabase.from("bookings").select("id, full_name, mobile, email, booking_date, package_id, status, final_price, quoted_total, guest_count, event_type, time_slot, start_time, end_time, created_at, appointment_at", { count: "exact" });
+  let query = supabase.from("bookings").select("*", { count: "exact" });
 
   if (status && status !== 'all') {
     query = query.eq("status", status);
   }
 
   if (searchQuery) {
-    // Supabase generic search: full_name, mobile, email
     query = query.or(`full_name.ilike.%${searchQuery}%,mobile.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
   }
 
@@ -42,10 +41,30 @@ export async function adminGetPaginatedBookings({
 
 export async function adminGetBookingStats() {
   log.info("adminGetBookingStats");
-  const { data, error } = await supabase.rpc("admin_booking_stats");
+  const { data, error } = await supabase.from("bookings").select("status");
   if (error) {
-    log.error("admin_booking_stats failed", error);
+    log.error("adminGetBookingStats failed", error);
     throw error;
   }
-  return data?.[0] || { total: 0, pending: 0, appointment_scheduled: 0, quotation_in_progress: 0, confirmed: 0, completed: 0, declined: 0, cancelled: 0 };
+
+  const stats = {
+    total: data?.length || 0,
+    pending: 0,
+    appointment_scheduled: 0,
+    quotation_in_progress: 0,
+    confirmed: 0,
+    completed: 0,
+    declined: 0,
+    cancelled: 0,
+  };
+
+  if (data) {
+    for (const row of data) {
+      if (row.status && row.status in stats) {
+        (stats as any)[row.status]++;
+      }
+    }
+  }
+
+  return stats;
 }

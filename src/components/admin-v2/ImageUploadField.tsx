@@ -47,13 +47,13 @@ export function ImageUploadField({
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      <div className="flex items-center justify-between">
-        <label className="text-xs sm:text-sm font-semibold text-stone-800">
+    <div className="image-field-container">
+      <div className="image-field-label-bar">
+        <label className="image-field-label">
           {label}
         </label>
         {value && (
-          <span className="text-xs text-lime-800 font-semibold flex items-center gap-1">
+          <span className="image-field-attached-badge">
             <Check size={12} strokeWidth={3} /> Image Attached
           </span>
         )}
@@ -74,7 +74,7 @@ export function ImageUploadField({
             </div>
           </div>
 
-          {/* Touch-Friendly Action Buttons Below Image */}
+          {/* Action Buttons Below Image */}
           <div className="image-field-actions-bar">
             <button
               type="button"
@@ -87,7 +87,7 @@ export function ImageUploadField({
             <button
               type="button"
               onClick={() => openModal('upload')}
-              className="image-field-touch-btn bg-white text-stone-800 border-stone-200 hover:bg-stone-50 active:scale-95 shadow-xs"
+              className="image-field-touch-btn bg-white text-stone-700 border-stone-200 hover:bg-stone-50 active:scale-95 shadow-xs"
             >
               <Upload size={14} />
               <span>Upload New</span>
@@ -103,49 +103,34 @@ export function ImageUploadField({
           </div>
         </div>
       ) : (
-        <div
-          className="border-2 border-dashed border-stone-200 hover:border-lime-500 rounded-2xl p-6 sm:p-8 bg-[#FAF8F5] hover:bg-white flex flex-col items-center justify-center gap-3 text-center cursor-pointer transition-all shadow-xs"
-          onClick={() => openModal('library')}
-        >
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-stone-900 shadow-xs"
-            style={{
-              background: 'rgba(182, 245, 0, 0.2)',
-              border: '1.5px solid rgba(182, 245, 0, 0.5)',
-            }}
-          >
+        <div className="image-field-empty-dropzone">
+          <div className="image-field-dropzone-icon">
             <ImageIcon size={22} />
           </div>
 
-          <div>
-            <p className="m-0 font-bold text-stone-900 text-sm sm:text-base">
-              Select or Upload Image
-            </p>
-            <p className="mt-1 text-xs text-stone-500 max-w-xs">
-              Choose from your media library or upload directly from your device
-            </p>
-          </div>
+          <p className="image-field-dropzone-title">
+            Add image
+          </p>
+          <p className="image-field-dropzone-desc">
+            Select an image from the library or upload from your device
+          </p>
 
-          <div
-            className="flex items-center gap-2 mt-1"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="image-field-dropzone-actions">
             <button
               type="button"
               onClick={() => openModal('library')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-900 active:scale-95 transition-all shadow-xs min-h-[38px] cursor-pointer"
-              style={{ background: '#B6F500' }}
+              className="workspace-button workspace-button-primary inline-flex items-center gap-2 cursor-pointer"
             >
-              <FolderOpen size={14} />
-              <span>Browse Library</span>
+              <FolderOpen size={15} />
+              <span>Select image</span>
             </button>
             <button
               type="button"
               onClick={() => openModal('upload')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-stone-800 bg-white border border-stone-200 hover:bg-stone-50 active:scale-95 transition-all shadow-xs min-h-[38px] cursor-pointer"
+              className="image-field-direct-upload-btn"
             >
-              <Upload size={14} />
-              <span>Upload New</span>
+              <Upload size={13} />
+              <span>or upload directly</span>
             </button>
           </div>
         </div>

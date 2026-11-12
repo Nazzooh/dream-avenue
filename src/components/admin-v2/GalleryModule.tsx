@@ -494,8 +494,47 @@ export default function GalleryModule() {
             ? 'Edit Photo & Event Details'
             : 'Add New Photo to Gallery'
         }
+        description={
+          isReadOnlyView
+            ? 'Viewing photo metadata and celebration settings'
+            : editingImage
+            ? 'Update photo metadata, event category, and showcase settings'
+            : 'Upload and organize a new photo in the venue showcase'
+        }
+        footer={
+          <div className="admin-modal-actions">
+            <button
+              type="button"
+              className="workspace-button"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              {isReadOnlyView ? 'Close' : 'Cancel'}
+            </button>
+            {!isReadOnlyView && (
+              <button
+                type="submit"
+                form="gallery-editor-form"
+                className="workspace-button workspace-button-primary"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin inline mr-1.5" /> Saving...
+                  </>
+                ) : editingImage ? (
+                  'Update photo'
+                ) : (
+                  'Add photo'
+                )}
+              </button>
+            )}
+          </div>
+        }
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form id="gallery-editor-form" onSubmit={handleSubmit} className="space-y-4">
           {isReadOnlyView && (
             <div
               className="p-3.5 rounded-xl text-xs font-medium"
@@ -509,57 +548,56 @@ export default function GalleryModule() {
             </div>
           )}
 
-          {/* Title */}
-          <FormInput
-            name="title"
-            label="Image Title"
-            placeholder="e.g., Grand Ballroom Reception & Chandeliers"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={isReadOnlyView}
-            required
-          />
-
-          {/* Category & Event Type Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormSelect
-              name="category"
-              label="Event Category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              options={categoryOptions}
+          {/* Details Section */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Photo Details</h4>
+            <FormInput
+              name="title"
+              label="Image Title"
+              placeholder="e.g., Grand Ballroom Reception & Chandeliers"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               disabled={isReadOnlyView}
               required
             />
 
-            <FormInput
-              name="event_type"
-              label="Event Type / Setting (Optional)"
-              placeholder="e.g., Outer Dining Counter, Stage Setup, Lawn"
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormSelect
+                name="category"
+                label="Event Category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                options={categoryOptions}
+                disabled={isReadOnlyView}
+                required
+              />
+
+              <FormInput
+                name="event_type"
+                label="Event Type / Setting (Optional)"
+                placeholder="e.g., Outer Dining Counter, Stage Setup, Lawn"
+                value={eventType}
+                onChange={(e) => setEventType(e.target.value)}
+                disabled={isReadOnlyView}
+                helpText="Specific setting or celebration area"
+              />
+            </div>
+
+            <FormTextarea
+              name="description"
+              label="Description & Event Details (Optional)"
+              placeholder="Enter notes about seating layout, capacity, decor, or the celebration shown in the photo..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               disabled={isReadOnlyView}
-              helpText="Specific setting or celebration area"
+              rows={3}
+              helpText="Displayed in detailed views and event highlights"
             />
           </div>
 
-          {/* Description */}
-          <FormTextarea
-            name="description"
-            label="Description & Event Details (Optional)"
-            placeholder="Enter notes about seating layout, capacity, decor, or the celebration shown in the photo..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={isReadOnlyView}
-            rows={3}
-            helpText="Displayed in detailed views and event highlights"
-          />
-
-          {/* Image Upload / Media Selector */}
-          <div>
-            <label className="admin-label mb-2 block font-semibold text-stone-800 text-sm">
-              Gallery Photo {isReadOnlyView ? '' : <span style={{ color: 'var(--lux-danger)' }}>*</span>}
-            </label>
+          {/* Media Section */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Media</h4>
             {isReadOnlyView ? (
               <div
                 style={{
@@ -578,7 +616,7 @@ export default function GalleryModule() {
               </div>
             ) : (
               <ImageUploadField
-                label=""
+                label="Gallery Photo"
                 value={imageUrl}
                 onChange={(url) => setImageUrl(url || '')}
                 bucket="facilities_images"
@@ -586,71 +624,33 @@ export default function GalleryModule() {
             )}
           </div>
 
-          {/* Featured Toggle */}
+          {/* Visibility & Showcase Section */}
           {!isReadOnlyView && (
-            <div
-              className="flex items-center gap-3.5 p-3.5 rounded-xl transition-all"
-              style={{
-                background: isFeatured ? 'var(--lux-gold-light)' : '#FAF8F5',
-                border: isFeatured
-                  ? '1px solid var(--lux-gold-border)'
-                  : '1px solid var(--lux-border)',
-              }}
-            >
-              <input
-                type="checkbox"
-                id="is_featured_lux_checkbox"
-                checked={isFeatured}
-                onChange={(e) => setIsFeatured(e.target.checked)}
-                style={{ width: '18px', height: '18px', accentColor: '#537517' }}
-              />
-              <label
-                htmlFor="is_featured_lux_checkbox"
-                className="cursor-pointer select-none text-sm font-medium"
-                style={{ color: isFeatured ? '#8C652D' : 'var(--lux-ink)' }}
-              >
-                <div className="flex items-center gap-1.5 font-bold">
-                  <Star size={14} fill={isFeatured ? '#8C652D' : 'none'} color={isFeatured ? '#8C652D' : 'currentColor'} />
-                  Feature this photo in homepage highlights
-                </div>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--lux-muted)' }}>
-                  Featured photos appear prominently in venue promotional showcases
-                </p>
-              </label>
+            <div className="admin-form-section">
+              <h4 className="admin-form-section-title">Visibility & Showcase</h4>
+              <div className={`gallery-feature-card ${isFeatured ? 'is-featured' : ''}`}>
+                <input
+                  type="checkbox"
+                  id="is_featured_lux_checkbox"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  className="gallery-feature-checkbox"
+                />
+                <label
+                  htmlFor="is_featured_lux_checkbox"
+                  className="gallery-feature-content"
+                >
+                  <div className="gallery-feature-header">
+                    <Star size={15} fill={isFeatured ? '#8C652D' : 'none'} color={isFeatured ? '#8C652D' : 'currentColor'} />
+                    <span>Feature this photo in homepage highlights</span>
+                  </div>
+                  <p className="gallery-feature-desc">
+                    Featured photos appear prominently in venue promotional showcases
+                  </p>
+                </label>
+              </div>
             </div>
           )}
-
-          {/* Modal Actions */}
-          <div
-            className="flex gap-3 justify-end pt-5 border-t"
-            style={{ borderColor: 'var(--lux-border)' }}
-          >
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsModalOpen(false);
-                resetForm();
-              }}
-            >
-              {isReadOnlyView ? 'Close' : 'Cancel'}
-            </Button>
-
-            {!isReadOnlyView && (
-              <Button
-                type="submit"
-                variant="primary"
-                loading={isSaving}
-                disabled={isSaving}
-              >
-                {isSaving
-                  ? 'Saving...'
-                  : editingImage
-                  ? 'Update Photo Details'
-                  : 'Add Photo to Gallery'}
-              </Button>
-            )}
-          </div>
         </form>
       </Modal>
 

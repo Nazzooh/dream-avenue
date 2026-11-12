@@ -106,7 +106,7 @@ export function DashboardSidebar({
       {/* Backdrop for mobile */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          className="sidebar-lux-backdrop"
           onClick={onClose}
         />
       )}

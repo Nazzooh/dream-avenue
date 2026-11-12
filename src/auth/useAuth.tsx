@@ -1,77 +1,43 @@
-// /src/auth/useAuth.tsx
-import { useEffect, useState } from "react";
+// src/auth/useAuth.tsx
+import { useCallback, useMemo } from "react";
 import { supabase } from "@/utils/supabase/client";
-import { log } from "../lib/logger";
-import { isAdminRole } from '../lib/adminPermissions';
+import { refreshAdminSession, useAdminGuard } from "../hooks/useAdminGuard";
 
 export function useAuth() {
-  const [session, setSession] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const guard = useAdminGuard();
 
-  useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      const currentSession = data?.session ?? null;
-      setSession(currentSession);
-      
-      if (currentSession?.user?.id) {
-        await loadProfile(currentSession.user.id);
-      }
-      setIsLoading(false);
-    };
-    init();
+  const user = guard.user;
+  const profile = guard.profile;
+  const isAdmin = guard.isAdmin;
+  const isLoading = guard.loading;
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session ?? null);
-      
-      if (session?.user?.id) {
-        await loadProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    });
+  const session = useMemo(() => {
+    return user ? { user } : null;
+  }, [user]);
 
-    return () => sub?.subscription?.unsubscribe?.();
-  }, []);
-
-  async function loadProfile(userId: string) {
-    try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id,email,full_name,role")
-        .eq("id", userId)
-        .single();
-      setProfile(data);
-      return data;
-    } catch (e) {
-      log.error("loadProfile error", e);
-      return null;
-    }
-  }
-
-  // Only database profile role is the trusted source of truth for authorization
-  const isAdmin = isAdminRole(profile?.role);
-
-  async function signIn(email: string, password: string) {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
     if (error) throw error;
+    await refreshAdminSession(data.session);
     return data;
-  }
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    setSession(null);
-    setProfile(null);
-  }
+  }, []);
+
+  const loadProfile = useCallback(async () => {
+    const state = await refreshAdminSession();
+    return state.profile;
+  }, []);
 
   return { 
     session, 
+    user,
     profile, 
     loadProfile, 
     isAdmin, 

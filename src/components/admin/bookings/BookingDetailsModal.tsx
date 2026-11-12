@@ -76,6 +76,26 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
   const [contactOutcome, setContactOutcome] = useState(booking.contact_outcome || '');
   const [isSavingConsultation, setIsSavingConsultation] = useState(false);
   const [workflowHistory, setWorkflowHistory] = useState<any[]>([]);
+
+  const handleQuickDate = (offsetDays: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const currentTime = appointmentAt && appointmentAt.includes('T') ? appointmentAt.split('T')[1] : '10:00';
+    setAppointmentAt(`${yyyy}-${mm}-${dd}T${currentTime}`);
+  };
+
+  const isQuickDateSelected = (offsetDays: number) => {
+    if (!appointmentAt) return false;
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return appointmentAt.startsWith(`${yyyy}-${mm}-${dd}`);
+  };
   
   // Fetch all packages
   const { data: allPackages = [] } = usePackages();
@@ -425,57 +445,76 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
       >
         {/* Header with Close Button - Fluid */}
         <div 
-          className="border-b-2 flex items-center justify-between"
           style={{ 
-            borderColor: '#E8E5DB',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #EAE3D6',
             background: 'linear-gradient(135deg, #FAF9F6 0%, #F5F3EE 100%)',
-            padding: 'clamp(0.75rem,2.5vw,1.5rem) clamp(1rem,4vw,2rem)'
+            padding: 'clamp(0.85rem, 2vw, 1.25rem) clamp(1rem, 3vw, 1.75rem)',
+            gap: '0.75rem',
+            flexShrink: 0,
           }}
         >
-          <div className="flex items-center gap-[clamp(0.5rem,2vw,1rem)] min-w-0 flex-1">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0, flex: 1 }}>
             <div 
-              className="rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ 
-                background: 'linear-gradient(135deg, #C8D46B, #B5C55A)', 
-                color: 'white',
-                width: 'clamp(3rem,8vw,3.5rem)',
-                height: 'clamp(3rem,8vw,3.5rem)'
+                background: '#EFF5E6', 
+                color: '#4F7218',
+                border: '1px solid #D5E3BD',
+                width: '40px',
+                height: '40px',
+                minWidth: '40px',
+                borderRadius: '12px',
+                display: 'grid',
+                placeItems: 'center',
+                boxShadow: '0 2px 6px rgba(79, 114, 24, 0.08)'
               }}
             >
-              <Calendar style={{ width: '45%', height: '45%' }} />
+              <Calendar style={{ width: '20px', height: '20px' }} />
             </div>
-            <div className="min-w-0 flex-1">
-              <h2 id="booking-details-title" className="text-[clamp(1.25rem,3vw,1.75rem)] leading-tight mb-[0.25em] truncate" style={{ color: '#2A2A2A' }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h2 id="booking-details-title" style={{ color: '#253123', margin: 0, font: '700 clamp(1.15rem, 2.5vw, 1.35rem)/1.2 var(--lux-font-serif, Georgia, serif)', letterSpacing: '-0.01em' }}>
                 Booking Details
               </h2>
-              <p className="text-[clamp(0.75rem,1.5vw,0.875rem)] truncate" style={{ color: '#999' }}>
-                ID: {booking.id?.substring(0, 8)}...
+              <p style={{ margin: '2px 0 0', color: '#737E72', fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                ID: {booking.id?.substring(0, 8)}... · {formatDate(booking.booking_date)}
               </p>
             </div>
           </div>
           
-          <button type="button"
+          <button 
+            type="button"
             onClick={onClose}
             aria-label="Close booking details"
-            className="rounded-xl transition-all duration-200 hover:scale-110 flex-shrink-0 ml-[clamp(0.5rem,2vw,1rem)]"
             style={{ 
-              background: 'white', 
-              border: '2px solid #E8E5DB',
-              color: '#666',
-              padding: 'clamp(0.5rem,1.5vw,0.75rem)'
+              background: '#FFFFFF', 
+              border: '1px solid #E2DCD2',
+              color: '#556050',
+              width: '36px',
+              height: '36px',
+              minWidth: '36px',
+              borderRadius: '10px',
+              display: 'grid',
+              placeItems: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#E57373';
-              e.currentTarget.style.borderColor = '#E57373';
-              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.background = '#FFF5F4';
+              e.currentTarget.style.borderColor = '#F1BDB7';
+              e.currentTarget.style.color = '#B04338';
+              e.currentTarget.style.transform = 'scale(1.06)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'white';
-              e.currentTarget.style.borderColor = '#E8E5DB';
-              e.currentTarget.style.color = '#666';
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.borderColor = '#E2DCD2';
+              e.currentTarget.style.color = '#556050';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            <X style={{ width: 'clamp(1.25rem,3vw,1.5rem)', height: 'clamp(1.25rem,3vw,1.5rem)' }} />
+            <X style={{ width: '18px', height: '18px' }} />
           </button>
         </div>
 
@@ -483,6 +522,10 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
         <div 
           className="overflow-y-auto flex-1"
           style={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
             padding: 'clamp(1rem,3vw,2rem) clamp(1rem,4vw,2rem)'
           }}
         >
@@ -507,12 +550,43 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
                 <StatusBadge status={booking.status} />
               </div>
               <div className="booking-consultation-grid">
-                <label>Appointment <input type="datetime-local" value={appointmentAt} onChange={(event) => setAppointmentAt(event.target.value)} /></label>
+                <div style={{ display: 'grid', gap: '0.35rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#52604e', font: '700 0.73rem Inter, sans-serif' }}>Appointment</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickDate(0)}
+                        className={`booking-quick-date-btn ${isQuickDateSelected(0) ? 'is-active' : ''}`}
+                        title="Set appointment to today"
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickDate(1)}
+                        className={`booking-quick-date-btn ${isQuickDateSelected(1) ? 'is-active' : ''}`}
+                        title="Set appointment to tomorrow"
+                      >
+                        Tomorrow
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickDate(2)}
+                        className={`booking-quick-date-btn ${isQuickDateSelected(2) ? 'is-active' : ''}`}
+                        title="Set appointment to the day after tomorrow"
+                      >
+                        Day After
+                      </button>
+                    </div>
+                  </div>
+                  <input type="datetime-local" value={appointmentAt} onChange={(event) => setAppointmentAt(event.target.value)} />
+                </div>
                 <label>Quoted total (₹) <input type="number" min="0" value={quotedTotal} onChange={(event) => setQuotedTotal(event.target.value)} placeholder="Agreed quote" /></label>
                 <label className="booking-consultation-wide">Consultation notes <textarea value={consultationNotes} onChange={(event) => setConsultationNotes(event.target.value)} placeholder="Meeting notes, package changes, partner introductions…" /></label>
                 <label className="booking-consultation-wide">Contact outcome / amendment reason <textarea value={contactOutcome || workflowNote} onChange={(event) => { setContactOutcome(event.target.value); setWorkflowNote(event.target.value); }} placeholder="What was agreed with the client? Required for a decline, cancellation, or confirmed-booking amendment." /></label>
               </div>
-              <div className="booking-consultation-actions">
+              <div className="booking-consultation-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.5rem', width: '100%' }}>
                 <button type="button" onClick={saveConsultation} disabled={isSavingConsultation}>{isSavingConsultation ? 'Saving…' : 'Save discussion'}</button>
                 {booking.status === 'pending' && <><button type="button" onClick={() => moveWorkflow('appointment_scheduled')}>Schedule appointment</button><button type="button" onClick={() => moveWorkflow('quotation_in_progress')}>Start quotation</button><button type="button" className="is-danger" onClick={() => moveWorkflow('declined')}>Decline</button></>}
                 {booking.status === 'appointment_scheduled' && <><button type="button" onClick={() => moveWorkflow('quotation_in_progress')}>Start quotation</button><button type="button" className="is-danger" onClick={() => moveWorkflow('declined')}>Decline</button></>}
@@ -1371,51 +1445,26 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
         </div>
 
         {/* Footer with Action Buttons - Fluid */}
-        <div 
-          className="border-t-2"
-          style={{ 
-            borderColor: '#E8E5DB',
-            background: '#FAF9F6',
-            padding: 'clamp(0.75rem,2.5vw,1.5rem) clamp(1rem,4vw,2rem)'
-          }}
-        >
-          <div className="flex flex-col sm:flex-row gap-[clamp(0.5rem,1.5vw,0.75rem)]">
+        <div className="da-drawer-footer">
+          <div className="da-drawer-footer-actions">
             {booking.status === 'pending' && (
               <>
                 <button
-                  onClick={() => moveWorkflow('quotation_in_progress')}
-                  disabled={updateStatusMutation.isPending}
-                  className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] disabled:opacity-50 disabled:cursor-not-allowed text-[clamp(0.875rem,1.5vw,1rem)]"
-                  style={{
-                    background: 'linear-gradient(135deg, #4CAF50, #45A049)',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-                    padding: 'clamp(0.75rem,2vw,1rem) clamp(1rem,2.5vw,1.5rem)'
-                  }}
+                  type="button"
+                  onClick={() => moveWorkflow('declined')}
+                  className="da-drawer-action-btn da-drawer-action-danger"
                 >
-                  <Check className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Start quotation</span>
+                  <XCircle size={15} />
+                  <span>Decline</span>
                 </button>
                 <button
-                  onClick={() => moveWorkflow('declined')}
-                  className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] text-[clamp(0.875rem,1.5vw,1rem)]"
-                  style={{
-                    background: 'white',
-                    border: '2px solid #E57373',
-                    color: '#E57373',
-                    padding: 'clamp(0.75rem,2vw,1rem) clamp(1rem,2.5vw,1.5rem)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#E57373';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.color = '#E57373';
-                  }}
+                  type="button"
+                  onClick={() => moveWorkflow('quotation_in_progress')}
+                  disabled={updateStatusMutation.isPending}
+                  className="da-drawer-action-btn da-drawer-action-olive"
                 >
-                  <XCircle className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Decline</span>
+                  <Check size={15} />
+                  <span>Start quotation</span>
                 </button>
               </>
             )}
@@ -1423,74 +1472,41 @@ function BookingDetailsModal({ booking, onClose, onStatusUpdate, onCancel, onDel
             {booking.status === 'confirmed' && (
               <>
                 <button
-                  onClick={() => moveWorkflow('completed')}
-                  disabled={updateStatusMutation.isPending}
-                  className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] disabled:opacity-50 disabled:cursor-not-allowed text-[clamp(0.875rem,1.5vw,1rem)]"
-                  style={{
-                    background: 'linear-gradient(135deg, #E0C097, #C29A5D)',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(224, 192, 151, 0.3)',
-                    padding: 'clamp(0.75rem,2vw,1rem) clamp(1rem,2.5vw,1.5rem)'
-                  }}
+                  type="button"
+                  onClick={() => moveWorkflow('cancelled')}
+                  className="da-drawer-action-btn da-drawer-action-danger"
                 >
-                  <CheckCircle className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Mark Completed</span>
+                  <Ban size={15} />
+                  <span>Cancel Booking</span>
                 </button>
                 <button
-                  onClick={() => moveWorkflow('cancelled')}
-                  className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] text-[clamp(0.875rem,1.5vw,1rem)]"
-                  style={{
-                    background: 'white',
-                    border: '2px solid #E57373',
-                    color: '#E57373',
-                    padding: 'clamp(0.75rem,2vw,1rem) clamp(1rem,2.5vw,1.5rem)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#E57373';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.color = '#E57373';
-                  }}
+                  type="button"
+                  onClick={() => moveWorkflow('completed')}
+                  disabled={updateStatusMutation.isPending}
+                  className="da-drawer-action-btn da-drawer-action-olive"
                 >
-                  <Ban className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Cancel Booking</span>
+                  <CheckCircle size={15} />
+                  <span>Mark Completed</span>
                 </button>
               </>
             )}
             
             {booking.status === 'cancelled' && (
               <button
+                type="button"
                 onClick={() => onDelete(booking)}
-                className="flex-1 rounded-xl transition-all duration-200 flex items-center justify-center gap-[0.5em] text-[clamp(0.875rem,1.5vw,1rem)]"
-                style={{
-                  background: 'white',
-                  border: '2px solid #999',
-                  color: '#999',
-                  padding: 'clamp(0.75rem,2vw,1rem) clamp(1rem,2.5vw,1.5rem)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#FF3333';
-                  e.currentTarget.style.borderColor = '#FF3333';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = '#999';
-                  e.currentTarget.style.color = '#999';
-                }}
+                className="da-drawer-action-btn da-drawer-action-danger"
               >
-                <Trash2 className="w-[1.25em] h-[1.25em]" />
-                <span className="font-medium">Delete Permanently</span>
+                <Trash2 size={15} />
+                <span>Delete Permanently</span>
               </button>
             )}
 
             {booking.status === 'completed' && (
-              <div className="flex-1 text-center" style={{ padding: 'clamp(0.75rem,2vw,1rem)' }}>
-                <div className="flex items-center justify-center gap-[0.5em] text-[clamp(0.875rem,1.5vw,1rem)]" style={{ color: '#4CAF50' }}>
-                  <CheckCircle className="w-[1.25em] h-[1.25em]" />
-                  <span className="font-medium">Event Completed Successfully</span>
+              <div className="flex-1 text-center py-2">
+                <div className="flex items-center justify-center gap-1.5 text-sm font-semibold" style={{ color: '#4f7218' }}>
+                  <CheckCircle size={16} />
+                  <span>Event Completed Successfully</span>
                 </div>
               </div>
             )}

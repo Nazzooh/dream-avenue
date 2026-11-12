@@ -235,11 +235,18 @@ function ensureAuthListener() {
   supabase.auth.onAuthStateChange((event, session) => {
     if (import.meta.env.DEV) console.log('AdminGuard Auth Event:', event);
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-      refreshAdminSession(session).then((state) => {
-        if (state.verified && state.isAdmin) {
-          queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'public' });
-        }
-      });
+      const prevUserId = globalState.user?.id;
+      // Decouple from GoTrue internal auth callback tick to avoid WebLock deadlocks
+      setTimeout(() => {
+        refreshAdminSession(session).then((state) => {
+          if (state.verified && state.isAdmin) {
+            // Only invalidate if the user actually switched to prevent aborting initial queries
+            if (session?.user?.id && prevUserId && session.user.id !== prevUserId) {
+              queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'public' });
+            }
+          }
+        });
+      }, 0);
     } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
       clearGlobalState();
       queryClient.clear();
