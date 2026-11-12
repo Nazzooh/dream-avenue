@@ -5,8 +5,8 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from 'lucid
 import { CalendarCell, CellStatus } from './CalendarCell';
 import { TimeSlotSelector, TimeSlot, generateDefaultTimeSlots } from './TimeSlotSelector';
 import { CalendarLegend } from './CalendarLegend';
-import { useCalendarMonth } from '../../src/hooks/useCalendar';
-import type { CalendarDaySlots } from '../../src/api/calendar';
+import { useCalendarMonth } from '@/hooks/useCalendar';
+import type { CalendarDaySlots } from '@/api/calendar';
 import { toast } from 'sonner';
 
 interface BookingCalendarProps {

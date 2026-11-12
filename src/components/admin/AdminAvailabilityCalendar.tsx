@@ -1,111 +1,81 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Lock } from 'lucide-react';
-import { useCalendarMonth, useCalendarEvents } from '../../src/hooks/useCalendar';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { useCalendarMonth, useCalendarEvents } from '@/hooks/useCalendar';
 import { format } from 'date-fns';
-import type { CalendarDaySlots, CalendarEvent } from '../../src/api/calendar';
+import type { CalendarDaySlots, CalendarEvent } from '@/api/calendar';
 import { AdminDateActionModal } from './AdminDateActionModal';
+import { AdminCalendarDayCell } from './AdminCalendarDayCell';
 import { CalendarLoadingSpinner } from '../LoadingFallback';
 
 interface AdminAvailabilityCalendarProps {
   onDateSelect?: (date: Date) => void;
 }
 
-/**
- * ADMIN AVAILABILITY CALENDAR
- * Uses get_calendar_month(p_year, p_month) RPC
- * Loads both availability and events, overlays them on calendar
- */
 export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showActionModal, setShowActionModal] = useState(false);
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
 
-    return { daysInMonth, startingDayOfWeek, year, month, firstDay, lastDay };
-  };
+  const firstDay = useMemo(() => new Date(year, month, 1), [year, month]);
+  const lastDay = useMemo(() => new Date(year, month + 1, 0), [year, month]);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
 
-  const { year, month, daysInMonth, startingDayOfWeek, firstDay, lastDay } = getDaysInMonth(currentMonth);
+  // Local date strings to prevent UTC shift
+  const monthStart = format(firstDay, 'yyyy-MM-dd');
+  const monthEnd = format(lastDay, 'yyyy-MM-dd');
 
-  // Format date range for events RPC
-  const monthStart = firstDay.toISOString().split('T')[0];
-  const monthEnd = lastDay.toISOString().split('T')[0];
-
-  // Use new calendar month RPC
+  // Load calendar availability and event counts
   const { data: calendarData = {}, isLoading: loadingStatus, error } = useCalendarMonth(year, month + 1);
   const { data: events = [], isLoading: loadingEvents } = useCalendarEvents(monthStart, monthEnd);
 
   const isLoading = loadingStatus || loadingEvents;
 
-  console.log('[AdminAvailabilityCalendar] Render state:', {
-    year,
-    month: month + 1,
-    isLoadingStatus: loadingStatus,
-    isLoadingEvents: loadingEvents,
-    hasError: !!error,
-    errorMessage: error?.message,
-    dataKeys: Object.keys(calendarData),
-    eventsCount: events.length,
-    sampleData: Object.entries(calendarData).slice(0, 3),
-  });
-
+  // Map events by date (day field returned by get_calendar_events RPC)
   const eventsByDate = useMemo(() => {
-    const map = new Map<string, CalendarEvent[]>();
+    const map = new Map<string, CalendarEvent>();
     events.forEach((event) => {
-      if (!event.event_date) return;
-      if (!map.has(event.event_date)) {
-        map.set(event.event_date, []);
-      }
-      map.get(event.event_date)!.push(event);
+      const dateKey = event.day || event.event_date;
+      if (!dateKey) return;
+      map.set(dateKey, event);
     });
     return map;
   }, [events]);
 
   const previousMonth = () => {
-    setCurrentMonth(new Date(year, month - 1));
+    setCurrentMonth(new Date(year, month - 1, 1));
   };
 
   const nextMonth = () => {
-    setCurrentMonth(new Date(year, month + 1));
+    setCurrentMonth(new Date(year, month + 1, 1));
   };
 
   const formatDateString = (day: number) => {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   };
 
-  /**
-   * Admin Calendar Status Logic using get_calendar_month
-   * - full_day = true → Red (fully booked)
-   * - any of morning/evening/night/short_duration = true → Yellow (partially booked)
-   * - all false → Green (available)
-   */
   const getDateStatus = (dateStr: string) => {
     const dayData: CalendarDaySlots | undefined = calendarData[dateStr];
-    const dayEvents = eventsByDate.get(dateStr) || [];
-    const hasEvent = dayEvents.length > 0;
+    const dayEvent = eventsByDate.get(dateStr);
+    const eventCount = dayEvent?.bookings_count || 0;
+    const hasEvent = eventCount > 0;
 
     if (!dayData) {
-      return { status: 'available', hasEvent, eventCount: dayEvents.length };
+      return { status: 'available' as const, hasEvent, eventCount };
     }
 
-    // Full day booked/blocked
-    if (dayData.full_day) {
-      return { status: 'full', hasEvent, eventCount: dayEvents.length };
+    if (dayData.full_day || (!dayData.morning && !dayData.evening && !dayData.night)) {
+      return { status: 'full' as const, hasEvent, eventCount };
     }
 
-    // Partial availability (any slot booked)
-    if (dayData.morning || dayData.evening || dayData.night || dayData.short_duration) {
-      return { status: 'partial', hasEvent, eventCount: dayEvents.length };
+    if (!dayData.morning || !dayData.evening || !dayData.night) {
+      return { status: 'partial' as const, hasEvent, eventCount };
     }
 
-    return { status: 'available', hasEvent, eventCount: dayEvents.length };
+    return { status: 'available' as const, hasEvent, eventCount };
   };
 
   const handleDayClick = (day: number) => {
@@ -123,11 +93,14 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
     return (
       <div
         style={{
-          background: 'linear-gradient(135deg, #FAFAF7, #FFFFFF)',
+          background: '#FFFFFF',
           borderRadius: '20px',
-          padding: '2rem',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
-          border: '1px solid rgba(224, 192, 151, 0.15)',
+          padding: '3rem',
+          boxShadow: '0 4px 20px rgba(27, 34, 27, 0.05)',
+          border: '1px solid #E8E3DA',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <CalendarLoadingSpinner size="md" />
@@ -137,9 +110,9 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
 
   if (error) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <CalendarIcon size={48} style={{ color: '#9ca3af', margin: '0 auto 16px' }} />
-        <p style={{ color: '#ef4444' }}>Error loading calendar</p>
+      <div style={{ padding: '2rem', textAlign: 'center', background: '#FFFFFF', borderRadius: '20px', border: '1px solid #E8E3DA' }}>
+        <CalendarIcon size={40} style={{ color: '#A1342C', margin: '0 auto 12px' }} />
+        <p style={{ color: '#A1342C', fontWeight: 600 }}>Error loading availability calendar</p>
       </div>
     );
   }
@@ -148,68 +121,80 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
     <>
       <div
         style={{
-          background: 'linear-gradient(135deg, #FAFAF7, #FFFFFF)',
+          background: '#FFFFFF',
           borderRadius: '20px',
-          padding: '2rem',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
-          border: '1px solid rgba(224, 192, 151, 0.15)',
+          padding: '28px',
+          boxShadow: '0 8px 30px rgba(27, 34, 27, 0.05)',
+          border: '1px solid #E8E3DA',
         }}
       >
-        {/* Header */}
+        {/* Month Navigation */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '1.5rem',
+            marginBottom: '1.75rem',
           }}
         >
-          <h3
-            style={{
-              fontFamily: 'Poppins, sans-serif',
-              fontSize: '1.25rem',
-              fontWeight: '600',
-              color: '#2A2A2A',
-            }}
-          >
-            {format(currentMonth, 'MMMM yyyy')}
-          </h3>
+          <div>
+            <h3
+              style={{
+                fontFamily: '"Playfair Display", Georgia, serif',
+                fontSize: '1.35rem',
+                fontWeight: 600,
+                color: '#1B221B',
+                margin: 0,
+              }}
+            >
+              {format(currentMonth, 'MMMM yyyy')}
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: '0.8125rem', color: '#737E72' }}>
+              Select a date to manage bookings or block slots
+            </p>
+          </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
+              type="button"
               onClick={previousMonth}
+              aria-label="Previous Month"
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                border: '1.5px solid #E0C097',
-                background: 'rgba(224, 192, 151, 0.08)',
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                border: '1px solid #E8E3DA',
+                background: '#FAF8F5',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                transition: 'all 0.25s ease',
+                color: '#1B221B',
+                transition: 'all 0.2s ease',
               }}
             >
-              <ChevronLeft size={20} color="#C29A5D" />
+              <ChevronLeft size={18} />
             </button>
 
             <button
+              type="button"
               onClick={nextMonth}
+              aria-label="Next Month"
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                border: '1.5px solid #E0C097',
-                background: 'rgba(224, 192, 151, 0.08)',
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                border: '1px solid #E8E3DA',
+                background: '#FAF8F5',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                transition: 'all 0.25s ease',
+                color: '#1B221B',
+                transition: 'all 0.2s ease',
               }}
             >
-              <ChevronRight size={20} color="#C29A5D" />
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>
@@ -220,7 +205,7 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
             gap: '8px',
-            marginBottom: '12px',
+            marginBottom: '10px',
           }}
         >
           {weekDays.map((day) => (
@@ -229,12 +214,12 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
               style={{
                 textAlign: 'center',
                 fontSize: '0.75rem',
-                fontWeight: '600',
-                color: '#B6F500',
+                fontWeight: 650,
+                color: '#737E72',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                padding: '8px 0',
-                fontFamily: 'Poppins, sans-serif',
+                letterSpacing: '0.08em',
+                padding: '6px 0',
+                fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
               }}
             >
               {day}
@@ -242,94 +227,29 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
           ))}
         </div>
 
-        {/* Calendar Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '10px' }}>
-          {/* Empty cells for days before month starts */}
+        {/* Calendar Day Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
           {Array.from({ length: startingDayOfWeek }).map((_, index) => (
             <div key={`empty-${index}`} />
           ))}
 
-          {/* Days of the month */}
           {Array.from({ length: daysInMonth }).map((_, index) => {
             const day = index + 1;
             const dateStr = formatDateString(day);
             const { status, hasEvent, eventCount } = getDateStatus(dateStr);
             const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
 
-            let cellStyles: React.CSSProperties = {
-              aspectRatio: '1',
-              borderRadius: '14px',
-              border: '2px solid',
-              background: '#FFFFFF',
-              color: '#2A2A2A',
-              fontWeight: isToday ? '700' : '500',
-              fontSize: '0.9375rem',
-              fontFamily: 'Poppins, sans-serif',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-            };
-
-            if (status === 'full') {
-              cellStyles.background = 'linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 153, 153, 0.15))';
-              cellStyles.borderColor = '#FF6B6B';
-            } else if (status === 'partial') {
-              cellStyles.background = 'linear-gradient(135deg, rgba(255, 215, 125, 0.2), rgba(255, 229, 157, 0.15))';
-              cellStyles.borderColor = '#FFD97D';
-            } else {
-              cellStyles.background = 'linear-gradient(135deg, rgba(182, 245, 0, 0.15), rgba(198, 246, 141, 0.08))';
-              cellStyles.borderColor = '#B6F500';
-            }
-
-            if (isToday) {
-              cellStyles.boxShadow = '0 0 16px rgba(224, 192, 151, 0.4)';
-              cellStyles.borderColor = '#E0C097';
-              cellStyles.borderWidth = '3px';
-            }
-
             return (
-              <motion.button
+              <AdminCalendarDayCell
                 key={day}
+                day={day}
+                dateStr={dateStr}
+                status={status}
+                hasEvent={hasEvent}
+                eventCount={eventCount}
+                isToday={isToday}
                 onClick={() => handleDayClick(day)}
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.95 }}
-                style={cellStyles}
-              >
-                {hasEvent && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '6px',
-                      left: '6px',
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      background: '#3B82F6',
-                      boxShadow: '0 0 4px rgba(59, 130, 246, 0.6)',
-                    }}
-                  />
-                )}
-                <span>{day}</span>
-                {eventCount > 0 && (
-                  <span
-                    style={{
-                      fontSize: '0.625rem',
-                      fontWeight: '600',
-                      color: status === 'full' ? '#721c24' : '#856404',
-                      background: status === 'full' ? 'rgba(255, 107, 107, 0.2)' : 'rgba(255, 215, 125, 0.2)',
-                      padding: '2px 6px',
-                      borderRadius: '6px',
-                    }}
-                  >
-                    {eventCount}
-                  </span>
-                )}
-              </motion.button>
+              />
             );
           })}
         </div>
@@ -338,49 +258,36 @@ export function AdminAvailabilityCalendar({ onDateSelect }: AdminAvailabilityCal
         <div
           style={{
             display: 'flex',
-            gap: '16px',
+            gap: '20px',
             marginTop: '24px',
+            paddingTop: '16px',
+            borderTop: '1px solid #F0EBE2',
             flexWrap: 'wrap',
             justifyContent: 'center',
+            fontSize: '0.8125rem',
+            color: '#485247',
           }}
         >
-          {[
-            { label: 'Available', color: 'rgba(182, 245, 0, 0.15)', border: '#B6F500' },
-            { label: 'Partial', color: 'rgba(255, 215, 125, 0.2)', border: '#FFD97D' },
-            { label: 'Full', color: 'rgba(255, 107, 107, 0.2)', border: '#FF6B6B' },
-          ].map((item) => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '6px',
-                  background: item.color,
-                  border: `2px solid ${item.border}`,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: '0.875rem',
-                  color: '#4A4A4A',
-                  fontFamily: 'Inter, sans-serif',
-                }}
-              >
-                {item.label}
-              </span>
-            </div>
-          ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#EBF2DE', border: '1px solid #C6DDA4' }} />
+            <span>Open (Available)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#FBF6EE', border: '1px dashed #B88B52' }} />
+            <span>Partial (1+ Slots Free)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#FDF1EE', border: '1px solid #F0C4B8' }} />
+            <span>Blocked / Reserved</span>
+          </div>
         </div>
       </div>
 
-      {selectedDate && (
+      {showActionModal && selectedDate && (
         <AdminDateActionModal
           date={selectedDate}
           isOpen={showActionModal}
-          onClose={() => {
-            setShowActionModal(false);
-            setSelectedDate(null);
-          }}
+          onClose={() => setShowActionModal(false)}
         />
       )}
     </>

@@ -1,10 +1,12 @@
-import { Menu, Bell, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '../../src/auth/useAuth';
-import { useNavigate } from 'react-router-dom';
+// src/components/admin-v2/DashboardTopbar.tsx — Redesigned Warm Editorial Luxury Topbar
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useNotifications } from '../../src/hooks/useNotifications';
+import { Menu, Bell, ExternalLink, LogOut, ChevronDown, User } from 'lucide-react';
+import { useAuth } from '@/auth/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationDropdown } from './NotificationDropdown';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { roleLabel } from '@/lib/adminPermissions';
 
 interface DashboardTopbarProps {
   pageTitle: string;
@@ -13,24 +15,28 @@ interface DashboardTopbarProps {
 
 export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps) {
   const { user, signOut } = useAuth();
+  const { profile } = useAdminGuard();
   const navigate = useNavigate();
+
+  // Notification state
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
 
-  // Supabase notification system
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead,
-    markAllAsRead,
-    isRealtimeConnected,
-  } = useNotifications();
+  // User Profile dropdown state
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  const { unreadCount } = useNotifications();
+
+  // Close menus on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (notificationRef.current && !notificationRef.current.contains(target)) {
         setIsNotificationOpen(false);
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(target)) {
+        setIsProfileMenuOpen(false);
       }
     };
 
@@ -38,16 +44,8 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Get user initials
-  const getUserInitials = () => {
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return 'A';
-  };
-
   const handleLogout = async () => {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm('Are you sure you want to log out of Dream Avenue Admin?')) {
       try {
         await signOut();
         navigate('/admin/login');
@@ -57,210 +55,117 @@ export function DashboardTopbar({ pageTitle, onMenuClick }: DashboardTopbarProps
     }
   };
 
-  const handleNotificationClick = () => {
-    setIsNotificationOpen((prev) => !prev);
-  };
-
-  const handleCloseNotifications = () => {
-    setIsNotificationOpen(false);
-  };
-
-  const handleViewAllBookings = () => {
-    navigate('/admin/bookings');
-    setIsNotificationOpen(false);
-  };
-
+  const userRole = profile?.role;
+  
   return (
-    <div className="admin-topbar">
-      {/* Left: Menu + Page Title (Mobile) */}
-      <div className="flex items-center gap-4">
-        <button 
+    <header className="admin-topbar-luxury">
+      {/* Left: Mobile Menu + Breadcrumbs & Page Title */}
+      <div className="topbar-lux-left">
+        <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 rounded-lg transition-colors"
-          style={{ color: '#666666' }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(182, 245, 0, 0.08)';
-            e.currentTarget.style.color = '#B6F500';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#666666';
-          }}
+          className="topbar-lux-menu-btn"
+          aria-label="Toggle navigation menu"
         >
-          <Menu size={22} />
-        </button>
-        
-        <h2 
-          className="hidden lg:block"
-          style={{
-            fontFamily: 'Poppins, sans-serif',
-            fontSize: '1.25rem',
-            fontWeight: '600',
-            color: '#2A2A2A'
-          }}
-        >
-          {pageTitle}
-        </h2>
-      </div>
-
-      {/* Right: Actions */}
-      <div className="admin-topbar-actions">
-        {/* Notifications with Hybrid System */}
-        <div ref={notificationRef} style={{ position: 'relative' }} className="notification-container">
-          <button 
-            onClick={handleNotificationClick}
-            className="admin-notification-btn"
-            style={{ position: 'relative' }}
-            aria-label="Notifications"
-          >
-            <motion.div
-              animate={unreadCount > 0 ? { 
-                color: ['#666666', '#E0C097', '#666666'],
-                scale: [1, 1.1, 1]
-              } : {}}
-              transition={{ 
-                duration: 2, 
-                repeat: unreadCount > 0 ? Infinity : 0,
-                ease: 'easeInOut'
-              }}
-            >
-              <Bell size={20} />
-            </motion.div>
-            
-            {/* Badge with Animation */}
-            <AnimatePresence>
-              {unreadCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  className="admin-notification-badge"
-                  style={{
-                    position: 'absolute',
-                    top: '-4px',
-                    right: '-4px',
-                    minWidth: '18px',
-                    height: '18px',
-                    background: 'linear-gradient(135deg, #FF6B6B, #FF5252)',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.65rem',
-                    fontWeight: '700',
-                    color: 'white',
-                    padding: '2px',
-                    boxShadow: '0 0 12px rgba(255, 107, 107, 0.6)',
-                    animation: 'pulse-glow 1.5s infinite alternate',
-                  }}
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </motion.span>
-              )}
-            </AnimatePresence>
-
-            {/* Connection Status Indicator */}
-            {isRealtimeConnected && (
-              <span
-                style={{
-                  position: 'absolute',
-                  bottom: '-2px',
-                  right: '-2px',
-                  width: '8px',
-                  height: '8px',
-                  background: '#10B981',
-                  borderRadius: '50%',
-                  border: '2px solid white',
-                  boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)',
-                }}
-              />
-            )}
-          </button>
-
-          {/* Notifications Dropdown Component */}
-          <NotificationDropdown
-            isOpen={isNotificationOpen}
-            notifications={notifications}
-            unreadCount={unreadCount}
-            isRealtimeConnected={isRealtimeConnected}
-            onClose={handleCloseNotifications}
-            onMarkAllRead={markAllAsRead}
-            onMarkAsRead={markAsRead}
-            onViewAll={handleViewAllBookings}
-          />
-        </div>
-
-        {/* Settings */}
-        <button 
-          className="admin-notification-btn"
-          style={{ position: 'relative' }}
-        >
-          <Settings size={20} style={{ color: '#666666' }} />
+          <Menu size={20} />
         </button>
 
-        {/* User Profile with Dropdown */}
-        <div className="relative group">
-          <button className="admin-profile-btn">
-            <div className="admin-profile-avatar">
-              {getUserInitials()}
-            </div>
-            <div className="hidden md:block text-left">
-              <p style={{ 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: '#2A2A2A' 
-              }}>
-                Admin
-              </p>
-              <p style={{ 
-                fontSize: '0.75rem', 
-                color: '#999999',
-                marginTop: '2px'
-              }}>
-                {user?.email || 'admin@dreamavenue.com'}
-              </p>
-            </div>
-          </button>
-          
-          {/* Dropdown Menu */}
-          <div 
-            className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50"
-            style={{
-              backgroundColor: '#FFFFFF',
-              borderColor: '#E5E7EB',
-            }}
-          >
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-3 flex items-center gap-3 transition-colors rounded-xl"
-              style={{ color: '#EF4444' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#FEE2E2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <LogOut size={18} />
-              <span style={{ fontWeight: '500' }}>Logout</span>
-            </button>
+        <div className="topbar-lux-title-wrap">
+          <div className="topbar-lux-breadcrumbs">
+            <span>Dream Avenue</span>
+            <span style={{ opacity: 0.5 }}>/</span>
+            <span>Workspace</span>
           </div>
+          <h2 className="topbar-lux-title">{pageTitle}</h2>
         </div>
       </div>
 
-      {/* Add keyframes for pulse animation */}
-      <style>{`
-        @keyframes pulse-glow {
-          from {
-            box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
-            transform: scale(1);
-          }
-          to {
-            box-shadow: 0 0 16px rgba(255, 107, 107, 0.8);
-            transform: scale(1.05);
-          }
-        }
-      `}</style>
-    </div>
+      {/* Right: Status, Notifications, Website Link & Profile */}
+      <div className="topbar-lux-right">
+        {/* Live Venue Status Pill (Desktop) */}
+        <div className="topbar-lux-status-pill topbar-lux-status-desktop">
+          <span className="topbar-lux-status-dot" />
+          <span>Venue Active</span>
+        </div>
+
+        {/* Visit Live Website */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="topbar-lux-action-btn topbar-lux-live-site"
+          title="Open live venue website in new tab"
+        >
+          <ExternalLink size={15} />
+          <span>Live Site</span>
+        </a>
+
+        {/* Notifications Center */}
+        <div ref={notificationRef} className="relative">
+          <button
+            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+            className="topbar-lux-notif-btn"
+            aria-label="View notifications"
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && <span className="topbar-lux-notif-badge" />}
+          </button>
+
+          {isNotificationOpen && (
+            <NotificationDropdown
+              onClose={() => setIsNotificationOpen(false)}
+              onViewAllBookings={() => {
+                setIsNotificationOpen(false);
+                navigate('/admin/bookings');
+              }}
+            />
+          )}
+        </div>
+
+        {/* Interactive User Profile Dropdown */}
+        <div ref={profileMenuRef} className="relative">
+          <button
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            className={`topbar-lux-profile-trigger ${isProfileMenuOpen ? 'active' : ''}`}
+            aria-expanded={isProfileMenuOpen}
+            aria-label="User account menu"
+          >
+            <div className="topbar-lux-user-avatar">
+              <User size={16} className="text-stone-700" />
+            </div>
+            <div className="topbar-lux-profile-details">
+              <span className="text-xs font-bold text-stone-900 leading-tight">
+                {roleLabel(userRole)}
+              </span>
+              <span className="text-[11px] text-stone-500 leading-tight truncate max-w-[150px]">
+                {user?.email || profile?.email || 'admin@dreamavenue.com'}
+              </span>
+            </div>
+            <ChevronDown
+              size={14}
+              className={`topbar-lux-profile-chevron ${isProfileMenuOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {/* Profile Dropdown Menu */}
+          {isProfileMenuOpen && (
+            <div className="topbar-lux-profile-dropdown" role="menu">
+              <div className="topbar-lux-dropdown-footer topbar-lux-dropdown-footer-only">
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="topbar-lux-dropdown-logout"
+                  role="menuitem"
+                >
+                  <LogOut size={15} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
   );
 }

@@ -1,7 +1,7 @@
 // src/components/admin/analytics/AnalyticsDashboard.tsx
 // Main composing component for the Analytics suite
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { AnalyticsHeader } from './AnalyticsHeader';
 import { AnalyticsKPICards } from './AnalyticsKPICards';
 import { AnalyticsCharts } from './AnalyticsCharts';

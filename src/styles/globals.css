@@ -141,7 +141,7 @@ body {
   background: var(--bg-cream);
   color: var(--dark-text);
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow-x: clip;
   /* Improve touch interactions for drag-and-drop on mobile/tablets */
   touch-action: manipulation;
 }

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { Search, Calendar, Users, Mail, Phone, FileText, Download, Trash2, Eye, Filter, X } from 'lucide-react';
-import { useBookings } from '../../src/hooks/useBookings';
+import { useBookings } from '@/hooks/useBookings';
 import { toast } from 'sonner';
 import {
   confirmBooking,
@@ -10,9 +10,9 @@ import {
   updateBookingDetails,
   updateBookingExtras,
   getBookingActions
-} from '../../src/api/adminBookings';
-import { isAdmin, getCurrentProfile } from '../../src/lib/adminAuth';
-import { supabase } from '../../src/lib/supabase';
+} from '@/api/adminBookings';
+import { isAdmin, getCurrentProfile } from '@/lib/adminAuth';
+import { supabase } from '@/lib/supabase';
 
 export function EnhancedBookingManagement() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);

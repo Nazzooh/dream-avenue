@@ -1,8 +1,8 @@
 // components/admin-v2/BeAnAdminModal.tsx — Modal for requesting admin access
 import React, { useState } from 'react';
 import { X, UserPlus } from 'lucide-react';
-import { useCreateAdminRequest } from '../../src/hooks/useAdminRequests';
-import { CreateAdminRequest } from '../../src/schemas/adminRequests';
+import { useCreateAdminRequest } from '@/hooks/useAdminRequests';
+import { CreateAdminRequest } from '@/schemas/adminRequests';
 
 interface BeAnAdminModalProps {
   isOpen: boolean;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
-import { useReorderPackages } from '../../src/hooks/usePackages';
-import { Package } from '../../src/schemas/packages';
+import { useReorderPackages } from '@/hooks/usePackages';
+import { Package } from '@/schemas/packages';
 import { GripVertical, IndianRupee, Loader2 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 // Utility to reorder items locally
 const reorder = (list: Package[], startIndex: number, endIndex: number): Package[] => {

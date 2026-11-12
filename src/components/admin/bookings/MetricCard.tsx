@@ -1,6 +1,6 @@
 // src/components/admin/bookings/MetricCard.tsx
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface MetricCardProps {

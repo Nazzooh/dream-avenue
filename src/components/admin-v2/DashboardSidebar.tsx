@@ -1,28 +1,28 @@
+﻿// src/components/admin-v2/DashboardSidebar.tsx — Redesigned Warm Editorial Luxury Sidebar
+import logoImage from '../../assets/b9e63ce206aa68d0d57227942230badde2fa6a6b.png';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../src/auth/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { 
   LayoutDashboard, 
   Package, 
   Building2, 
-  Image, 
-  Calendar, 
-  Star, 
+  Image as ImageIcon, 
   CalendarCheck, 
   ClipboardList, 
   BookOpen,
   LogOut,
   X,
-  Home,
-  Sparkles,
+  User,
   UserPlus,
   TrendingUp,
   Terminal,
   ChevronLeft,
   ChevronRight,
-  Users
+  Users,
+  ExternalLink
 } from 'lucide-react';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can, roleLabel } from '@/lib/adminPermissions';
 
 interface DashboardSidebarProps {
   currentPage: string;
@@ -32,27 +32,64 @@ interface DashboardSidebarProps {
   onToggleCollapse?: () => void;
 }
 
-const navItems = [
-  { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
-  { id: 'analytics', label: 'Analytics', icon: TrendingUp, path: '/admin/analytics', permission: 'analytics' },
-  { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages', permission: 'content' },
-  { id: 'facilities', label: 'Facilities', icon: Building2, path: '/admin/facilities', permission: 'content' },
-  { id: 'gallery', label: 'Gallery', icon: Image, path: '/admin/gallery', permission: 'content' },
-  { id: 'availability', label: 'Availability', icon: CalendarCheck, path: '/admin/availability', permission: 'operations' },
-  { id: 'bookings', label: 'Bookings', icon: BookOpen, path: '/admin/bookings', permission: 'operations' },
-  { id: 'tasks', label: 'Team Tasks', icon: ClipboardList, path: '/admin/tasks', permission: 'tasks' },
-  { id: 'partners', label: 'Partner Network', icon: Users, path: '/admin/partners', permission: 'partners' },
-  { id: 'requests', label: 'Admin Requests', icon: UserPlus, path: '/admin/requests', permission: 'access' },
-  { id: 'activity', label: 'Activity & Audit', icon: Terminal, path: '/admin/activity', permission: 'audit' },
+interface NavSection {
+  heading?: string;
+  items: {
+    id: string;
+    label: string;
+    icon: any;
+    path: string;
+    permission?: string;
+  }[];
+}
+
+const navSections: NavSection[] = [
+  {
+    heading: 'Venue & Content',
+    items: [
+      { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, path: '/admin/gallery', permission: 'content' },
+      { id: 'facilities', label: 'Venue Facilities', icon: Building2, path: '/admin/facilities', permission: 'content' },
+      { id: 'packages', label: 'Packages & Pricing', icon: Package, path: '/admin/packages', permission: 'content' },
+    ]
+  },
+  {
+    heading: 'Operations',
+    items: [
+      { id: 'availability', label: 'Availability Calendar', icon: CalendarCheck, path: '/admin/availability', permission: 'operations' },
+      { id: 'bookings', label: 'Bookings & Events', icon: BookOpen, path: '/admin/bookings', permission: 'operations' },
+      { id: 'tasks', label: 'Team Tasks', icon: ClipboardList, path: '/admin/tasks', permission: 'tasks' },
+    ]
+  },
+  {
+    heading: 'Performance & Insights',
+    items: [
+      { id: 'analytics', label: 'Analytics & Trends', icon: TrendingUp, path: '/admin/analytics', permission: 'analytics' },
+    ]
+  },
+  {
+    heading: 'Administration',
+    items: [
+      { id: 'partners', label: 'Partner Network', icon: Users, path: '/admin/partners', permission: 'partners' },
+      { id: 'requests', label: 'Access Requests', icon: UserPlus, path: '/admin/requests', permission: 'access' },
+      { id: 'staff', label: 'Staff Directory', icon: Users, path: '/admin/staff', permission: 'access' },
+      { id: 'activity', label: 'Security & Audit', icon: Terminal, path: '/admin/activity', permission: 'audit' },
+    ]
+  }
 ];
 
-export function DashboardSidebar({ currentPage, isOpen, onClose, isCollapsed = false, onToggleCollapse }: DashboardSidebarProps) {
+export function DashboardSidebar({ 
+  currentPage, 
+  isOpen, 
+  onClose, 
+  isCollapsed = false, 
+  onToggleCollapse 
+}: DashboardSidebarProps) {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { profile } = useAdminGuard();
 
   const handleLogout = async () => {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm('Are you sure you want to log out of Dream Avenue Admin?')) {
       try {
         await signOut();
         navigate('/admin/login');
@@ -62,138 +99,147 @@ export function DashboardSidebar({ currentPage, isOpen, onClose, isCollapsed = f
     }
   };
 
+  const userRole = profile?.role;
+
   return (
     <>
-      {/* Overlay for mobile */}
+      {/* Backdrop for mobile */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Luxury Redesigned Sidebar */}
       <aside 
-        className={`
-          admin-sidebar
-          ${isOpen ? 'open' : ''}
-          ${isCollapsed ? 'collapsed' : ''}
-        `}
+        className={`admin-sidebar-luxury ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo Section */}
-          <div className="admin-sidebar-logo">
-            <div 
-              className="w-12 h-12 rounded-2xl flex items-center justify-center sidebar-logo-icon"
-              style={{ 
-                background: 'linear-gradient(135deg, #B6F500, #A4DD00)',
-                boxShadow: '0 4px 12px rgba(182, 245, 0, 0.25)'
-              }}
-            >
-              <Sparkles size={24} style={{ color: '#2A2A2A' }} />
-            </div>
-            <div className="flex-1 sidebar-logo-text-wrapper">
-              <h1 className="admin-sidebar-logo-text">
-                Dream Avenue
-              </h1>
-              <p style={{ fontSize: '0.75rem', color: '#A4DD00', marginTop: '2px', fontWeight: '500' }}>
-                Admin Dashboard
-              </p>
-            </div>
-            
-            {/* Mobile close button */}
-            <button 
-              onClick={onClose}
-              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-              style={{
-                color: '#666666'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 107, 107, 0.1)';
-                e.currentTarget.style.color = '#FF6B6B';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#666666';
-              }}
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Navigation */}
-          <nav className="admin-sidebar-nav overflow-y-auto">
-            {navItems.filter((item) => !item.permission || can(profile?.role, item.permission as any)).map(item => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id;
-              
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  className={`admin-nav-link ${isActive ? 'active' : ''}`}
-                  onClick={() => onClose()}
-                  title={isCollapsed ? item.label : undefined}
-                >
-                  <Icon size={20} />
-                  <span className="nav-link-text">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Footer */}
-          <div 
-            className="mt-auto p-4 border-t sidebar-footer"
-            style={{ borderColor: '#E6E6E6' }}
-          >
-            {/* Desktop Collapse Toggle - only visible on lg+ screens */}
-            {onToggleCollapse && (
-              <button
-                onClick={onToggleCollapse}
-                className="admin-nav-link mb-2 hidden lg:flex sidebar-collapse-toggle"
-                title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-                style={{ 
-                  background: 'rgba(182, 245, 0, 0.08)',
-                  justifyContent: isCollapsed ? 'center' : 'flex-start'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(182, 245, 0, 0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(182, 245, 0, 0.08)';
-                }}
-              >
-                {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-                <span className="nav-link-text">{isCollapsed ? '' : 'Collapse'}</span>
-              </button>
+        {/* Brand Header */}
+        <div className="sidebar-lux-brand flex items-center justify-between">
+          <Link to="/admin/dashboard" className="sidebar-lux-logo-box flex items-center gap-3">
+            <img
+              src={logoImage}
+              alt="Dream Avenue"
+              className="sidebar-lux-logo-img"
+              style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+            />
+            {!isCollapsed && (
+              <div className="sidebar-lux-brand-info">
+                <h1 className="sidebar-lux-brand-title">Dream Avenue</h1>
+                <span className="sidebar-lux-brand-tag">Venue Admin</span>
+              </div>
             )}
-            
-            <Link 
-              to="/" 
-              className="admin-nav-link mb-2"
-              title={isCollapsed ? 'Back to Website' : undefined}
-            >
-              <Home size={20} />
-              <span className="nav-link-text">Back to Website</span>
-            </Link>
-            
+          </Link>
+
+          {/* Desktop Discreet Header Collapse Toggle */}
+          {onToggleCollapse && (
             <button
-              onClick={handleLogout}
-              className="admin-nav-link w-full"
-              title={isCollapsed ? 'Logout' : undefined}
-              style={{ color: '#FF6B6B' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 107, 107, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
+              onClick={onToggleCollapse}
+              className="sidebar-lux-collapse-button"
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             >
-              <LogOut size={20} />
-              <span className="nav-link-text">Logout</span>
+              {isCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
             </button>
+          )}
+
+          {/* Mobile Close Button */}
+          <button
+            onClick={onClose}
+            className="sidebar-lux-mobile-close-button"
+            aria-label="Close Sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Grouped Navigation */}
+        <nav className="sidebar-lux-nav">
+          {/* Prominent Overview Hero Card */}
+          <div className="mb-3 px-1">
+            <Link
+              to="/admin/dashboard"
+              className={`sidebar-lux-overview-hero ${currentPage === 'dashboard' ? 'active' : ''}`}
+              onClick={() => onClose()}
+              title={isCollapsed ? 'Overview Dashboard' : undefined}
+            >
+              <LayoutDashboard className="sidebar-lux-overview-hero-icon" size={20} />
+              {!isCollapsed && (
+                <div className="flex flex-col text-left">
+                  <span className="sidebar-lux-overview-hero-title">Overview</span>
+                  <span className="sidebar-lux-overview-hero-sub">Workspace Command Center</span>
+                </div>
+              )}
+            </Link>
           </div>
+          {navSections.map((section, sIdx) => {
+            const accessibleItems = section.items.filter(
+              (item) => !item.permission || can(userRole, item.permission as any)
+            );
+
+            if (accessibleItems.length === 0) return null;
+
+            return (
+              <div key={sIdx} className="mb-2">
+                {!isCollapsed && section.heading && (
+                  <p className="sidebar-lux-nav-heading">{section.heading}</p>
+                )}
+                {accessibleItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = currentPage === item.id;
+
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      className={`sidebar-lux-link ${isActive ? 'active' : ''}`}
+                      onClick={() => onClose()}
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <Icon className="sidebar-lux-link-icon" />
+                      {!isCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* Footer with User Card and Controls */}
+        <div className="sidebar-lux-footer">
+          {/* User profile card */}
+          {!isCollapsed ? (
+            <div className="sidebar-lux-user-card">
+              <div className="sidebar-lux-user-avatar-icon">
+                <User size={18} className="text-stone-700" />
+              </div>
+              <div className="sidebar-lux-user-info">
+                <span className="sidebar-lux-user-role">{roleLabel(userRole)}</span>
+                <span className="sidebar-lux-user-email" title={user?.email || profile?.email || ''}>
+                  {user?.email || profile?.email || 'admin@dreamavenue.com'}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div 
+              className="sidebar-lux-user-avatar-icon mx-auto mb-2" 
+              title={`${roleLabel(userRole)} (${user?.email || profile?.email || 'Admin'})`}
+            >
+              <User size={18} className="text-stone-700" />
+            </div>
+          )}
+
+          {/* Log Out Button */}
+          <button
+            onClick={handleLogout}
+            className="sidebar-lux-action-btn logout"
+            title={isCollapsed ? 'Log Out' : undefined}
+          >
+            <LogOut size={16} />
+            {!isCollapsed && <span>Log Out</span>}
+          </button>
         </div>
       </aside>
     </>

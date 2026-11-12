@@ -1,10 +1,10 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Building2, Check, ChevronRight, Download, LayoutGrid, LayoutList, Mail, MapPin, Phone, Plus, Search, Star, X } from 'lucide-react';
 import AdminLayout from './AdminLayout';
-import { Partner, PartnerCategory, PartnerContact, PartnerReferral, partnerCategories } from '../../src/api/adminWorkspace';
-import { useCreatePartnerReferral, usePartnerReferrals, usePartners, useSavePartner, useUpdatePartnerReferral } from '../../src/hooks/useAdminWorkspace';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
+import { Partner, PartnerCategory, PartnerContact, PartnerReferral, partnerCategories } from '@/api/adminWorkspace';
+import { useCreatePartnerReferral, usePartnerReferrals, usePartners, useSavePartner, useUpdatePartnerReferral } from '@/hooks/useAdminWorkspace';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can } from '@/lib/adminPermissions';
 
 const blankContact = (): PartnerContact => ({ name: '', role_title: '', phone: '', email: '', is_primary: true, is_whatsapp: false, notes: '' });
 const blankPartner = () => ({ name: '', categories: [] as PartnerCategory[], tags: '', service_area: '', website: '', social_url: '', notes: '', is_preferred: false, is_active: true, contacts: [blankContact()] });

@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Users, Heart, TrendingUp, Award, Sparkles } from 'lucide-react';
 import { SmartMetricCard } from './SmartMetricCard';
-import { useAnalyticsSummary } from '../../src/hooks/useAnalyticsSummary';
+import { useAnalyticsSummary } from '@/hooks/useAnalyticsSummary';
 
 export function EnhancedAnalyticsDashboard() {
   const { data: summary, isLoading, isFetching } = useAnalyticsSummary();
@@ -130,7 +130,7 @@ export function EnhancedAnalyticsDashboard() {
         </div>
         
         <p style={{ fontSize: '0.9375rem', color: '#666666', margin: 0 }}>
-          Live metrics from your Dream Avenue Convention Center
+          Live metrics from your Dream Avenue Event Hall
         </p>
       </div>
 

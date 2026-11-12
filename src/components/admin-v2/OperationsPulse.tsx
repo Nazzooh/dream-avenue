@@ -1,8 +1,8 @@
 import { CheckCircle2, ClipboardList, Clock3, ListTodo, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { useAdminActivity, useAdminTasks, useCreateTask, useUpdateTaskStatus } from '../../src/hooks/useAdminWorkspace';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
+import { useAdminActivity, useAdminTasks, useCreateTask, useUpdateTaskStatus } from '@/hooks/useAdminWorkspace';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can } from '@/lib/adminPermissions';
 
 export function OperationsPulse() {
   const { data: tasks = [], isLoading: tasksLoading } = useAdminTasks();

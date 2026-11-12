@@ -1,98 +1,79 @@
-// Dream Avenue — Facilities React Query Hooks
-// Manages facilities data with React Query
+// src/hooks/useFacilities.ts — React Query hooks for facilities
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getFacilities,
+  getFacility,
+  createFacility,
+  updateFacility,
+  deleteFacility,
+  facilityKeys,
+} from "../api/facilities";
+import { FacilityCreate, FacilityUpdate } from "../schemas/facilities";
+import { toast } from "sonner";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../utils/supabase/client';
-import { getFacilities, type Facility } from '../api/facilities';
-
-// Query keys factory
-const facilityKeys = {
-  all: ['facilities'] as const,
-  lists: () => [...facilityKeys.all, 'list'] as const,
-  list: (filters?: { includeInactive?: boolean }) => [...facilityKeys.lists(), filters] as const,
-  details: () => [...facilityKeys.all, 'detail'] as const,
-  detail: (id: string) => [...facilityKeys.details(), id] as const,
-};
-
-// Get facilities hook
-export const useFacilities = (includeInactive: boolean = false) => {
+// GET all facilities
+export const useFacilities = () => {
   return useQuery({
-    queryKey: facilityKeys.list({ includeInactive }),
-    queryFn: () => getFacilities(includeInactive),
+    queryKey: facilityKeys.lists(),
+    queryFn: getFacilities,
   });
 };
 
-// Create facility mutation
+// GET single facility
+export const useFacility = (id: string) => {
+  return useQuery({
+    queryKey: facilityKeys.detail(id),
+    queryFn: () => getFacility(id),
+    enabled: !!id,
+  });
+};
+
+// CREATE facility
 export const useCreateFacility = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Omit<Facility, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data: facility, error } = await supabase
-        .from('facilities')
-        .insert([data])
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return facility;
-    },
+    mutationFn: (data: FacilityCreate) => createFacility(data),
     onSuccess: () => {
-      // Invalidate all facility queries to refetch
       queryClient.invalidateQueries({ queryKey: facilityKeys.all });
+      toast.success("Facility created successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create facility");
     },
   });
 };
 
-// Update facility mutation
+// UPDATE facility
 export const useUpdateFacility = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Facility> }) => {
-      const { data: facility, error } = await supabase
-        .from('facilities')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return facility;
-    },
-    onSuccess: () => {
-      // Invalidate all facility queries to refetch
+    mutationFn: ({ id, data }: { id: string; data: FacilityUpdate }) =>
+      updateFacility(id, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: facilityKeys.all });
+      queryClient.invalidateQueries({ queryKey: facilityKeys.detail(variables.id) });
+      toast.success("Facility updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update facility");
     },
   });
 };
 
-// Delete facility mutation
+// DELETE facility
 export const useDeleteFacility = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('facilities')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return id;
-    },
+    mutationFn: (id: string) => deleteFacility(id),
     onSuccess: () => {
-      // Invalidate all facility queries to refetch
       queryClient.invalidateQueries({ queryKey: facilityKeys.all });
+      toast.success("Facility deleted successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete facility");
     },
   });
 };

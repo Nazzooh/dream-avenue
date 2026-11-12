@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/admin-v2/AdminLayout';
 import { EnhancedAnalyticsDashboard } from '../../components/admin-v2/EnhancedAnalyticsDashboard';
-import { useBookings } from '../../src/hooks/useBookings';
-import { usePackages } from '../../src/hooks/usePackages';
+import { useBookings } from '@/hooks/useBookings';
+import { usePackages } from '@/hooks/usePackages';
 import { OperationsPulse } from '../../components/admin-v2/OperationsPulse';
 
 interface MetricCardProps {

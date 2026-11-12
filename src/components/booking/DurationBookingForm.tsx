@@ -3,10 +3,10 @@ import { motion } from 'motion/react';
 import { User, Mail, Phone, Users, MessageSquare, Package, Calendar, Clock, CheckCircle } from 'lucide-react';
 import { CalendarView } from './CalendarView';
 import { TimeSlotSelector, TimeSlot } from './TimeSlotSelector';
-import { usePackages } from '../../src/hooks/usePackages';
+import { usePackages } from '@/hooks/usePackages';
 import { toast } from 'sonner';
-import { buildPublicBookingPayload } from '../../src/lib/api/bookings';
-import { supabase } from '../../utils/supabase/client';
+import { buildPublicBookingPayload } from '@/lib/api/bookings';
+import { supabase } from '@/utils/supabase/client';
 
 interface DurationBookingFormProps {
   onSuccess?: () => void;

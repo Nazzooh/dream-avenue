@@ -6,8 +6,8 @@ import {
   ClipboardList, 
   MoreHorizontal 
 } from 'lucide-react';
-import { useAdminGuard } from '../../src/hooks/useAdminGuard';
-import { can } from '../../src/lib/adminPermissions';
+import { useAdminGuard } from '@/hooks/useAdminGuard';
+import { can } from '@/lib/adminPermissions';
 
 interface MobileBottomNavProps {
   currentPage: string;

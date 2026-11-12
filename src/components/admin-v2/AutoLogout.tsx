@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useAuth } from '../../src/auth/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { toast } from 'sonner';
 import { useLocation } from 'react-router-dom';
 

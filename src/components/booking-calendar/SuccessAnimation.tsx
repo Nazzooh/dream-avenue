@@ -1,7 +1,7 @@
 // SuccessAnimation.tsx - Animated success confirmation component
 import { motion } from 'motion/react';
 import { Check, Calendar, Clock } from 'lucide-react';
-import { getTimeSlotDisplay, isValidTimeSlot } from '../../src/constants/timeSlots';
+import { getTimeSlotDisplay, isValidTimeSlot } from '@/constants/timeSlots';
 
 interface SuccessAnimationProps {
   date: string;

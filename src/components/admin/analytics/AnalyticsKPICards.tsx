@@ -1,7 +1,7 @@
 // src/components/admin/analytics/AnalyticsKPICards.tsx
 // Premium KPI cards with shadcn Card, Badge, Progress, and Tooltip
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import {
   DollarSign, CalendarCheck, TrendingUp, Users,
   Percent, BarChart3, Info

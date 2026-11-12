@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
+import { useEffect, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 
 export function ConfirmationModal({ title, message, confirmText, cancelText, onConfirm, onCancel, isDangerous }: {
@@ -10,6 +11,16 @@ export function ConfirmationModal({ title, message, confirmText, cancelText, onC
   onCancel: () => void;
   isDangerous?: boolean;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => confirmRef.current?.focus());
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onCancel(); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', onKeyDown); };
+  }, [onCancel]);
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -22,7 +33,7 @@ export function ConfirmationModal({ title, message, confirmText, cancelText, onC
         zIndex: 9999,
         padding: 'clamp(1rem,4vw,2rem)'
       }}
-      onClick={onCancel}
+      onMouseDown={onCancel}
     >
       <motion.div
         initial={{ scale: 0.95, y: 20 }}
@@ -36,7 +47,12 @@ export function ConfirmationModal({ title, message, confirmText, cancelText, onC
           maxWidth: 'min(28rem, 95vw)',
           padding: 'clamp(1.5rem,4vw,2rem)'
         }}
-        onClick={(e) => e.stopPropagation()}
+        ref={dialogRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirmation-title"
+        aria-describedby="confirmation-message"
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div 
           className="mx-auto mb-[1.5em] rounded-2xl flex items-center justify-center"
@@ -52,15 +68,15 @@ export function ConfirmationModal({ title, message, confirmText, cancelText, onC
           <AlertCircle style={{ width: '50%', height: '50%' }} />
         </div>
         
-        <h3 className="text-center mb-[0.75em] text-[clamp(1.25rem,3vw,1.75rem)]" style={{ color: '#2A2A2A' }}>
+        <h3 id="confirmation-title" className="text-center mb-[0.75em] text-[clamp(1.25rem,3vw,1.75rem)]" style={{ color: '#2A2A2A' }}>
           {title}
         </h3>
-        <p className="text-center mb-[2em] text-[clamp(0.875rem,1.5vw,1rem)]" style={{ color: '#666', lineHeight: '1.6' }}>
+        <p id="confirmation-message" className="text-center mb-[2em] text-[clamp(0.875rem,1.5vw,1rem)]" style={{ color: '#666', lineHeight: '1.6' }}>
           {message}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-[clamp(0.5rem,1.5vw,0.75rem)]">
-          <button
+          <button type="button"
             onClick={onCancel}
             className="flex-1 rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
             style={{
@@ -71,7 +87,7 @@ export function ConfirmationModal({ title, message, confirmText, cancelText, onC
           >
             {cancelText}
           </button>
-          <button
+          <button ref={confirmRef} type="button"
             onClick={onConfirm}
             className="flex-1 rounded-xl transition-all duration-200 text-[clamp(0.875rem,1.5vw,1rem)]"
             style={{
