@@ -125,7 +125,41 @@ export default function BookingRequestsModule() {
           setSelectedRequest(null);
         }}
         title="Booking Request Details"
+        description="Review customer request information and update reservation status"
         size="lg"
+        footer={
+          selectedRequest?.status === 'Pending' ? (
+            <div className="admin-modal-actions">
+              <button
+                type="button"
+                className="workspace-button workspace-button-danger"
+                onClick={() => handleStatusUpdate('Rejected')}
+              >
+                Reject Request
+              </button>
+              <button
+                type="button"
+                className="workspace-button workspace-button-primary"
+                onClick={() => handleStatusUpdate('Confirmed')}
+              >
+                Confirm Booking
+              </button>
+            </div>
+          ) : (
+            <div className="admin-modal-actions">
+              <button
+                type="button"
+                className="workspace-button"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedRequest(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          )
+        }
       >
         {selectedRequest && (
           <div className="space-y-6">
@@ -199,26 +233,6 @@ export default function BookingRequestsModule() {
                 variant={getStatusVariant(selectedRequest.status)} 
               />
             </div>
-
-            {/* Action Buttons */}
-            {selectedRequest.status === 'Pending' && (
-              <div className="flex gap-3 pt-4 border-t border-[#EAE7E2]">
-                <Button 
-                  variant="primary" 
-                  className="flex-1"
-                  onClick={() => handleStatusUpdate('Confirmed')}
-                >
-                  Confirm Booking
-                </Button>
-                <Button 
-                  variant="danger" 
-                  className="flex-1"
-                  onClick={() => handleStatusUpdate('Rejected')}
-                >
-                  Reject Request
-                </Button>
-              </div>
-            )}
           </div>
         )}
       </Modal>

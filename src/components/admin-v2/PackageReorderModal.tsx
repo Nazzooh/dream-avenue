@@ -70,8 +70,41 @@ export function PackageReorderModal({ isOpen, onClose, packages }: PackageReorde
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Reorder Packages" size="lg">
-      <div className="space-y-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Reorder Packages"
+      description="Drag and drop packages to arrange their public website order"
+      size="lg"
+      footer={
+        <div className="admin-modal-actions">
+          <button
+            type="button"
+            className="workspace-button"
+            onClick={handleClose}
+            disabled={reorderMutation.isPending}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="workspace-button workspace-button-primary"
+            onClick={handleSaveOrder}
+            disabled={reorderMutation.isPending || items.length === 0}
+          >
+            {reorderMutation.isPending ? (
+              <>
+                <Loader2 size={16} className="animate-spin inline mr-1.5" />
+                Saving...
+              </>
+            ) : (
+              'Save Order'
+            )}
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
         {/* Instructions */}
         <div className="p-4 rounded-xl border-2" style={{ 
           background: 'rgba(0, 255, 65, 0.1)', 
@@ -91,7 +124,7 @@ export function PackageReorderModal({ isOpen, onClose, packages }: PackageReorde
         )}
 
         {/* Sortable List */}
-        <div className="max-h-[500px] overflow-y-auto pr-2">
+        <div>
           {items.length > 0 ? (
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="packages">
@@ -180,35 +213,6 @@ export function PackageReorderModal({ isOpen, onClose, packages }: PackageReorde
               <p style={{ color: 'var(--dream-text-secondary)' }}>No packages to reorder</p>
             </div>
           )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3 justify-end pt-6 border-t" style={{ borderColor: 'rgba(0, 255, 65, 0.2)' }}>
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={handleClose}
-            disabled={reorderMutation.isPending}
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="button" 
-            variant="primary"
-            onClick={handleSaveOrder}
-            disabled={reorderMutation.isPending || items.length === 0}
-          >
-            {reorderMutation.isPending ? (
-              <>
-                <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block' }}>
-                  <Loader2 size={18} />
-                </motion.div>
-                Saving...
-              </>
-            ) : (
-              'Save Order'
-            )}
-          </Button>
         </div>
       </div>
     </Modal>

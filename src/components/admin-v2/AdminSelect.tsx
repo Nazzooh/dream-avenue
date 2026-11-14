@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Check } from 'lucide-react';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../ui/select';
@@ -41,7 +40,7 @@ export function AdminSelect({
         <SelectContent className="da-select-content" position="popper">
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value} disabled={option.disabled} className="da-select-item">
-              {option.label}<Check className="da-select-check" aria-hidden="true" />
+              {option.label}
             </SelectItem>
           ))}
         </SelectContent>

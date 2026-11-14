@@ -13,6 +13,7 @@ import { FormSelect } from './FormSelect';
 import { FormTextarea } from './FormTextarea';
 import { ImageUploadField } from './ImageUploadField';
 import { Modal } from './Modal';
+import { ConfirmationModal } from './ConfirmationModal';
 import { AdminActionButton } from './AdminActionButton';
 import { AdminSelect } from './AdminSelect';
 
@@ -32,6 +33,7 @@ const getIcon = (icon: string | null | undefined) => iconOptions.find((option) =
 export default function FacilitiesModule() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
+  const [facilityToDelete, setFacilityToDelete] = useState<Facility | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
@@ -91,14 +93,8 @@ export default function FacilitiesModule() {
     }
   };
 
-  const removeFacility = async (facility: Facility) => {
-    if (!confirm(`Delete “${facility.title}”? This cannot be undone.`)) return;
-    try {
-      await deleteMutation.mutateAsync(facility.id);
-      toast.success('Facility deleted');
-    } catch {
-      toast.error('Unable to delete this facility');
-    }
+  const removeFacility = (facility: Facility) => {
+    setFacilityToDelete(facility);
   };
 
   const activeCount = facilities.filter((facility) => facility.is_active).length;
@@ -112,7 +108,9 @@ export default function FacilitiesModule() {
           <h1>Venue facilities</h1>
           <p className="da-header-copy">Curate the spaces, titles, badges, and subtitles guests see when exploring Dream Avenue.</p>
         </div>
-        <AdminActionButton type="button" data-admin-shortcut="new-facility" variant="primary" icon={<Plus size={17} />} onClick={() => openEditor()}>Add facility</AdminActionButton>
+        <div className="da-operations-actions">
+          <AdminActionButton type="button" data-admin-shortcut="new-facility" variant="primary" icon={<Plus size={17} />} onClick={() => openEditor()}>Add facility</AdminActionButton>
+        </div>
       </header>
 
       <div className="da-catalogue-summary" aria-label="Facilities summary">
@@ -155,16 +153,18 @@ export default function FacilitiesModule() {
                     <span className={facility.is_active ? 'da-status-chip live' : 'da-status-chip'}>{facility.is_active ? 'Live' : 'Hidden'}</span>
                   </div>
                   <div className="da-facility-content">
-                    <div className="da-facility-icon"><Icon size={20} /></div>
-                    <div className="da-facility-copy">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className="da-facility-header">
+                      <div className="da-facility-icon"><Icon size={20} /></div>
+                      <div className="da-facility-title-wrap">
                         <h2>{facility.title}</h2>
                         {facility.category && (
-                          <span className="da-status-chip" style={{ background: '#edf6de', color: '#31511b', borderColor: '#c1d986', fontSize: '0.68rem', padding: '2px 8px' }}>
+                          <span className="da-status-chip" style={{ background: '#edf6de', color: '#31511b', borderColor: '#c1d986', fontSize: '0.68rem', padding: '2px 8px', marginTop: '4px', display: 'inline-block' }}>
                             {facility.category}
                           </span>
                         )}
                       </div>
+                    </div>
+                    <div className="da-facility-copy">
                       {facility.subtitles && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', margin: '4px 0 8px' }}>
                           {facility.subtitles.split(',').map((sub, i) => (
@@ -176,11 +176,17 @@ export default function FacilitiesModule() {
                       )}
                       <p>{facility.description || 'No description has been added yet.'}</p>
                     </div>
-                    <div className="da-catalogue-card-actions">
-                      <button type="button" onClick={() => toggleVisibility(facility)} title={facility.is_active ? 'Hide from website' : 'Show on website'}>{facility.is_active ? <EyeOff size={17} /> : <Eye size={17} />}</button>
-                      <button type="button" onClick={() => openEditor(facility)} title="Edit facility"><Edit3 size={17} /></button>
-                      <button type="button" className="is-danger" onClick={() => removeFacility(facility)} title="Delete facility"><Trash2 size={17} /></button>
-                    </div>
+                  </div>
+                  <div className="da-facility-actions">
+                    <button type="button" onClick={() => toggleVisibility(facility)} title={facility.is_active ? 'Hide from website' : 'Show on website'}>
+                      {facility.is_active ? <><EyeOff size={15} /> Hide</> : <><Eye size={15} /> Publish</>}
+                    </button>
+                    <button type="button" onClick={() => openEditor(facility)} title="Edit facility">
+                      <Edit3 size={15} /> Edit
+                    </button>
+                    <button type="button" className="is-danger" onClick={() => removeFacility(facility)} title="Delete facility" aria-label={`Delete ${facility.title}`}>
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 </article>
               );
@@ -189,19 +195,83 @@ export default function FacilitiesModule() {
         )}
       </section>
 
-      <Modal isOpen={isEditorOpen} onClose={closeEditor} title={editingFacility ? 'Edit facility' : 'Add facility'}>
-        <form onSubmit={saveFacility} className="da-catalogue-form">
-          <FormInput name="title" label="Facility name (e.g. The Grand Event Hall)" placeholder="e.g. The Grand Event Hall" defaultValue={editingFacility?.title} required />
-          <FormInput name="category" label="Badge title / Category" placeholder="e.g. Main Auditorium, Dining Experience" defaultValue={editingFacility?.category || ''} />
-          <FormInput name="subtitles" label="Subtitles & Highlights (comma-separated)" placeholder="e.g. 800+ Guests, Sound System, Central AC" defaultValue={editingFacility?.subtitles || ''} />
-          <FormInput name="capacity" label="Capacity badge (optional)" placeholder="e.g. 1,000+ Guests" defaultValue={editingFacility?.capacity || ''} />
-          <FormTextarea name="description" label="Description" placeholder="What should clients know about it?" defaultValue={editingFacility?.description || ''} required />
-          <FormSelect name="icon" label="Icon" defaultValue={editingFacility?.icon || 'sparkles'} options={iconOptions.map(({ value, label }) => ({ value, label }))} required />
-          <ImageUploadField label="Facility image (optional)" value={imageUrl} onChange={setImageUrl} />
-          <FormSelect name="status" label="Website visibility" defaultValue={editingFacility?.is_active === false ? 'Inactive' : 'Active'} options={[{ value: 'Active', label: 'Live on the website' }, { value: 'Inactive', label: 'Hidden draft' }]} required />
-          <div className="da-catalogue-form-actions"><Button type="button" variant="outline" onClick={closeEditor}>Cancel</Button><Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>{createMutation.isPending || updateMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Saving</> : editingFacility ? 'Save changes' : 'Add facility'}</Button></div>
+      <Modal
+        isOpen={isEditorOpen}
+        onClose={closeEditor}
+        title={editingFacility ? 'Edit facility' : 'Add facility'}
+        description={editingFacility ? 'Update facility highlights, image, and visibility' : 'Add a new facility to help clients picture their event'}
+        size="lg"
+        footer={
+          <div className="admin-modal-actions">
+            <button type="button" className="workspace-button" onClick={closeEditor}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="facility-editor-form"
+              className="workspace-button workspace-button-primary"
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {createMutation.isPending || updateMutation.isPending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin inline mr-1.5" /> Saving...
+                </>
+              ) : editingFacility ? (
+                'Save changes'
+              ) : (
+                'Add facility'
+              )}
+            </button>
+          </div>
+        }
+      >
+        <form id="facility-editor-form" onSubmit={saveFacility} className="space-y-4">
+          {/* Details Section */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Details</h4>
+            <FormInput name="title" label="Facility name" placeholder="e.g. The Grand Event Hall" defaultValue={editingFacility?.title} required />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormInput name="category" label="Badge title / Category" placeholder="e.g. Main Auditorium" defaultValue={editingFacility?.category || ''} />
+              <FormInput name="capacity" label="Capacity badge (optional)" placeholder="e.g. 1,000+ Guests" defaultValue={editingFacility?.capacity || ''} />
+            </div>
+            <FormInput name="subtitles" label="Subtitles & Highlights (comma-separated)" placeholder="e.g. 800+ Guests, Sound System, Central AC" defaultValue={editingFacility?.subtitles || ''} />
+            <FormTextarea name="description" label="Description" placeholder="What should clients know about it?" defaultValue={editingFacility?.description || ''} required />
+            <FormSelect name="icon" label="Icon" defaultValue={editingFacility?.icon || 'sparkles'} options={iconOptions.map(({ value, label }) => ({ value, label }))} required />
+          </div>
+
+          {/* Media Section */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Media</h4>
+            <ImageUploadField label="Facility image" value={imageUrl} onChange={setImageUrl} />
+          </div>
+
+          {/* Visibility Section */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Visibility & Publishing</h4>
+            <FormSelect name="status" label="Website visibility" defaultValue={editingFacility?.is_active === false ? 'Inactive' : 'Active'} options={[{ value: 'Active', label: 'Live on the website' }, { value: 'Inactive', label: 'Hidden draft' }]} required />
+          </div>
         </form>
       </Modal>
+
+      {facilityToDelete && (
+        <ConfirmationModal
+          title="Delete Facility?"
+          message={`Are you sure you want to permanently delete "${facilityToDelete.title}"? This action cannot be undone.`}
+          confirmText={deleteMutation.isPending ? 'Deleting...' : 'Delete permanently'}
+          cancelText="Cancel"
+          isDangerous
+          onConfirm={async () => {
+            try {
+              await deleteMutation.mutateAsync(facilityToDelete.id);
+              toast.success('Facility deleted');
+              setFacilityToDelete(null);
+            } catch {
+              toast.error('Unable to delete this facility');
+            }
+          }}
+          onCancel={() => setFacilityToDelete(null)}
+        />
+      )}
     </section>
   );
 }

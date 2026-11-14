@@ -137,63 +137,66 @@ export function Navbar() {
               ))}
             </div>
 
-            <div className="navbar-preferences" aria-label="Appearance settings">
-              <button type="button" className="navbar-preference-button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`}>
-                {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+            {/* Right-side Actions */}
+            <div className="navbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+              <div className="navbar-preferences" aria-label="Appearance settings">
+                <button type="button" className="navbar-preference-button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} appearance`}>
+                  {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+                </button>
+              </div>
+
+              <a className="navbar-phone-shortcut" href="tel:+918606206096" aria-label="Call Dream Avenue">
+                <Phone size={18} />
+              </a>
+
+              {/* Desktop CTA Button */}
+              <button
+                onClick={() => navigate('/booking')}
+                className="btn-editorial-primary"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 22px',
+                  background: 'var(--hall-olive)',
+                  color: '#FFFFFF',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(83, 117, 23, 0.25)',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--hall-olive-dark)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--hall-olive)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <Calendar size={16} />
+                <span>Reserve Hall</span>
+              </button>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="navbar-mobile-toggle"
+                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--hall-ink)',
+                  cursor: 'pointer',
+                  display: 'none',
+                }}
+              >
+                {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
             </div>
-
-            <a className="navbar-phone-shortcut" href="tel:+918606206096" aria-label="Call Dream Avenue">
-              <Phone size={18} />
-            </a>
-
-            {/* Desktop CTA Button */}
-            <button
-              onClick={() => navigate('/booking')}
-              className="btn-editorial-primary"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 22px',
-                background: 'var(--hall-olive)',
-                color: '#FFFFFF',
-                borderRadius: '10px',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(83, 117, 23, 0.25)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--hall-olive-dark)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--hall-olive)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <Calendar size={16} />
-              <span>Reserve Hall</span>
-            </button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="navbar-mobile-toggle"
-              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--hall-ink)',
-                cursor: 'pointer',
-                display: 'none',
-              }}
-            >
-              {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
-            </button>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 import { useBlockDate, useUnblockDate, useCalendarEvents } from '@/hooks/useCalendar';
+import { Modal } from '../admin-v2/Modal';
 import { AdminManualBookingModal } from './AdminManualBookingModal';
 import { AdminBlockDateDialog } from './AdminBlockDateDialog';
 import { AdminDayEventsDialog } from './AdminDayEventsDialog';
@@ -118,74 +119,34 @@ export function AdminDateActionModal({ isOpen, onClose, date }: AdminDateActionM
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="admin-modal-overlay"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="admin-modal"
-          style={{ maxWidth: '480px' }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="admin-modal-header">
-            <div>
-              <span
-                style={{
-                  display: 'inline-block',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: '#B88B52',
-                  marginBottom: '2px',
-                }}
-              >
-                Date Actions
-              </span>
-              <h3 className="admin-modal-title">
-                {format(date, 'MMMM d, yyyy')}
-              </h3>
-            </div>
-            <button type="button" className="admin-modal-close" onClick={onClose} aria-label="Close">
-              <X size={18} />
-            </button>
-          </div>
-
-          {/* Action List */}
-          <div className="admin-modal-body">
-            <AdminDateActionButtons
-              isBlocked={isBlocked}
-              hasEvents={hasEvents}
-              eventCount={eventCount}
-              isUnblocking={unblockDateMutation.isPending}
-              onAddManualBooking={() => setShowManualBooking(true)}
-              onBlockClick={() => setShowBlockDialog(true)}
-              onUnblockClick={handleUnblock}
-              onViewEventsClick={() => setShowEventsDialog(true)}
-            />
-          </div>
-
-          {/* Footer */}
-          <div className="admin-modal-footer">
-            <button
-              type="button"
-              className="workspace-button workspace-button-secondary"
-              onClick={onClose}
-              style={{ width: '100%' }}
-            >
-              Close
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={format(date, 'MMMM d, yyyy')}
+      description="Date actions and schedule management"
+      size="sm"
+      footer={
+        <div className="admin-modal-actions">
+          <button
+            type="button"
+            className="workspace-button"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+      }
+    >
+      <AdminDateActionButtons
+        isBlocked={isBlocked}
+        hasEvents={hasEvents}
+        eventCount={eventCount}
+        isUnblocking={unblockDateMutation.isPending}
+        onAddManualBooking={() => setShowManualBooking(true)}
+        onBlockClick={() => setShowBlockDialog(true)}
+        onUnblockClick={handleUnblock}
+        onViewEventsClick={() => setShowEventsDialog(true)}
+      />
+    </Modal>
   );
 }

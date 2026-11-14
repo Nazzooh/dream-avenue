@@ -1,13 +1,8 @@
-// src/components/admin/bookings/BookingCard.tsx
 import React from 'react';
 import { motion } from 'motion/react';
-import { 
-  Phone, Mail, Calendar, Clock, Users, Eye, Ban
-} from 'lucide-react';
+import { Phone, Mail, Calendar, Clock, Users, Eye, Ban } from 'lucide-react';
 import { StatusBadge } from '../../admin-v2/StatusBadge';
 import { Booking } from '@/schemas/bookings';
-import { Button } from '../../ui/button';
-import { Badge } from '../../ui/badge';
 
 interface BookingCardProps {
   booking: Booking;
@@ -26,7 +21,6 @@ export function BookingCard({
   formatTime, 
   delay 
 }: BookingCardProps) {
-  // Compute client initials
   const initials = booking.full_name
     ? booking.full_name
         .split(' ')
@@ -37,123 +31,106 @@ export function BookingCard({
     : 'BK';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
+    <motion.article
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay, ease: [0.16, 1, 0.3, 1] }}
-      className="da-booking-mobile-card group relative border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow-md sm:rounded-xl"
+      transition={{ duration: 0.22, delay, ease: [0.16, 1, 0.3, 1] }}
+      className="da-booking-card-mobile"
+      onClick={() => onView(booking)}
     >
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-        
-        {/* Left section: Client Avatar + Main Details */}
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          {/* Client Avatar with gradient fill */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-sm font-bold text-[#B6F500] shadow-sm transition-transform group-hover:scale-105">
-            {initials}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2.5 flex-wrap mb-1">
-              <h3 className="text-base font-bold text-slate-900 tracking-tight truncate group-hover:text-slate-800">
-                {booking.full_name}
-              </h3>
-              <StatusBadge status={booking.status} />
-              {booking.event_type && (
-                <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 text-[11px] font-medium capitalize">
-                  {booking.event_type.replace(/_/g, ' ')}
-                </Badge>
-              )}
-            </div>
-
-            {/* Contact info pill strip */}
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium mt-1.5">
-              <div className="flex items-center gap-1.5 text-slate-700 bg-slate-100/70 px-2.5 py-1 rounded-lg">
-                <Phone className="w-3.5 h-3.5 text-slate-400" />
-                <span>{booking.mobile}</span>
-              </div>
-
-              {booking.email && (
-                <div className="flex items-center gap-1.5 text-slate-700 bg-slate-100/70 px-2.5 py-1 rounded-lg truncate max-w-[220px]">
-                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{booking.email}</span>
-                </div>
-              )}
-            </div>
-          </div>
+      <div className="da-booking-card-top">
+        <div className="da-booking-avatar">
+          {initials}
         </div>
-
-        {/* Middle section: Schedule & Event specs */}
-        <div className="flex flex-wrap items-center gap-6 text-xs border-t lg:border-t-0 lg:border-l border-slate-100 pt-3 lg:pt-0 lg:pl-6">
-          {/* Date */}
-          <div className="min-w-[110px]">
-            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
-              Event Date
-            </span>
-            <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-              <Calendar className="w-3.5 h-3.5 text-slate-500" />
-              <span>{formatDate(booking.booking_date)}</span>
-            </div>
+        <div className="da-booking-card-info">
+          <div className="da-booking-card-title-row">
+            <h3>{booking.full_name || 'Unnamed client'}</h3>
+            <StatusBadge status={booking.status} />
           </div>
-
-          {/* Time Slot */}
-          <div className="min-w-[90px]">
-            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
-              Time
+          {booking.event_type && (
+            <span className="da-booking-card-event-badge">
+              {booking.event_type.replace(/_/g, ' ')}
             </span>
-            <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-              <Clock className="w-3.5 h-3.5 text-slate-500" />
-              <span>{formatTime(booking.start_time)}</span>
-            </div>
-          </div>
-
-          {/* Guests */}
-          {booking.guest_count && (
-            <div className="min-w-[70px]">
-              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
-                Guests
-              </span>
-              <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-                <Users className="w-3.5 h-3.5 text-slate-500" />
-                <span>{booking.guest_count}</span>
-              </div>
-            </div>
           )}
+          <div className="da-booking-card-contacts">
+            {booking.mobile && (
+              <a 
+                href={`tel:${booking.mobile}`} 
+                onClick={(e) => e.stopPropagation()} 
+                className="da-booking-contact-pill"
+                title={`Call ${booking.mobile}`}
+              >
+                <Phone size={12} />
+                <span>{booking.mobile}</span>
+              </a>
+            )}
+            {booking.email && (
+              <a 
+                href={`mailto:${booking.email}`} 
+                onClick={(e) => e.stopPropagation()} 
+                className="da-booking-contact-pill"
+                title={`Email ${booking.email}`}
+              >
+                <Mail size={12} />
+                <span>{booking.email}</span>
+              </a>
+            )}
+          </div>
         </div>
+      </div>
 
-        {/* Right section: Action Buttons */}
-        <div className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-slate-100 pt-3 lg:w-auto lg:border-t-0 lg:pt-0">
-          <Button
-            size="sm"
-            variant="outline"
+      <div className="da-booking-card-specs-grid">
+        <div className="da-booking-spec-box">
+          <span className="da-booking-spec-label">EVENT DATE</span>
+          <div className="da-booking-spec-value">
+            <Calendar size={13} />
+            <span>{formatDate(booking.booking_date)}</span>
+          </div>
+        </div>
+        <div className="da-booking-spec-box">
+          <span className="da-booking-spec-label">TIME</span>
+          <div className="da-booking-spec-value">
+            <Clock size={13} />
+            <span>{formatTime(booking.start_time)}</span>
+          </div>
+        </div>
+        <div className="da-booking-spec-box">
+          <span className="da-booking-spec-label">GUESTS</span>
+          <div className="da-booking-spec-value">
+            <Users size={13} />
+            <span>{booking.guest_count || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="da-booking-card-actions">
+        <button
+          type="button"
+          className="da-booking-detail-action"
+          onClick={(e) => {
+            e.stopPropagation();
+            onView(booking);
+          }}
+          aria-label={`View booking details for ${booking.full_name || 'unnamed client'}`}
+        >
+          <Eye size={14} />
+          <span>Details</span>
+        </button>
+        {booking.status === 'confirmed' && (
+          <button
+            type="button"
+            className="da-booking-cancel-action"
             onClick={(e) => {
               e.stopPropagation();
-              onView(booking);
+              onCancel(booking);
             }}
-            aria-label={`View booking details for ${booking.full_name || 'unnamed client'}`}
-            className="h-9 px-3 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-900 hover:text-white font-medium text-xs gap-1.5 transition-all"
+            aria-label={`Cancel booking for ${booking.full_name || 'unnamed client'}`}
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Details</span>
-          </Button>
-
-          {booking.status === 'confirmed' && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCancel(booking);
-              }}
-              className="h-9 px-3 rounded-xl border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white font-medium text-xs gap-1.5 transition-all"
-            >
-              <Ban className="w-3.5 h-3.5" />
-              <span>Cancel</span>
-            </Button>
-          )}
-
-        </div>
-
+            <Ban size={14} />
+            <span>Cancel</span>
+          </button>
+        )}
       </div>
-    </motion.div>
+    </motion.article>
   );
 }

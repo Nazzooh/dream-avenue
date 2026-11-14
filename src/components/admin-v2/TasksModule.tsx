@@ -6,6 +6,7 @@ import { useAdminTasks, useCreateTask, useUpdateTaskStatus, useWorkspaceMembers 
 import { useAdminGuard } from '@/hooks/useAdminGuard';
 import { can } from '@/lib/adminPermissions';
 import { AdminSelect } from './AdminSelect';
+import { Modal } from './Modal';
 
 const priorityOrder: Record<TaskPriority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
 
@@ -45,5 +46,80 @@ function TaskEditor({ members, defaultAssigneeId, onClose }: { members: Workspac
   const [assigneeId, setAssigneeId] = useState(defaultAssigneeId);
   const submit = (event: FormEvent) => { event.preventDefault(); if (!title.trim()) return; createTask.mutate({ title: title.trim(), description: description.trim() || null, priority, due_at: dueAt ? new Date(dueAt).toISOString() : null, booking_id: null, assignee_id: assigneeId || null }, { onSuccess: onClose }); };
   const assigneeOptions = [{ value: 'unassigned', label: 'Leave unassigned' }, ...members.map((member) => ({ value: member.id, label: `${member.email || 'Team member'}${member.role ? ` · ${member.role}` : ''}` }))];
-  return <div className="workspace-drawer-backdrop" onMouseDown={onClose}><aside className="workspace-drawer" role="dialog" aria-modal="true" aria-label="Create task" onMouseDown={(event) => event.stopPropagation()}><div className="workspace-drawer-header"><div><p className="workspace-eyebrow">Operations queue</p><h2>Create task</h2></div><button className="workspace-icon-button" onClick={onClose} aria-label="Close task editor"><X size={20}/></button></div><form className="workspace-form" onSubmit={submit}><label>Task title<input required autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Confirm floral setup time" /></label><label>Context or instructions<textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What does the assignee need to know?" /></label><div className="workspace-form-grid"><label>Priority<AdminSelect value={priority} onValueChange={(value) => setPriority(value as TaskPriority)} options={[{value:'low',label:'Low'},{value:'medium',label:'Medium'},{value:'high',label:'High'},{value:'urgent',label:'Urgent'}]} /></label><label>Due date & time<input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} /></label></div><label>Assign to<AdminSelect value={assigneeId || 'unassigned'} onValueChange={(value) => setAssigneeId(value === 'unassigned' ? '' : value)} options={assigneeOptions} /></label><div className="workspace-drawer-footer"><button type="button" className="workspace-button workspace-button-secondary" onClick={onClose}>Cancel</button><button className="workspace-button workspace-button-primary" disabled={createTask.isPending}>{createTask.isPending ? 'Creating...' : 'Create task'}</button></div></form></aside></div>;
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      variant="drawer"
+      title="Create task"
+      description="Add a task to the operations queue"
+      footer={
+        <div className="admin-modal-actions">
+          <button type="button" className="workspace-button" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="create-task-form"
+            className="workspace-button workspace-button-primary"
+            disabled={createTask.isPending}
+          >
+            {createTask.isPending ? 'Creating...' : 'Create task'}
+          </button>
+        </div>
+      }
+    >
+      <form id="create-task-form" className="workspace-form" onSubmit={submit}>
+        <label>
+          Task title
+          <input
+            required
+            autoFocus
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="e.g. Confirm floral setup time"
+          />
+        </label>
+        <label>
+          Context or instructions
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="What does the assignee need to know?"
+          />
+        </label>
+        <div className="workspace-form-grid">
+          <label>
+            Priority
+            <AdminSelect
+              value={priority}
+              onValueChange={(value) => setPriority(value as TaskPriority)}
+              options={[
+                { value: 'low', label: 'Low' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'high', label: 'High' },
+                { value: 'urgent', label: 'Urgent' },
+              ]}
+            />
+          </label>
+          <label>
+            Due date & time
+            <input
+              type="datetime-local"
+              value={dueAt}
+              onChange={(event) => setDueAt(event.target.value)}
+            />
+          </label>
+        </div>
+        <label>
+          Assign to
+          <AdminSelect
+            value={assigneeId || 'unassigned'}
+            onValueChange={(value) => setAssigneeId(value === 'unassigned' ? '' : value)}
+            options={assigneeOptions}
+          />
+        </label>
+      </form>
+    </Modal>
+  );
 }

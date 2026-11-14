@@ -3,13 +3,18 @@ import { supabase } from "@/utils/supabase/client";
 import { Facility, FacilityCreate, FacilityUpdate, facilitySchema } from "../schemas/facilities";
 
 // GET all facilities - Direct Supabase
-export const getFacilities = async (): Promise<Facility[]> => {
-  console.log('🏢 Fetching facilities via direct Supabase...');
-  const { data, error } = await supabase
+export const getFacilities = async (includeInactive = false): Promise<Facility[]> => {
+  console.log('🏢 Fetching facilities via direct Supabase...', { includeInactive });
+  let query = supabase
     .from('facilities')
     .select('*')
-    .eq('is_active', true)
     .order('created_at', { ascending: false });
+
+  if (!includeInactive) {
+    query = query.eq('is_active', true);
+  }
+
+  const { data, error } = await query;
   
   if (error) {
     console.error('❌ Supabase error:', error);

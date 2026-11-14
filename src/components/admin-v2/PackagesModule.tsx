@@ -10,6 +10,7 @@ import { FormSelect } from './FormSelect';
 import { FormTextarea } from './FormTextarea';
 import { ImageUploadField } from './ImageUploadField';
 import { Modal } from './Modal';
+import { ConfirmationModal } from './ConfirmationModal';
 import { PackageReorderModal } from './PackageReorderModal';
 import { AdminActionButton } from './AdminActionButton';
 import { AdminSelect } from './AdminSelect';
@@ -28,6 +29,7 @@ export default function PackagesModule() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isReorderOpen, setIsReorderOpen] = useState(false);
   const [editingPackage, setEditingPackage] = useState<PackageData | null>(null);
+  const [packageToDelete, setPackageToDelete] = useState<PackageData | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [features, setFeatures] = useState<string[]>([]);
   const [search, setSearch] = useState('');
@@ -80,14 +82,9 @@ export default function PackagesModule() {
     }
   };
 
-  const removePackage = async (pkg: PackageData) => {
-    if (!pkg.id || !confirm(`Delete “${pkg.name}”? This cannot be undone.`)) return;
-    try {
-      await deleteMutation.mutateAsync(pkg.id);
-      toast.success('Package deleted');
-    } catch {
-      toast.error('Unable to delete this package');
-    }
+  const removePackage = (pkg: PackageData) => {
+    if (!pkg.id) return;
+    setPackageToDelete(pkg);
   };
 
   const toggleVisibility = async (pkg: PackageData) => {
@@ -167,17 +164,113 @@ export default function PackagesModule() {
       </section>
 
       <PackageReorderModal isOpen={isReorderOpen} onClose={() => setIsReorderOpen(false)} packages={packages} />
-      <Modal isOpen={isEditorOpen} onClose={closeEditor} title={editingPackage ? 'Edit package' : 'Create package'}>
-        <form onSubmit={savePackage} className="da-catalogue-form">
-          <FormInput name="name" label="Package name" placeholder="e.g. Garden wedding" defaultValue={editingPackage?.name} required />
-          <FormTextarea name="description" label="Description" placeholder="Help clients understand this offer at a glance." defaultValue={editingPackage?.description || ''} required />
-          <FormInput name="price" label="Price (₹)" type="number" min="0" placeholder="e.g. 85000" defaultValue={editingPackage?.price ?? ''} />
-          <ImageUploadField label="Package image (optional)" value={imageUrl} onChange={(url) => setImageUrl(url || '')} />
-          <fieldset className="da-package-editor-features"><legend>Inclusions</legend>{features.map((feature, index) => <div key={`${index}-${feature}`}><input value={feature} onChange={(event) => updateFeature(index, event.target.value)} placeholder={`Inclusion ${index + 1}`} /><button type="button" onClick={() => setFeatures((current) => current.filter((_, position) => position !== index))} aria-label={`Remove inclusion ${index + 1}`}><X size={16} /></button></div>)}<button type="button" className="da-add-feature" onClick={() => setFeatures((current) => [...current, ''])}><ListPlus size={16} /> Add inclusion</button></fieldset>
-          <FormSelect name="status" label="Website visibility" defaultValue={editingPackage?.is_active === false ? 'Inactive' : 'Active'} options={[{ value: 'Active', label: 'Live on the website' }, { value: 'Inactive', label: 'Hidden draft' }]} required />
-          <div className="da-catalogue-form-actions"><Button type="button" variant="outline" onClick={closeEditor}>Cancel</Button><Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>{createMutation.isPending || updateMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Saving</> : editingPackage ? 'Save changes' : 'Create package'}</Button></div>
+      <Modal
+        isOpen={isEditorOpen}
+        onClose={closeEditor}
+        title={editingPackage ? 'Edit package' : 'Create package'}
+        description={editingPackage ? 'Update package pricing, inclusions, and website visibility' : 'Add a new pricing package for clients to explore'}
+        size="lg"
+        footer={
+          <div className="admin-modal-actions">
+            <button type="button" className="workspace-button" onClick={closeEditor}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="package-editor-form"
+              className="workspace-button workspace-button-primary"
+              disabled={createMutation.isPending || updateMutation.isPending}
+            >
+              {createMutation.isPending || updateMutation.isPending ? (
+                <>
+                  <Loader2 size={16} className="animate-spin inline mr-1.5" /> Saving...
+                </>
+              ) : editingPackage ? (
+                'Save changes'
+              ) : (
+                'Create package'
+              )}
+            </button>
+          </div>
+        }
+      >
+        <form id="package-editor-form" onSubmit={savePackage} className="space-y-4">
+          {/* Details & Pricing */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Details & Pricing</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormInput name="name" label="Package name" placeholder="e.g. Garden wedding" defaultValue={editingPackage?.name} required />
+              <FormInput name="price" label="Price (₹)" type="number" min="0" placeholder="e.g. 85000" defaultValue={editingPackage?.price ?? ''} />
+            </div>
+            <FormTextarea name="description" label="Description" placeholder="Help clients understand this offer at a glance." defaultValue={editingPackage?.description || ''} required />
+          </div>
+
+          {/* Inclusions */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Inclusions & Highlights</h4>
+            <fieldset className="da-package-editor-features" style={{ border: 'none', padding: 0, margin: 0 }}>
+              {features.map((feature, index) => (
+                <div key={`${index}-${feature}`} className="flex items-center gap-2 mb-2">
+                  <input
+                    value={feature}
+                    onChange={(event) => updateFeature(index, event.target.value)}
+                    placeholder={`Inclusion ${index + 1}`}
+                    className="flex-1 px-3 py-2 rounded-xl border border-stone-200 bg-white text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFeatures((current) => current.filter((_, position) => position !== index))}
+                    aria-label={`Remove inclusion ${index + 1}`}
+                    className="p-2 text-stone-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="da-add-feature"
+                onClick={() => setFeatures((current) => [...current, ''])}
+              >
+                <ListPlus size={16} /> Add inclusion
+              </button>
+            </fieldset>
+          </div>
+
+          {/* Media */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Media</h4>
+            <ImageUploadField label="Package image (optional)" value={imageUrl} onChange={(url) => setImageUrl(url || '')} />
+          </div>
+
+          {/* Visibility */}
+          <div className="admin-form-section">
+            <h4 className="admin-form-section-title">Visibility & Publishing</h4>
+            <FormSelect name="status" label="Website visibility" defaultValue={editingPackage?.is_active === false ? 'Inactive' : 'Active'} options={[{ value: 'Active', label: 'Live on the website' }, { value: 'Inactive', label: 'Hidden draft' }]} required />
+          </div>
         </form>
       </Modal>
+
+      {packageToDelete && (
+        <ConfirmationModal
+          title="Delete Package?"
+          message={`Are you sure you want to permanently delete "${packageToDelete.name}"? This action cannot be undone.`}
+          confirmText={deleteMutation.isPending ? 'Deleting...' : 'Delete permanently'}
+          cancelText="Cancel"
+          isDangerous
+          onConfirm={async () => {
+            if (!packageToDelete.id) return;
+            try {
+              await deleteMutation.mutateAsync(packageToDelete.id);
+              toast.success('Package deleted');
+              setPackageToDelete(null);
+            } catch {
+              toast.error('Unable to delete this package');
+            }
+          }}
+          onCancel={() => setPackageToDelete(null)}
+        />
+      )}
     </section>
   );
 }

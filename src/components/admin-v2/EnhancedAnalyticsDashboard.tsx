@@ -80,13 +80,13 @@ export function EnhancedAnalyticsDashboard() {
   ];
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
       {/* Header with real-time indicator */}
       <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
           <h2
             style={{
-              fontSize: '1.875rem',
+              fontSize: 'clamp(1.4rem, 4vw, 1.875rem)',
               fontWeight: '800',
               color: '#2A2A2A',
               margin: 0,
@@ -138,7 +138,7 @@ export function EnhancedAnalyticsDashboard() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
           gap: '24px',
           marginBottom: '40px',
         }}

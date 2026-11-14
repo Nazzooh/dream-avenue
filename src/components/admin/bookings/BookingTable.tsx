@@ -1,9 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, Eye, Ban, Users } from 'lucide-react';
 import { Booking } from '@/schemas/bookings';
-import { Button } from '../../ui/button';
-import { Badge } from '../../ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
 import { StatusBadge } from '../../admin-v2/StatusBadge';
 
 interface BookingTableProps {
@@ -27,21 +24,26 @@ function formatAmount(value: number | null | undefined) {
 export function BookingTable({ bookings, onView, onCancel, formatDate, formatTime }: BookingTableProps) {
   return (
     <div className="da-booking-table hidden md:block">
-      <Table className="da-booking-table-grid">
-        <TableHeader className="bg-slate-50/80">
-          <TableRow className="border-slate-200 hover:bg-transparent">
-            <TableHead className="da-booking-client-col">Client</TableHead>
-            <TableHead className="da-booking-schedule-col">Schedule</TableHead>
-            <TableHead className="da-booking-type-col">Booking</TableHead>
-            <TableHead className="da-booking-guests-col">Guests</TableHead>
-            <TableHead className="da-booking-status-col">Status</TableHead>
-            <TableHead className="da-booking-actions-col">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+      <table className="da-booking-table-grid">
+        <thead>
+          <tr>
+            <th className="da-booking-client-col">Client</th>
+            <th className="da-booking-schedule-col">Schedule</th>
+            <th className="da-booking-type-col">Booking</th>
+            <th className="da-booking-guests-col">Guests</th>
+            <th className="da-booking-status-col">Status</th>
+            <th className="da-booking-actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
           {bookings.map((booking) => (
-            <TableRow key={booking.id} className="border-slate-100 transition-colors hover:bg-[#B6F500]/[0.04]">
-              <TableCell className="da-booking-client-cell">
+            <tr 
+              key={booking.id} 
+              className="da-booking-table-row"
+              onClick={() => onView(booking)}
+              title="Click row to view details"
+            >
+              <td className="da-booking-client-cell">
                 <div className="da-booking-client">
                   <div className="da-booking-avatar">
                     {(booking.full_name || 'BK').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase()}
@@ -51,8 +53,8 @@ export function BookingTable({ bookings, onView, onCancel, formatDate, formatTim
                     <span>{booking.mobile || booking.email || 'No contact details'}</span>
                   </div>
                 </div>
-              </TableCell>
-              <TableCell className="da-booking-schedule-cell">
+              </td>
+              <td className="da-booking-schedule-cell">
                 <div className="da-booking-schedule">
                   <div>
                     <Calendar aria-hidden="true" />
@@ -63,52 +65,56 @@ export function BookingTable({ bookings, onView, onCancel, formatDate, formatTim
                     {formatTime(booking.start_time)}
                   </div>
                 </div>
-              </TableCell>
-              <TableCell className="da-booking-type-cell">
+              </td>
+              <td className="da-booking-type-cell">
                 <div className="da-booking-type">
                   <span>{formatEventType(booking.event_type)}</span>
                   <p>{formatAmount(booking.final_price)}</p>
                 </div>
-              </TableCell>
-              <TableCell className="da-booking-guests-cell">
+              </td>
+              <td className="da-booking-guests-cell">
                 <div>
                   <Users aria-hidden="true" />
                   {booking.guest_count || 0}
                 </div>
-              </TableCell>
-              <TableCell className="da-booking-status-cell"><StatusBadge status={booking.status} /></TableCell>
-              <TableCell className="da-booking-actions-cell">
+              </td>
+              <td className="da-booking-status-cell">
+                <StatusBadge status={booking.status} />
+              </td>
+              <td className="da-booking-actions-cell">
                 <div className="da-booking-row-actions">
-                  <Button
+                  <button
                     type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onView(booking)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onView(booking);
+                    }}
                     aria-label={`View booking details for ${booking.full_name || 'unnamed client'}`}
                     className="da-booking-detail-action"
                   >
                     <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                    Details
-                  </Button>
+                    <span>Details</span>
+                  </button>
                   {booking.status === 'confirmed' && (
-                    <Button
+                    <button
                       type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onCancel(booking)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCancel(booking);
+                      }}
                       aria-label={`Cancel booking for ${booking.full_name || 'unnamed client'}`}
-                    className="da-booking-cancel-action"
+                      className="da-booking-cancel-action"
                     >
                       <Ban className="h-3.5 w-3.5" aria-hidden="true" />
                       <span className="da-booking-cancel-label">Cancel</span>
-                    </Button>
+                    </button>
                   )}
                 </div>
-              </TableCell>
-            </TableRow>
+              </td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 }

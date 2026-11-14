@@ -12,10 +12,10 @@ import { FacilityCreate, FacilityUpdate } from "../schemas/facilities";
 import { toast } from "sonner";
 
 // GET all facilities
-export const useFacilities = () => {
+export const useFacilities = (includeInactive = false) => {
   return useQuery({
-    queryKey: facilityKeys.lists(),
-    queryFn: getFacilities,
+    queryKey: includeInactive ? [...facilityKeys.all, 'admin'] : facilityKeys.lists(),
+    queryFn: () => getFacilities(includeInactive),
   });
 };
 
