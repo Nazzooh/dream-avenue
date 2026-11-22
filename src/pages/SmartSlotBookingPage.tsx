@@ -929,7 +929,7 @@ export default function SmartSlotBookingPage() {
                             style={{ width: '18px', height: '18px', accentColor: '#537517', marginTop: '2px', cursor: 'pointer' }}
                           />
                           <label htmlFor="termsCheck" style={{ fontSize: '0.8125rem', color: '#485247', lineHeight: 1.5, cursor: 'pointer' }}>
-                            I agree to Dream Avenue Event Hall policies: zero single-use plastic policy, no drinks inside the main auditorium, and complete payment settlement prior to the event date.
+                            I agree to the <a href="/terms-and-conditions" target="_blank" rel="noreferrer" style={{ color: '#537517', textDecoration: 'underline' }}>Dream Avenue Event Hall policies and terms</a>, including the zero single-use plastic policy, no drinks inside the main auditorium, and complete payment settlement prior to the event date.
                           </label>
                         </div>
                       </div>

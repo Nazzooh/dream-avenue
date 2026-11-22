@@ -14,6 +14,7 @@ import type { AdminPermission } from '@/lib/adminPermissions';
 import { queryClient } from '@/lib/queryClient';
 import { initializePerformanceOptimizations } from '@/utils/performanceOptimizations';
 import { PublicPreferencesProvider } from '@/context/PublicPreferences';
+import { reportError } from '@/utils/errorReporting';
 
 import './styles/admin-dashboard.css';
 import './styles/admin-login-pastel.css';
@@ -23,11 +24,14 @@ import './styles/admin-redesign.css';
 import './styles/admin-completion.css';
 import './styles/admin-responsive.css';
 import './styles/editorial-theme.css';
+import './styles/policies.css';
 
 const SmartSlotBookingPage = lazy(() => import('./pages/SmartSlotBookingPage'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdminLogin = lazy(() => import('./pages/admin/Login').then((m) => ({ default: m.AdminLogin })));
+const AdminResetPassword = lazy(() => import('./pages/admin/ResetPassword').then((m) => ({ default: m.AdminResetPassword })));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard').then((m) => ({ default: m.AdminDashboard })));
 const AdminPackages = lazy(() => import('./pages/admin/Packages').then((m) => ({ default: m.AdminPackages })));
 const AdminFacilities = lazy(() => import('./pages/admin/Facilities').then((m) => ({ default: m.AdminFacilities })));
@@ -40,6 +44,7 @@ const AdminPartners = lazy(() => import('./pages/admin/Partners').then((m) => ({
 const AdminActivity = lazy(() => import('./pages/admin/Activity').then((m) => ({ default: m.AdminActivity })));
 const AdminTasks = lazy(() => import('./pages/admin/Tasks').then((m) => ({ default: m.AdminTasks })));
 const AdminStaffDirectory = lazy(() => import('./pages/admin/StaffDirectory').then((m) => ({ default: m.AdminStaffDirectory })));
+const AdminPolicies = lazy(() => import('./pages/admin/Policies').then((m) => ({ default: m.AdminPolicies })));
 
 function protectedAdminPage(page: ReactNode, permission?: AdminPermission) {
   return (
@@ -52,6 +57,14 @@ function protectedAdminPage(page: ReactNode, permission?: AdminPermission) {
 export default function App() {
   useEffect(() => {
     initializePerformanceOptimizations();
+    const handleError = (event: ErrorEvent) => reportError(event.error || event.message, 'window error');
+    const handleRejection = (event: PromiseRejectionEvent) => reportError(event.reason, 'unhandled rejection');
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleRejection);
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
   }, []);
 
   return (
@@ -65,7 +78,9 @@ export default function App() {
               <Route path="/slot-booking" element={<PublicPreferencesProvider><SmartSlotBookingPage /></PublicPreferencesProvider>} />
               <Route path="/terms-and-conditions" element={<PublicPreferencesProvider><TermsAndConditions /></PublicPreferencesProvider>} />
               <Route path="/terms" element={<PublicPreferencesProvider><TermsAndConditions /></PublicPreferencesProvider>} />
+              <Route path="/privacy-policy" element={<PublicPreferencesProvider><PrivacyPolicy /></PublicPreferencesProvider>} />
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/reset-password" element={<AdminResetPassword />} />
 
               <Route element={<AdminErrorBoundary><Outlet /></AdminErrorBoundary>}>
                 <Route path="/admin" element={<AdminWorkspaceShell />}>
@@ -74,6 +89,7 @@ export default function App() {
                   <Route path="packages" element={protectedAdminPage(<AdminPackages />, 'content')} />
                   <Route path="facilities" element={protectedAdminPage(<AdminFacilities />, 'content')} />
                   <Route path="gallery" element={protectedAdminPage(<AdminGallery />, 'content')} />
+                  <Route path="policies" element={protectedAdminPage(<AdminPolicies />, 'content')} />
                   <Route path="availability" element={protectedAdminPage(<AdminAvailability />, 'operations')} />
                   <Route path="requests" element={protectedAdminPage(<AdminRequests />, 'access')} />
                   <Route path="bookings" element={protectedAdminPage(<AdminBookings />, 'operations')} />

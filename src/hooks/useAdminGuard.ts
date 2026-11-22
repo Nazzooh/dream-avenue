@@ -40,21 +40,6 @@ let globalState: AdminGuardState = (() => {
         };
       }
     }
-    // Check Supabase session token in localStorage for instant hydration on cold start
-    const rawToken = localStorage.getItem(SB_TOKEN_KEY);
-    if (rawToken) {
-      const parsedToken = JSON.parse(rawToken);
-      if (parsedToken?.user) {
-        return {
-          loading: false,
-          verified: true,
-          isAdmin: true,
-          user: parsedToken.user,
-          profile: { id: parsedToken.user.id, email: parsedToken.user.email, role: 'developer' },
-          profileError: null,
-        };
-      }
-    }
   } catch {}
   return {
     loading: true,
@@ -128,21 +113,8 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
         updateGlobalState({ loading: true, verified: false, profileError: null });
       }
 
-      // Synchronously resolve session if passed or stored locally to prevent WebLock deadlocks
+      // Resolve an authenticated session, then always verify the matching profile.
       let session = passedSession;
-      if (!session) {
-        try {
-          const rawToken = localStorage.getItem(SB_TOKEN_KEY);
-          if (rawToken) {
-            const parsedToken = JSON.parse(rawToken);
-            if (parsedToken?.user) {
-              session = parsedToken;
-            }
-          }
-        } catch {}
-      }
-
-      // Fallback: Query getSession only if no local token was found
       if (!session) {
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise<{ data: { session: null }; error: Error }>((_, reject) =>
@@ -155,6 +127,11 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
 
       if (!session?.user) {
         console.log('No active session in Supabase');
+        clearGlobalState();
+        return globalState;
+      }
+
+      if (!session.user.email_confirmed_at) {
         clearGlobalState();
         return globalState;
       }
@@ -200,22 +177,14 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
       return globalState;
     } catch (err) {
       console.error('Admin guard refresh error:', err);
-      // Graceful fallback: If we already have a cached admin session, stay verified
-      if (globalState.profile && globalState.isAdmin) {
-        updateGlobalState({
-          loading: false,
-          verified: true,
-        });
-      } else {
-        updateGlobalState({
-          loading: false,
-          verified: true,
-          isAdmin: false,
-          user: null,
-          profile: null,
-          profileError: err as Error,
-        });
-      }
+      updateGlobalState({
+        loading: false,
+        verified: true,
+        isAdmin: false,
+        user: null,
+        profile: null,
+        profileError: err as Error,
+      });
       return globalState;
     } finally {
       inFlightPromise = null;

@@ -249,6 +249,9 @@ export function Footer() {
             >
               Terms & Policies
             </a>
+            <a href="/privacy-policy" style={{ color: 'rgba(250, 248, 245, 0.6)', textDecoration: 'none' }}>
+              Privacy
+            </a>
           </div>
         </div>
       </div>

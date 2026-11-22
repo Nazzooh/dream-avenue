@@ -50,6 +50,7 @@ const navSections: NavSection[] = [
       { id: 'gallery', label: 'Photo Gallery', icon: ImageIcon, path: '/admin/gallery', permission: 'content' },
       { id: 'facilities', label: 'Venue Facilities', icon: Building2, path: '/admin/facilities', permission: 'content' },
       { id: 'packages', label: 'Packages & Pricing', icon: Package, path: '/admin/packages', permission: 'content' },
+      { id: 'policies', label: 'Policies & Terms', icon: BookOpen, path: '/admin/policies', permission: 'content' },
     ]
   },
   {

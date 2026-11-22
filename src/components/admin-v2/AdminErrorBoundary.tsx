@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle, RefreshCcw, Home } from 'lucide-react';
+import { reportError } from '@/utils/errorReporting';
 
 interface Props {
   children: ReactNode;
@@ -22,6 +23,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught admin error:', error, errorInfo);
+    reportError(error, 'admin error boundary');
   }
 
   private handleReset = () => {
@@ -42,12 +44,6 @@ export class AdminErrorBoundary extends Component<Props, State> {
             <p className="text-gray-600 mb-8">
               The admin panel encountered an unexpected error. Don't worry, your data is safe.
             </p>
-
-            <div className="bg-gray-50 rounded-lg p-4 mb-8 text-left overflow-auto max-h-32">
-              <code className="text-xs text-red-600 font-mono">
-                {this.state.error?.message || 'Unknown Error'}
-              </code>
-            </div>
 
             <div className="flex flex-col gap-3">
               <button
