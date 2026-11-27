@@ -6,8 +6,8 @@ import { z } from "zod";
 const analyticsSchema = z.object({
   totalBookings: z.number(),
   totalGuests: z.number(),
-  bookingsByStatus: z.record(z.number()),
-  bookingsByPackage: z.record(z.number()),
+  bookingsByStatus: z.record(z.string(), z.number()),
+  bookingsByPackage: z.record(z.string(), z.number()),
   recentBookingsCount: z.number(),
   confirmedBookings: z.number(),
   pendingBookings: z.number(),

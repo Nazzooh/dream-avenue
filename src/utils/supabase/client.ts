@@ -4,9 +4,7 @@
  * All other modules should import this client to avoid multiple GoTrueClient instances.
  */
 import { createClient } from '@supabase/supabase-js';
-import { projectId, publicAnonKey } from './info';
-
-const supabaseUrl = `https://${projectId}.supabase.co`;
+import { projectId, publicAnonKey, supabaseUrl } from './info';
 
 // Create a single, shared Supabase client instance
 export const supabase = createClient(supabaseUrl, publicAnonKey, {

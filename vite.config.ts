@@ -11,7 +11,7 @@ export default defineConfig({
       devOptions: {
         enabled: false,
       },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Dream Avenue Event Hall',
         short_name: 'Dream Avenue',

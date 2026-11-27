@@ -7,6 +7,11 @@ import { DashboardTopbar } from './DashboardTopbar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { AdminShortcuts } from './AdminShortcuts';
 import { useAdminGuard } from '@/hooks/useAdminGuard';
+import '../../styles/admin-dashboard.css';
+import '../../styles/admin-workspace.css';
+import '../../styles/admin-redesign.css';
+import '../../styles/admin-completion.css';
+import '../../styles/admin-responsive.css';
 
 const routeMap: Record<string, { title: string; id: string }> = {
   '/admin': { title: 'Dashboard', id: 'dashboard' },
@@ -14,6 +19,7 @@ const routeMap: Record<string, { title: string; id: string }> = {
   '/admin/packages': { title: 'Packages & Pricing', id: 'packages' },
   '/admin/facilities': { title: 'Venue Facilities', id: 'facilities' },
   '/admin/gallery': { title: 'Photo Gallery', id: 'gallery' },
+  '/admin/policies': { title: 'Hall Policies', id: 'policies' },
   '/admin/availability': { title: 'Availability Calendar', id: 'availability' },
   '/admin/requests': { title: 'Access Requests', id: 'requests' },
   '/admin/bookings': { title: 'Bookings & Events', id: 'bookings' },

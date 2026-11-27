@@ -16,13 +16,7 @@ import { initializePerformanceOptimizations } from '@/utils/performanceOptimizat
 import { PublicPreferencesProvider } from '@/context/PublicPreferences';
 import { reportError } from '@/utils/errorReporting';
 
-import './styles/admin-dashboard.css';
-import './styles/admin-login-pastel.css';
 import './styles/new-booking-page.css';
-import './styles/admin-workspace.css';
-import './styles/admin-redesign.css';
-import './styles/admin-completion.css';
-import './styles/admin-responsive.css';
 import './styles/editorial-theme.css';
 import './styles/policies.css';
 

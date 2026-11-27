@@ -18,17 +18,14 @@ jobs:
             exit 1
           fi
           
-          # Hitting the system_health table to insert a ping log
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/system_health" \
+          # Lightweight read-only query against a public table to keep Supabase active
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.SUPABASE_URL }}/rest/v1/packages?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: return=minimal" \
-            -d '{"ping_source": "github_action"}')
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
           
-          if [ "$STATUS" -eq 200 ]; then
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
             echo "✅ Successfully pinged Supabase database. Status code: $STATUS"
           else
-            echo "⚠️ Warning: Received unexpected status code $STATUS from Supabase."
-            # We don't fail the workflow because even a 4xx error means the API was hit and activity was registered.
+            echo "❌ Failed to ping Supabase database. Status code: $STATUS"
+            exit 1
           fi

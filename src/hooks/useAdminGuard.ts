@@ -9,7 +9,6 @@ import { isAdminRole } from '../lib/adminPermissions';
 import { queryClient } from '../lib/queryClient';
 
 const STORAGE_KEY = 'da_admin_guard_cache_v2';
-const SB_TOKEN_KEY = 'sb-njxtiaokvgoaxjcrnxzo-auth-token';
 const STALE_THRESHOLD_MS = 30_000; // Skip redundant refreshes if last verified < 30s ago
 let lastVerifiedAt = 0;
 
@@ -23,33 +22,16 @@ export interface AdminGuardState {
   profileError: Error | null;
 }
 
-// 1. Initial State from localStorage (instant synchronous hydration on mount/navigation)
-let globalState: AdminGuardState = (() => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed?.profile && parsed?.user && isAdminRole(parsed.profile.role)) {
-        return {
-          loading: false,
-          verified: true,
-          isAdmin: true,
-          user: parsed.user,
-          profile: parsed.profile,
-          profileError: null,
-        };
-      }
-    }
-  } catch {}
-  return {
-    loading: true,
-    verified: false,
-    isAdmin: false,
-    user: null,
-    profile: null,
-    profileError: null,
-  };
-})();
+// 1. Initial State: never trust localStorage alone for verified/isAdmin status.
+// Always start unverified until Supabase session + database profile are confirmed.
+let globalState: AdminGuardState = {
+  loading: true,
+  verified: false,
+  isAdmin: false,
+  user: null,
+  profile: null,
+  profileError: null,
+};
 
 const listeners = new Set<(state: AdminGuardState) => void>();
 
@@ -146,10 +128,15 @@ export async function refreshAdminSession(passedSession?: any): Promise<AdminGua
       try {
         userProfile = await Promise.race([profilePromise, profileTimeoutPromise]);
       } catch (profileErr) {
-        console.debug('Profile fetch latency, falling back to cached profile if present:', profileErr);
-        if (globalState.profile && globalState.isAdmin) {
-          userProfile = globalState.profile;
-        }
+        updateGlobalState({
+          loading: false,
+          verified: true,
+          isAdmin: false,
+          user: session.user,
+          profile: null,
+          profileError: profileErr instanceof Error ? profileErr : new Error('Profile verification failed'),
+        });
+        return globalState;
       }
 
       if (!userProfile) {

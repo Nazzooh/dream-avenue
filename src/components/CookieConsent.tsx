@@ -4,45 +4,60 @@ import { Cookie } from 'lucide-react';
 
 const CONSENT_KEY = 'dream-avenue-cookie-consent';
 const GA_ID = 'G-HTHJL3BEBY';
+const CLARITY_ID = 'ufqlt12vt6';
+
+let analyticsLoaded = false;
+
+function loadAnalyticsScripts() {
+    if (analyticsLoaded) return;
+    analyticsLoaded = true;
+
+    // Load Google Analytics
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+
+    script.onload = () => {
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        function gtag(...args: any[]) {
+            (window as any).dataLayer.push(args);
+        }
+        gtag('js', new Date());
+        gtag('config', GA_ID);
+        (window as any).gtag = gtag;
+    };
+
+    // Load Microsoft Clarity outside localhost
+    if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+        (function (c: any, l: Document, a: string, r: string, i: string) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+            const t = l.createElement(r) as HTMLScriptElement;
+            t.async = true;
+            t.src = `https://www.clarity.ms/tag/${i}`;
+            const y = l.getElementsByTagName(r)[0];
+            y?.parentNode?.insertBefore(t, y);
+        })(window, document, 'clarity', 'script', CLARITY_ID);
+    }
+}
 
 export function CookieConsent() {
     const [showBanner, setShowBanner] = useState(false);
 
     useEffect(() => {
-        // Check if user has already made a choice
         const consent = localStorage.getItem(CONSENT_KEY);
 
         if (!consent) {
-            // Show banner after a short delay
-            setTimeout(() => setShowBanner(true), 1000);
-        } else if (consent === 'accepted') {
-            // User previously accepted, load analytics
-            loadGoogleAnalytics();
+            const timer = setTimeout(() => setShowBanner(true), 1000);
+            return () => clearTimeout(timer);
+        } else if (consent === 'accepted' || consent === 'analytics-only') {
+            loadAnalyticsScripts();
         }
     }, []);
 
-    const loadGoogleAnalytics = () => {
-        // Load gtag.js script
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-        document.head.appendChild(script);
-
-        // Initialize gtag
-        script.onload = () => {
-            (window as any).dataLayer = (window as any).dataLayer || [];
-            function gtag(...args: any[]) {
-                (window as any).dataLayer.push(args);
-            }
-            gtag('js', new Date());
-            gtag('config', GA_ID);
-            (window as any).gtag = gtag;
-        };
-    };
-
     const handleAccept = () => {
         localStorage.setItem(CONSENT_KEY, 'accepted');
-        loadGoogleAnalytics();
+        loadAnalyticsScripts();
         setShowBanner(false);
     };
 
@@ -53,7 +68,7 @@ export function CookieConsent() {
 
     const handleAnalyticsOnly = () => {
         localStorage.setItem(CONSENT_KEY, 'analytics-only');
-        loadGoogleAnalytics();
+        loadAnalyticsScripts();
         setShowBanner(false);
     };
 
@@ -82,8 +97,8 @@ export function CookieConsent() {
                         maxWidth: '1200px',
                         margin: '0 auto',
                         display: 'flex',
-                        flexDirection: window.innerWidth < 768 ? 'column' : 'row',
-                        alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
                         gap: '20px',
                         justifyContent: 'space-between',
                     }}>
