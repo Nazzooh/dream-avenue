@@ -1,10 +1,27 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Content-Type': 'application/json' };
-const reply = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers });
+const defaultOrigins = ['https://dreamavenue.in', 'https://www.dreamavenue.in', 'http://localhost:3000', 'http://localhost:5173'];
+const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+const originAllowlist = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
+
+function buildHeaders(request: Request) {
+  const origin = request.headers.get('Origin') || '';
+  const allowOrigin = originAllowlist.includes(origin) ? origin : originAllowlist[0];
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Vary': 'Origin',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Content-Type': 'application/json',
+  };
+}
 
 serve(async (request) => {
+  const headers = buildHeaders(request);
+  const reply = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers });
   if (request.method === 'OPTIONS') return new Response('ok', { headers });
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return reply({ success: false, error: 'Sign in required.' }, 401);
@@ -32,13 +49,25 @@ serve(async (request) => {
     if (inviteError || !invite.user) return reply({ success: false, error: inviteError?.message || 'Could not create invitation.' }, 400);
     const id = invite.user.id;
     const { error: profileError } = await admin.from('profiles').upsert({ id, email, role }, { onConflict: 'id' });
-    if (profileError) return reply({ success: false, error: profileError.message }, 400);
+    if (profileError) {
+      await admin.auth.admin.deleteUser(id).catch(() => {});
+      return reply({ success: false, error: profileError.message }, 400);
+    }
     const { error: staffError } = await admin.from('staff_directory').upsert({ id, full_name: fullName, work_started_on: body.work_started_on || null, created_by: authData.user.id }, { onConflict: 'id' });
-    if (staffError) return reply({ success: false, error: staffError.message }, 400);
+    if (staffError) {
+      await admin.from('profiles').delete().eq('id', id).catch(() => {});
+      await admin.auth.admin.deleteUser(id).catch(() => {});
+      return reply({ success: false, error: staffError.message }, 400);
+    }
     return reply({ success: true, data: { id } });
   }
   if (body.action === 'set_portrait') {
-    const { error } = await admin.from('staff_directory').update({ portrait_path: body.portrait_path, updated_at: new Date().toISOString() }).eq('id', body.id);
+    const targetId = String(body.id || '').trim();
+    const portraitPath = String(body.portrait_path || '').trim();
+    if (!/^[0-9a-f-]{36}$/i.test(targetId) || !/^[0-9a-zA-Z/_-]+\.(png|jpe?g|webp)$/i.test(portraitPath) || portraitPath.includes('..')) {
+      return reply({ success: false, error: 'Invalid staff ID or portrait path.' }, 400);
+    }
+    const { error } = await admin.from('staff_directory').update({ portrait_path: portraitPath, updated_at: new Date().toISOString() }).eq('id', targetId);
     return error ? reply({ success: false, error: error.message }, 400) : reply({ success: true });
   }
   return reply({ success: false, error: 'Unknown action.' }, 400);

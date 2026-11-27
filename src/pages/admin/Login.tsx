@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/auth/useAuth';
 import { supabase } from '@/utils/supabase/client';
+import '../../styles/admin-login-pastel.css';
 
 const resetUrl = `${window.location.origin}/admin/reset-password`;
 
@@ -71,7 +72,7 @@ export function AdminLogin() {
   };
 
   return <main className="admin-login-shell">
-    <div className="admin-login-plot" aria-hidden="true"><svg viewBox="0 0 1440 960" preserveAspectRatio="xMidYMid slice"><g className="admin-login-plot-lines"><path d="M-160 210 1550 20M-160 390 1550 200M-160 570 1550 380M-160 750 1550 560M-160 930 1550 740M120-160 330 1120M380-160 590 1120M640-160 850 1120M900-160 1110 1120M1160-160 1370 1120" /></g><g className="admin-login-plot-points"><circle cx="205" cy="310" r="5"/><circle cx="770" cy="455" r="5"/><circle cx="1120" cy="220" r="5"/><circle cx="1230" cy="700" r="5"/></g></svg></div>
+    <div className="admin-login-atmosphere" aria-hidden="true"><svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><g className="admin-login-wire"><path d="M-120 125 1720-40M-120 360 1720 195M-120 595 1720 430M-120 830 1720 665M160-180 445 1180M610-180 895 1180M1060-180 1345 1180" /></g><g className="admin-login-mist admin-login-mist-one"><path d="M-140 500C130 600 205 205 550 280s324 332 664 201 305-314 560-194v370c-284-122-377 283-687 167S826 572 503 685-2 832-140 736Z" /></g><g className="admin-login-mist admin-login-mist-two"><path d="M-90 260C152 388 265 65 506 157s310 347 586 226 336-337 614-135v214c-244-193-383 153-637 223s-362-186-596-213S157 564-90 432Z" /></g><g className="admin-login-mist admin-login-mist-three"><path d="M-155 710c279 80 354-222 621-159s317 305 546 168 336-201 714-54v258c-280-138-436 10-721 66S722 798 485 880 62 1003-155 919Z" /></g></svg></div>
     <section className="admin-login-intro" aria-label="Dream Avenue admin access"><p className="admin-login-kicker">Dream Avenue Event Hall</p><h1>Run every celebration with clarity.</h1><p>Secure staff access for bookings, venue operations, and client care.</p></section>
     <section className="admin-login-panel" aria-label="Admin sign in">
       <div className="admin-login-brand"><span aria-hidden="true">DA</span><div><strong>Dream Avenue</strong><small>Admin workspace</small></div></div>

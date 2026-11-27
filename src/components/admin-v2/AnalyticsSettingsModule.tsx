@@ -1,7 +1,8 @@
 // components/admin-v2/AnalyticsSettingsModule.tsx — Analytics Settings Module
 // Single-row update with Realtime sync and Dream Avenue pastel theme
 
-import React, { motion } from 'motion/react';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Calendar, Users, Heart, Save, RefreshCw, TrendingUp, AlertCircle, Sparkles, Database, Zap, Globe } from 'lucide-react';
 import { useAnalyticsSummary, useUpdateAnalyticsSummary } from '@/hooks/useAnalyticsSummary';
 import { useAuth } from '@/auth/useAuth';
